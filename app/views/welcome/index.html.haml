@@ -1,0 +1,27 @@
+.container.py-5
+  .row.justify-content-center
+    .col-md-8.text-center
+      %h1.display-4.mb-4 Welcome to TAPAS
+
+      .mt-5
+        - if user_signed_in?
+          .card
+            .card-body
+              %h5.card-title Hello, #{current_user.email}!
+              %p.card-text You are signed in.
+
+              .d-flex.gap-3.justify-content-center.mt-4
+                = link_to "Projects", projects_path, class: "btn btn-primary"
+                = link_to "Collections", collections_path, class: "btn btn-outline-primary"
+                - if current_user.admin?
+                  = link_to "Admin Dashboard", admin_root_path, class: "btn btn-success"
+                = button_to "Sign Out", destroy_user_session_path, method: :delete, class: "btn btn-outline-secondary"
+        - else
+          .card
+            .card-body
+              %h5.card-title Get Started
+              %p.card-text Sign in to access projects and collections.
+
+              .d-flex.gap-3.justify-content-center.mt-4
+                = link_to "Sign In", new_user_session_path, class: "btn btn-primary"
+                = link_to "Sign Up", new_user_registration_path, class: "btn btn-outline-primary"

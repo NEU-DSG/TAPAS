@@ -1,0 +1,2 @@
+class ViewPackage < ApplicationRecord
+end

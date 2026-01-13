@@ -1,0 +1,230 @@
+// Admin Dashboard Styles with Bootstrap
+
+@import 'bootstrap';
+
+// Admin-specific overrides and customizations
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+// Sidebar Navigation
+.navigation {
+  width: 250px;
+  padding: 1rem 0;
+  position: fixed;
+  height: 100vh;
+  overflow-y: auto;
+
+  .navigation__link {
+    display: block;
+    color: #adb5bd;
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    transition: all 0.3s;
+
+    &:hover {
+      background-color: #495057;
+      color: #fff;
+    }
+
+    &--active {
+      background-color: #007bff;
+      color: #fff;
+    }
+  }
+
+  .navigation__link__text {
+    margin-left: 0.5rem;
+  }
+}
+
+// Main Content Area
+.main-content {
+  flex: 1;
+  margin-left: 250px;
+
+  .main-content__header {
+    margin-bottom: 2rem;
+  }
+
+  .main-content__header-title {
+    font-size: 2rem;
+    font-weight: 300;
+    color: #212529;
+    margin-bottom: 1rem;
+  }
+}
+
+// Flash Messages
+.flashes {
+  margin-bottom: 1.5rem;
+
+  .flash {
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+
+    &--alert {
+      @extend .alert;
+      @extend .alert-danger;
+    }
+
+    &--notice {
+      @extend .alert;
+      @extend .alert-info;
+    }
+
+    &--success {
+      @extend .alert;
+      @extend .alert-success;
+    }
+  }
+}
+
+// Tables
+.table {
+  background-color: #fff;
+  border-radius: 0.25rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+
+  thead {
+    background-color: #f8f9fa;
+  }
+
+  th {
+    border-top: none;
+    font-weight: 600;
+    color: #495057;
+  }
+}
+
+// Buttons
+.button,
+.button--primary {
+  @extend .btn;
+  @extend .btn-primary;
+}
+
+.button--secondary {
+  @extend .btn;
+  @extend .btn-secondary;
+}
+
+.button--small {
+  @extend .btn-sm;
+}
+
+// Forms
+.field-unit__label {
+  @extend .form-label;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.field-unit__field input[type="text"],
+.field-unit__field input[type="email"],
+.field-unit__field input[type="password"],
+.field-unit__field textarea,
+.field-unit__field select {
+  @extend .form-control;
+}
+
+.field-unit__field input[type="checkbox"] {
+  @extend .form-check-input;
+}
+
+// Search
+.search {
+  margin-bottom: 1.5rem;
+
+  .search__input {
+    @extend .form-control;
+  }
+
+  .search__button {
+    @extend .btn;
+    @extend .btn-primary;
+  }
+}
+
+// Pagination
+.pagination {
+  margin-top: 2rem;
+}
+
+// Filters
+.filters {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 0.25rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+
+  .filter-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    @extend .btn;
+    @extend .btn-outline-primary;
+    @extend .btn-sm;
+  }
+
+  .filter-btn-clear {
+    @extend .btn;
+    @extend .btn-outline-secondary;
+    @extend .btn-sm;
+  }
+}
+
+// Cards
+.attribute-data {
+  margin-bottom: 1rem;
+  padding: 1.5rem;
+  background-color: #fff;
+  border-radius: 0.25rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+// Dashboard-specific
+.dashboard {
+  .dashboard-resource-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+
+    .dashboard-resource-link {
+      padding: 1.5rem;
+      background-color: #fff;
+      border-radius: 0.25rem;
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+      text-decoration: none;
+      color: #212529;
+      transition: all 0.3s;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.15);
+      }
+    }
+  }
+}
+
+// Action Links
+.table__action {
+  @extend .btn;
+  @extend .btn-sm;
+  @extend .btn-outline-primary;
+  margin-right: 0.25rem;
+}
+
+// Header Actions
+.main-content__header-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
