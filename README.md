@@ -6,13 +6,13 @@ The TEI Archiving, Publishing, and Access Service (TAPAS) web application.
 
 ## Prerequisites
 
-Before setting up the application, ensure you have the following installed:
+Before setting up the application, see the [Dev Environment Configuration guide](DEVELOPMENT_ENVIRONMENT_CONFIGURATION_GUIDE.md) and ensure you have the following installed:
 
 - **Ruby** 4.0.0 (see `.ruby-version`)
 - **MySQL** 8.0 or higher
 - **Bundler** gem
 - **ImageMagick** (for image processing)
-- **Solr** 8.11.2(for search functionality)
+- **Solr** 8.11.2 (for search functionality)
 - **Node.js** and **npm** (for asset compilation)
 
 ## Local Development Setup
@@ -88,9 +88,6 @@ Start Solr for search functionality:
 ```bash
 # Start Solr
 solr start
-
-# Create a Solr core for TAPAS (adjust core name as needed)
-solr create -c tapas_development
 ```
 
 ## Running Tests
@@ -131,6 +128,11 @@ bin/brakeman
 
 ## Additional Resources
 
+### Documentation
+- [Admin Dashboard Guide](ADMIN_DASHBOARD_GUIDE.md) - Guide to using the Administrate-powered admin interface
+- [Development Environment Configuration Guide](DEVELOPMENT_ENVIRONMENT_CONFIGURATION_GUIDE.md) - Detailed setup instructions
+
+### External Resources
 - [Rails 8 Documentation](https://guides.rubyonrails.org/)
 - [Blacklight Documentation](https://github.com/projectblacklight/blacklight)
 - [Solr Documentation](https://solr.apache.org/guide/)
