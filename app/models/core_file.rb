@@ -26,7 +26,7 @@ class CoreFile < ApplicationRecord
   # callbacks
   after_save :index_core_file
   after_update :update_indexed_core_file
-  after_create :enqueue_tapas_xq_processing
+  after_create_commit :enqueue_tapas_xq_processing
 
   def project
     collections[0]&.project
@@ -97,6 +97,7 @@ class CoreFile < ApplicationRecord
   end
 
   def enqueue_tapas_xq_processing
+    # Only enqueue if TEI file is attached
     ProcessTeiFileJob.perform_later(id) if tei_file.attached?
   end
 

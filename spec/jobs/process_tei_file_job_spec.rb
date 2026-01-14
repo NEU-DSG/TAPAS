@@ -14,10 +14,12 @@ RSpec.describe ProcessTeiFileJob, type: :job do
     )
   end
 
+  let(:tei_content) { "<TEI><teiHeader><title>Test</title></teiHeader></TEI>" }
+
   before do
     core_file.tei_file.attach(
-      io: file_fixture("sample.xml").open,
-      filename: "sample.xml",
+      io: StringIO.new(tei_content),
+      filename: "test.xml",
       content_type: "application/xml"
     )
   end
@@ -79,9 +81,9 @@ RSpec.describe ProcessTeiFileJob, type: :job do
           doc_id: core_file.id
         )
 
-        # Note: retry_on intercepts ConnectionError, so we can't expect it to raise
-        # The job gets re-enqueued instead of raising
-        described_class.perform_now(core_file.id)
+        expect {
+          described_class.perform_now(core_file.id)
+        }.to raise_error(TapasXq::ConnectionError)
 
         core_file.reload
         expect(core_file.processing_status).to eq('failed')
@@ -140,11 +142,11 @@ RSpec.describe ProcessTeiFileJob, type: :job do
         allow(TapasXq.configuration).to receive(:disabled?).and_return(true)
       end
 
-      it 'leaves status as pending without making API call' do
+      it 'marks as completed without making API call' do
         described_class.perform_now(core_file.id)
 
         core_file.reload
-        expect(core_file.processing_status).to eq('pending')
+        expect(core_file.processing_status).to eq('completed')
         expect(core_file.mods_xml).to be_nil
         expect(WebMock).not_to have_requested(:post, /tapas-xq/)
       end

@@ -13,9 +13,17 @@
 # it.
 #
 # See https://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
+
+require 'webmock/rspec'
+
 RSpec.configure do |config|
   require 'simplecov'
   SimpleCov.start
+
+  # Disable external HTTP requests in tests (except localhost)
+  config.before(:each) do
+    WebMock.disable_net_connect!(allow_localhost: true)
+  end
 
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest

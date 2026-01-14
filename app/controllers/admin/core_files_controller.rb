@@ -1,5 +1,18 @@
 module Admin
   class CoreFilesController < Admin::ApplicationController
+    # Custom action to retry failed TAPAS-XQ processing
+    def retry_processing
+      core_file = CoreFile.find(params[:id])
+
+      if core_file.retry_processing!
+        flash[:notice] = "Processing re-queued for '#{core_file.title}'"
+      else
+        flash[:error] = "Cannot retry processing (status: #{core_file.processing_status})"
+      end
+
+      redirect_to admin_core_file_path(core_file)
+    end
+
     # Overwrite any of the RESTful controller actions to implement custom behavior
     # For example, you may want to send an email after a foo is updated.
     #

@@ -1,0 +1,14 @@
+<div class="container mt-4">
+  <div class="card">
+    <div class="card-header">
+      <h5 class="card-title mb-0">Core Files</h5>
+    </div>
+    <div class="card-body">
+      <ul class="list-unstyled mb-0">
+        <% @core_files.each do |core_file| %>
+          <li><%= core_file.title %></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+</div>
