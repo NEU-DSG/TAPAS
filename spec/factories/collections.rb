@@ -4,5 +4,6 @@ FactoryBot.define do
     association :depositor, factory: :user
     association :project
     is_public { true }
+    description { "A test collection description" }
   end
 end
