@@ -13,13 +13,42 @@
       that you fully re-index after changing this setting as it can
       affect both how text is indexed and queried. -->
   <luceneMatchVersion>9.12</luceneMatchVersion>
+  <!-- The DirectoryFactory to use for indexes.
 
-  <directoryFactory name="DirectoryFactory" class="${solr.directoryFactory:solr.StandardDirectoryFactory}"/>
+       solr.StandardDirectoryFactory is filesystem
+       based and tries to pick the best implementation for the current
+       JVM and platform.  solr.NRTCachingDirectoryFactory, the default,
+       wraps solr.StandardDirectoryFactory and caches small files in memory
+       for better NRT performance.
+    -->
+  <directoryFactory name="DirectoryFactory"
+                    class="${solr.directoryFactory:solr.NRTCachingDirectoryFactory}"/>
 
+  <!-- Enables a transaction log, used for real-time get, durability, and
+    and solr cloud replica recovery.  The log can grow as big as
+    uncommitted changes to the index, so use of a hard autoCommit
+    is recommended (see below).
+    "dir" - the target directory for transaction logs, defaults to the
+    solr data directory. -->
   <updateHandler class="solr.DirectUpdateHandler2">
     <updateLog>
-      <str name="dir">${solr.core0.data.dir:}</str>
+      <str name="dir">${solr.ulog.dir:}</str>
     </updateLog>
+    
+    <!-- AutoCommit (automatic hard commit) 
+      https://solr.apache.org/guide/solr/latest/indexing-guide/indexing-with-update-handlers.html -->
+    <!--<autoCommit>
+      <maxTime>${solr.autoCommit.maxTime:15000}</maxTime>
+      <openSearcher>false</openSearcher>
+    </autoCommit>-->
+    
+    <!-- softAutoCommit is like autoCommit except it causes a
+      'soft' commit which only ensures that changes are visible
+      but does not ensure that data is synced to disk.  This is
+      faster and more near-realtime friendly than a hard commit. -->
+    <!--<autoSoftCommit>
+      <maxTime>${solr.autoSoftCommit.maxTime:3000}</maxTime>
+    </autoSoftCommit>-->
   </updateHandler>
 
   <!-- We are using the manually-maintained schema.xml file.
