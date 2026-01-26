@@ -38,19 +38,20 @@
     </updateLog>
     
     <!-- AutoCommit (automatic hard commit) 
-      https://solr.apache.org/guide/solr/latest/indexing-guide/indexing-with-update-handlers.html -->
-    <!--<autoCommit>
-      <maxTime>${solr.autoCommit.maxTime:15000}</maxTime>
-      <openSearcher>false</openSearcher>
-    </autoCommit>-->
+      https://solr.apache.org/guide/solr/latest/configuration-guide/commits-transaction-logs.html -->
+    <autoCommit>
+      <maxDocs>50</maxDocs>
+      <maxTime>${solr.autoCommit.maxTime:60000}</maxTime> <!-- 60000 ms = 1 min -->
+      <openSearcher>true</openSearcher>
+    </autoCommit>
     
     <!-- softAutoCommit is like autoCommit except it causes a
       'soft' commit which only ensures that changes are visible
       but does not ensure that data is synced to disk.  This is
       faster and more near-realtime friendly than a hard commit. -->
-    <!--<autoSoftCommit>
-      <maxTime>${solr.autoSoftCommit.maxTime:3000}</maxTime>
-    </autoSoftCommit>-->
+    <autoSoftCommit>
+      <maxTime>${solr.autoSoftCommit.maxTime:10000}</maxTime> <!-- 10000 ms = 10 s -->
+    </autoSoftCommit>
   </updateHandler>
 
   <!-- We are using the manually-maintained schema.xml file.
