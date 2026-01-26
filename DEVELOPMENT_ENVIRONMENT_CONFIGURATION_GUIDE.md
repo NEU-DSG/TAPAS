@@ -85,8 +85,8 @@ If the command executed successfully, Solr should report back: "Created new core
 If Solr already had a core named `tapas-core`, you will see this error instead:
 
 > ERROR:
-> Core 'tapas-core' already exists!
-> Checked core existence using Core API command
+> <br />Core 'tapas-core' already exists!
+> <br />Checked core existence using Core API command
 
 To rebuild the core with the latest files from the TAPAS configset, you can delete the current core and make a new one:
 
@@ -118,7 +118,7 @@ rails dummy_data_generator:delete_indexed
 
 Then, use the Solr dashboard to [check for leftover segments](http://localhost:8983/solr/#/tapas-core/segments).
 
-Then, re-ingest the TAPAS data in Solr. As of January 2026, TAPAS does not have a method for programmatically re-ingesting data from Rails back into Solr.
+Then, re-ingest the TAPAS data in Solr. (As of January 2026, TAPAS does not have a method for programmatically re-ingesting data from Rails back into Solr.)
 
 #### Verify the core's existence
 
