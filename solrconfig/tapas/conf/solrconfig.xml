@@ -61,6 +61,52 @@
 
   <dataDir>${solr.data.dir:}</dataDir>
 
+  <query>
+
+    <!-- Maximum number of clauses allowed when parsing a boolean query string. -->
+    <maxBooleanClauses>${solr.max.booleanClauses:1024}</maxBooleanClauses>
+
+    <!-- Minimum acceptable prefix-size for prefix-based queries.
+
+      Prefix-based queries consume memory in proportion to the number of terms in the index
+      that start with that prefix.  Short prefixes tend to match many many more indexed-terms
+      and consume more memory as a result, sometimes causing stability issues on the node.
+
+      This setting allows administrators to require that prefixes meet or exceed a specified
+      minimum length requirement.  Prefix queries that don't meet this requirement return an
+      error to users.  The limit may be overridden on a per-query basis by specifying a
+      'minPrefixQueryTermLength' local-param value.
+
+      The flag value of '-1' can be used to disable enforcement of this limit.
+    -->
+    <minPrefixQueryTermLength>${solr.query.minPrefixLength:-1}</minPrefixQueryTermLength>
+
+    <!-- Custom Cache
+
+      Example of a generic cache.  These caches may be accessed by
+      name through SolrIndexSearcher.getCache(),cacheLookup(), and
+      cacheInsert().  The purpose is to enable easy caching of
+      user/application level data.  The regenerator argument should
+      be specified as an implementation of solr.CacheRegenerator
+      if autowarming is desired.
+      -->
+    <!--
+       <cache name="myUserCache"
+              class="solr.CaffeineCache"
+              size="4096"
+              initialSize="1024"
+              autowarmCount="1024"
+              regenerator="com.mycompany.MyRegenerator"
+              />
+      -->
+
+    <queryResultWindowSize>20</queryResultWindowSize>
+
+    <!-- Fields that aren't requested are loaded lazily. -->
+    <enableLazyFieldLoading>true</enableLazyFieldLoading>
+
+  </query>
+
   <requestHandler name="standard" class="solr.SearchHandler">
     <lst name="defaults">
       <str name="echoParams">explicit</str>
