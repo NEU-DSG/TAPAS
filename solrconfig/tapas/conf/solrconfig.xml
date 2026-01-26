@@ -12,7 +12,9 @@
       get all bug fixes and improvements. It is highly recommended
       that you fully re-index after changing this setting as it can
       affect both how text is indexed and queried. -->
-  <luceneMatchVersion>9.12</luceneMatchVersion>
+  <!-- Solr 9.10.1 version: <luceneMatchVersion>9.12</luceneMatchVersion>-->
+  <!-- Solr 8.11.2 version: --><luceneMatchVersion>8.11.2</luceneMatchVersion>
+
   <!-- The DirectoryFactory to use for indexes.
 
        solr.StandardDirectoryFactory is filesystem
@@ -99,8 +101,6 @@
               regenerator="com.mycompany.MyRegenerator"
               />
       -->
-
-    <queryResultWindowSize>20</queryResultWindowSize>
 
     <!-- Fields that aren't requested are loaded lazily. -->
     <enableLazyFieldLoading>true</enableLazyFieldLoading>
