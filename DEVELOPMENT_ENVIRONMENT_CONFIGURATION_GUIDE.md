@@ -15,7 +15,7 @@ We recommend the [Homebrew](https://brew.sh/) package manager to install softwar
 
 ### Install Ruby
 
-TAPAS requires Ruby at version 4.0.0.
+TAPAS requires Ruby version >= 4.0.0.
 
 1. [Install Ruby Version Manager (RVM)](http://rvm.io/rvm/install), using the RVM instructions.
 2. Install [Xcode](https://developer.apple.com/xcode/) from the Mac App Store.
