@@ -28,7 +28,7 @@ TAPAS requires Ruby at version 4.0.0.
 
 ### Install Apache Solr
 
-Apache Solr v8.11.2 is recommended for TAPAS.
+Apache Solr v8.11.x is recommended for TAPAS.
 
 **macOS (with Homebrew):**
 ```bash

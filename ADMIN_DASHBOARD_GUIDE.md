@@ -1,6 +1,6 @@
 # TAPAS Admin Dashboard Guide
 
-This guide shows you how to navigate and use the TAPAS admin dashboard powered by the Administrate gem.
+This guide shows you how to navigate and use the TAPAS admin dashboard powered by the [Administrate gem](https://administrate-demo.herokuapp.com/).
 
 ## Accessing the Admin Dashboard
 
@@ -180,10 +180,10 @@ Alternatively:
 
 ## Technical Details
 
-**Built with:** Administrate gem
-**Authentication:** Devise
-**Authorization:** Custom `admin?` method on User model
-**Base Controller:** `Admin::ApplicationController`
+**Built with:** Administrate gem\
+**Authentication:** Devise\
+**Authorization:** Custom `admin?` method on User model\
+**Base Controller:** `Admin::ApplicationController`\
 **Routes Namespace:** `/admin/*`
 
 For more technical details, see the implementation files:
