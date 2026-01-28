@@ -101,9 +101,9 @@ GEM
     blacklight-gallery (6.0.0)
       blacklight (~> 9.0.0beta1)
       rails (>= 7.1, < 9)
-    bootsnap (1.20.1)
+    bootsnap (1.21.0)
       msgpack (~> 1.2)
-    bootstrap (5.3.5)
+    bootstrap (5.3.8)
       popper_js (>= 2.11.8, < 3)
     brakeman (7.1.2)
       racc
@@ -177,7 +177,7 @@ GEM
     fugit (1.12.1)
       et-orbi (~> 1.4)
       raabro (~> 1.4)
-    git (4.1.1)
+    git (4.2.0)
       activesupport (>= 5.0)
       addressable (~> 2.8)
       process_executer (~> 4.0)
@@ -191,7 +191,7 @@ GEM
       temple (>= 0.8.2)
       thor
       tilt
-    haml-rails (2.1.0)
+    haml-rails (3.0.0)
       actionpack (>= 5.1)
       activesupport (>= 5.1)
       haml (>= 4.0.6)
@@ -266,14 +266,17 @@ GEM
     mini_mime (1.1.5)
     minitest (6.0.1)
       prism (~> 1.5)
-    mods (2.4.1)
-      edtf
+    mods (3.0.5)
+      csv (~> 3.3)
+      edtf (~> 3.0)
       iso-639
       nokogiri (>= 1.6.6)
       nom-xml (~> 1.0)
-    mods_display (0.10.1)
+    mods_display (1.7.0)
       i18n
-      stanford-mods (~> 2.1)
+      rails_autolink
+      stanford-mods (~> 3.3, >= 3.3.9)
+      view_component
     msgpack (1.8.0)
     mysql2 (0.5.7)
       bigdecimal
@@ -320,7 +323,7 @@ GEM
     pp (0.6.3)
       prettyprint
     prettyprint (0.2.0)
-    prism (1.7.0)
+    prism (1.8.0)
     process_executer (4.0.2)
       track_open_instances (~> 0.1)
     propshaft (1.3.1)
@@ -368,6 +371,10 @@ GEM
     rails-html-sanitizer (1.6.2)
       loofah (~> 2.21)
       nokogiri (>= 1.15.7, != 1.16.7, != 1.16.6, != 1.16.5, != 1.16.4, != 1.16.3, != 1.16.2, != 1.16.1, != 1.16.0.rc1, != 1.16.0)
+    rails_autolink (1.1.8)
+      actionview (> 3.1)
+      activesupport (> 3.1)
+      railties (> 3.1)
     railties (8.1.2)
       actionpack (= 8.1.2)
       activesupport (= 8.1.2)
@@ -493,9 +500,9 @@ GEM
       net-sftp (>= 2.1.2)
       net-ssh (>= 2.8.0)
       ostruct
-    stanford-mods (2.6.4)
+    stanford-mods (3.3.11)
       activesupport
-      mods (~> 2.2)
+      mods (~> 3.0, >= 3.0.4)
     stimulus-rails (1.3.4)
       railties (>= 6.0.0)
     stringio (3.2.0)
@@ -566,7 +573,7 @@ DEPENDENCIES
   faker
   friendly_id (~> 5.5)
   git
-  haml-rails (~> 2.0)
+  haml-rails (~> 3.0)
   image_processing (~> 1.2)
   importmap-rails
   jbuilder
@@ -621,8 +628,8 @@ CHECKSUMS
   bindex (0.8.1) sha256=7b1ecc9dc539ed8bccfc8cb4d2732046227b09d6f37582ff12e50a5047ceb17e
   blacklight (9.0.0) sha256=10c796cb81c57ee91b3adf745c50a96c5cf9de17055a2fa66469da73ae1e17f8
   blacklight-gallery (6.0.0) sha256=cde12f48b4068754314fdf15da553c580085b21e88cd2eeb86d62fbca10c16a6
-  bootsnap (1.20.1) sha256=7ad62cda65c5157bcca0acfcc0ee11fcbb83d7d7a8a72d52ccd85e6ffc130b93
-  bootstrap (5.3.5) sha256=d57c9b7a21eaf2182c32fe93d1c0eaa0e1ebe82c46676c5a1fd66dd3a6ac41f8
+  bootsnap (1.21.0) sha256=27893da6347c925e5bf299034b68131bbaf5d22036d466a61d38022cb235da50
+  bootstrap (5.3.8) sha256=1c23b06df24ec28a0058ad90a0da93e260d2c0a5c453d7087f6bad428464742f
   brakeman (7.1.2) sha256=6b04927710a2e7d13a72248b5d404c633188e02417f28f3d853e4b6370d26dce
   builder (3.3.0) sha256=497918d2f9dca528fdca4b88d84e4ef4387256d984b8154e9d5d3fe5a9c8835f
   bundler-audit (0.9.3) sha256=81c8766c71e47d0d28a0f98c7eed028539f21a6ea3cd8f685eb6f42333c9b4e9
@@ -659,11 +666,11 @@ CHECKSUMS
   ffi (1.17.3-x86_64-linux-gnu) sha256=3746b01f677aae7b16dc1acb7cb3cc17b3e35bdae7676a3f568153fb0e2c887f
   friendly_id (5.6.0) sha256=28e221cd53fbd21586321164c1c6fd0c9ba8dde13969cb2363679f44726bb0c3
   fugit (1.12.1) sha256=5898f478ede9b415f0804e42b8f3fd53f814bd85eebffceebdbc34e1107aaf68
-  git (4.1.1) sha256=aa453075944a116b7452fbe1de9272c3226796a022fcb08c660c7691675ad5cc
+  git (4.2.0) sha256=bda068656b637e83473e2a3963887f33de08a7c21f6e9d9d554a4b2e74ea8137
   globalid (1.3.0) sha256=05c639ad6eb4594522a0b07983022f04aa7254626ab69445a0e493aa3786ff11
   google-protobuf (4.33.2) sha256=748150d6c642fd655ef39efa23ecf2abe6d616020039a6d1c1764be1da530315
   haml (7.1.0) sha256=aed691bddcaaf4855398b3e4dd39d8590600b0f0151f4def1c2aa83bfd444248
-  haml-rails (2.1.0) sha256=273ba0189e2f82ce4b2385019dd9138884017e3103cc2eaebeee7f45186f59ea
+  haml-rails (3.0.0) sha256=091fe496a85ca521d9cac87fb50f1ecf77a57974a99aa7e267130add81a5585f
   http-accept (1.7.0) sha256=c626860682bfbb3b46462f8c39cd470fd7b0584f61b3cc9df5b2e9eb9972a126
   http-cookie (1.1.0) sha256=38a5e60d1527eebc396831b8c4b9455440509881219273a6c99943d29eadbb19
   i18n (1.14.8) sha256=285778639134865c5e0f6269e0b818256017e8cde89993fdfcbfb64d088824a5
@@ -692,8 +699,8 @@ CHECKSUMS
   mini_magick (5.3.1) sha256=29395dfd76badcabb6403ee5aff6f681e867074f8f28ce08d78661e9e4a351c4
   mini_mime (1.1.5) sha256=8681b7e2e4215f2a159f9400b5816d85e9d8c6c6b491e96a12797e798f8bccef
   minitest (6.0.1) sha256=7854c74f48e2e975969062833adc4013f249a4b212f5e7b9d5c040bf838d54bb
-  mods (2.4.1) sha256=926e4b5ab2dd73f5e0dafd464ddf640b63422ad020c70be093b1b64f268a9491
-  mods_display (0.10.1) sha256=0d0f1b1fe2cc90fa722ebea1bea6a7ece7dacd1ff254c1b3c4d020fec187e5d1
+  mods (3.0.5) sha256=70b06c780025a9880b3cfb9727d99b7401c42a343976bf69abe862894786b88b
+  mods_display (1.7.0) sha256=0b718c792765108e812ef7ad0c123a9e8c2c63326bd6ee3a293d3e2884b17b1b
   msgpack (1.8.0) sha256=e64ce0212000d016809f5048b48eb3a65ffb169db22238fb4b72472fecb2d732
   mysql2 (0.5.7) sha256=ba09ede515a0ae8a7192040a1b778c0fb0f025fa5877e9be895cd325fa5e9d7b
   namae (1.2.0) sha256=3541ce4b086fd4981d2376630c03e284402bfe1cdbab4e50e2222a72aeb9d59d
@@ -720,7 +727,7 @@ CHECKSUMS
   popper_js (2.11.8) sha256=f4b0be717fc0d50bdb3dbbc55788525a9e0e8f640b76c9971fc34ee609eadbd2
   pp (0.6.3) sha256=2951d514450b93ccfeb1df7d021cae0da16e0a7f95ee1e2273719669d0ab9df6
   prettyprint (0.2.0) sha256=2bc9e15581a94742064a3cc8b0fb9d45aae3d03a1baa6ef80922627a0766f193
-  prism (1.7.0) sha256=10062f734bf7985c8424c44fac382ac04a58124ea3d220ec3ba9fe4f2da65103
+  prism (1.8.0) sha256=84453a16ef5530ea62c5f03ec16b52a459575ad4e7b9c2b360fd8ce2c39c1254
   process_executer (4.0.2) sha256=c73eb646d450044241c973a8360f6326e33ec5ad933f7acf503f6f3579873a71
   propshaft (1.3.1) sha256=9acc664ef67e819ffa3d95bd7ad4c3623ea799110c5f4dee67fa7e583e74c392
   pry (0.16.0) sha256=d76c69065698ed1f85e717bd33d7942c38a50868f6b0673c636192b3d1b6054e
@@ -736,6 +743,7 @@ CHECKSUMS
   rails (8.1.2) sha256=5069061b23dfa8706b9f0159ae8b9d35727359103178a26962b868a680ba7d95
   rails-dom-testing (2.3.0) sha256=8acc7953a7b911ca44588bf08737bc16719f431a1cc3091a292bca7317925c1d
   rails-html-sanitizer (1.6.2) sha256=35fce2ca8242da8775c83b6ba9c1bcaad6751d9eb73c1abaa8403475ab89a560
+  rails_autolink (1.1.8) sha256=fbcb9d2e5f2cea9435a32e5f12556c7a9b7ed6867889fb9cf5eac405049bfc3a
   railties (8.1.2) sha256=1289ece76b4f7668fc46d07e55cc992b5b8751f2ad85548b7da351b8c59f8055
   rainbow (3.1.1) sha256=039491aa3a89f42efa1d6dec2fc4e62ede96eb6acd95e52f1ad581182b79bc6a
   rake (13.3.1) sha256=8c9e89d09f66a26a01264e7e3480ec0607f0c497a861ef16063604b1b08eb19c
@@ -772,7 +780,7 @@ CHECKSUMS
   solid_cache (1.0.10) sha256=bc05a2fb3ac78a6f43cbb5946679cf9db67dd30d22939ededc385cb93e120d41
   solid_queue (1.3.0) sha256=1a1d9810e0d5334d2cde7955b3701e2f4fdb07e67dbd32be27f6ba7ba3fa27f6
   sshkit (1.25.0) sha256=c8c6543cdb60f91f1d277306d585dd11b6a064cb44eab0972827e4311ff96744
-  stanford-mods (2.6.4) sha256=d76c5f7e103f3189afb3b9e418b04567df600526dad71a95c9ae0f07d45b1aa6
+  stanford-mods (3.3.11) sha256=f089b987f3cb4c481b46ceba612f5f3623c56f644097a4a72f12fb03912dc0cf
   stimulus-rails (1.3.4) sha256=765676ffa1f33af64ce026d26b48e8ffb2e0b94e0f50e9119e11d6107d67cb06
   stringio (3.2.0) sha256=c37cb2e58b4ffbd33fe5cd948c05934af997b36e0b6ca6fdf43afa234cf222e1
   temple (0.10.4) sha256=b7a1e94b6f09038ab0b6e4fe0126996055da2c38bec53a8a336f075748fff72c

@@ -42,7 +42,7 @@ gem "discard", "~> 1.2"
 
 # Forms & Views
 gem "simple_form"
-gem "haml-rails", "~> 2.0"
+gem "haml-rails", "~> 3.0"
 
 # External Services
 gem "rest-client" # API calls
