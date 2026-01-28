@@ -1,28 +1,112 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <config>
   <!-- NOTE: various comments and unused configuration possibilities have been purged
-     from this file.  Please refer to http://wiki.apache.org/solr/SolrConfigXml,
-     as well as the default solrconfig file included with Solr -->
+    from this file.  Please refer to 
+    https://solr.apache.org/guide/solr/latest/configuration-guide/configuring-solrconfig-xml.html
+    as well as the default solrconfig file included with Solr. -->
 
   <abortOnConfigurationError>${solr.abortOnConfigurationError:true}</abortOnConfigurationError>
 
-  <luceneMatchVersion>6.1.0</luceneMatchVersion>
+  <!-- Controls what version of Lucene various components of Solr
+      adhere to.  Generally, you want to use the latest version to
+      get all bug fixes and improvements. It is highly recommended
+      that you fully re-index after changing this setting as it can
+      affect both how text is indexed and queried. -->
+  <!-- Solr 9.10.1 version: <luceneMatchVersion>9.12</luceneMatchVersion>-->
+  <!-- Solr 8.11.2 version: --><luceneMatchVersion>8.11.2</luceneMatchVersion>
 
-  <directoryFactory name="DirectoryFactory" class="${solr.directoryFactory:solr.StandardDirectoryFactory}"/>
+  <!-- The DirectoryFactory to use for indexes.
 
+       solr.StandardDirectoryFactory is filesystem
+       based and tries to pick the best implementation for the current
+       JVM and platform.  solr.NRTCachingDirectoryFactory, the default,
+       wraps solr.StandardDirectoryFactory and caches small files in memory
+       for better NRT performance.
+    -->
+  <directoryFactory name="DirectoryFactory"
+                    class="${solr.directoryFactory:solr.NRTCachingDirectoryFactory}"/>
+
+  <!-- Enables a transaction log, used for real-time get, durability, and
+    and solr cloud replica recovery.  The log can grow as big as
+    uncommitted changes to the index, so use of a hard autoCommit
+    is recommended (see below).
+    "dir" - the target directory for transaction logs, defaults to the
+    solr data directory. -->
   <updateHandler class="solr.DirectUpdateHandler2">
     <updateLog>
-      <str name="dir">${solr.core0.data.dir:}</str>
+      <str name="dir">${solr.ulog.dir:}</str>
     </updateLog>
+    
+    <!-- AutoCommit (automatic hard commit) 
+      https://solr.apache.org/guide/solr/latest/configuration-guide/commits-transaction-logs.html -->
+    <!--<autoCommit>
+      <maxDocs>50</maxDocs>
+      <maxTime>${solr.autoCommit.maxTime:60000}</maxTime> <!-\- 60000 ms = 1 min -\->
+      <openSearcher>true</openSearcher>
+    </autoCommit>-->
+    
+    <!-- softAutoCommit is like autoCommit except it causes a
+      'soft' commit which only ensures that changes are visible
+      but does not ensure that data is synced to disk.  This is
+      faster and more near-realtime friendly than a hard commit. -->
+    <!--<autoSoftCommit>
+      <maxTime>${solr.autoSoftCommit.maxTime:10000}</maxTime> <!-\- 10000 ms = 10 s -\->
+    </autoSoftCommit>-->
   </updateHandler>
 
+  <!-- We are using the manually-maintained schema.xml file.
+    Since this solrconfig.xml file originally came from an older version of Solr, it's possible that we
+    are using ClassicIndexSchemaFactory now because we've always used Solr that way. If we ever decide
+    to investigate ManagedIndexSchemaFactory instead, this is where we'll make the change.
+    See https://solr.apache.org/guide/solr/latest/configuration-guide/schema-factory.html for more
+    information on options and migrating between factories. -->
   <schemaFactory class="ClassicIndexSchemaFactory"/>
 
-  <!-- solr lib dirs -->
-  <lib dir="${solr.install.dir:../../../..}/contrib/analysis-extras/lib" />
-  <lib dir="${solr.install.dir:../../../..}/contrib/analysis-extras/lucene-libs" />
-
   <dataDir>${solr.data.dir:}</dataDir>
+
+  <query>
+
+    <!-- Maximum number of clauses allowed when parsing a boolean query string. -->
+    <maxBooleanClauses>${solr.max.booleanClauses:1024}</maxBooleanClauses>
+
+    <!-- Minimum acceptable prefix-size for prefix-based queries.
+
+      Prefix-based queries consume memory in proportion to the number of terms in the index
+      that start with that prefix.  Short prefixes tend to match many many more indexed-terms
+      and consume more memory as a result, sometimes causing stability issues on the node.
+
+      This setting allows administrators to require that prefixes meet or exceed a specified
+      minimum length requirement.  Prefix queries that don't meet this requirement return an
+      error to users.  The limit may be overridden on a per-query basis by specifying a
+      'minPrefixQueryTermLength' local-param value.
+
+      The flag value of '-1' can be used to disable enforcement of this limit.
+    -->
+    <minPrefixQueryTermLength>${solr.query.minPrefixLength:-1}</minPrefixQueryTermLength>
+
+    <!-- Custom Cache
+
+      Example of a generic cache.  These caches may be accessed by
+      name through SolrIndexSearcher.getCache(),cacheLookup(), and
+      cacheInsert().  The purpose is to enable easy caching of
+      user/application level data.  The regenerator argument should
+      be specified as an implementation of solr.CacheRegenerator
+      if autowarming is desired.
+      -->
+    <!--
+       <cache name="myUserCache"
+              class="solr.CaffeineCache"
+              size="4096"
+              initialSize="1024"
+              autowarmCount="1024"
+              regenerator="com.mycompany.MyRegenerator"
+              />
+      -->
+
+    <!-- Fields that aren't requested are loaded lazily. -->
+    <enableLazyFieldLoading>true</enableLazyFieldLoading>
+
+  </query>
 
   <requestHandler name="standard" class="solr.SearchHandler">
     <lst name="defaults">
