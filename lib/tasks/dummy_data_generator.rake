@@ -297,7 +297,7 @@ namespace :dummy_data_generator do
     end
 
     Project.all.map { |p| record_image(p) }
-    puts Project.count == 25 ? '25 Projects created.' : '"Create Projects" task failed.'
+    puts Project.count >= 25 ? '25 Projects created.' : '"Create Projects" task failed.'
   end
 
   desc 'creates project members'
