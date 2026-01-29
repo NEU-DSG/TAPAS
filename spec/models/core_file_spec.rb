@@ -315,6 +315,7 @@ RSpec.describe CoreFile, type: :model do
     end
   end
 
+
   describe '#collections_same_project validation' do
     let(:depositor) { create(:user) }
     let(:project_a) { create(:project, depositor: depositor) }
