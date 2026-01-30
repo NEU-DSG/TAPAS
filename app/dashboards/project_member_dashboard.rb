@@ -14,7 +14,7 @@ class ProjectMemberDashboard < Administrate::BaseDashboard
     role: Field::String,
     user: Field::BelongsTo,
     created_at: Field::DateTime,
-    updated_at: Field::DateTime,
+    updated_at: Field::DateTime
   }.freeze
 
   # COLLECTION_ATTRIBUTES

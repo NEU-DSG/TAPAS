@@ -16,7 +16,7 @@ class ImageFileDashboard < Administrate::BaseDashboard
     imageable: Field::Polymorphic,
     title: Field::String,
     created_at: Field::DateTime,
-    updated_at: Field::DateTime,
+    updated_at: Field::DateTime
   }.freeze
 
   # COLLECTION_ATTRIBUTES

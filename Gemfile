@@ -58,8 +58,8 @@ gem "openseadragon"
 gem "git"
 
 # Search & Discovery (Blacklight ecosystem)
-gem 'blacklight'
-gem 'blacklight-gallery'
+gem "blacklight"
+gem "blacklight-gallery"
 gem "rsolr"
 
 # Secure app data
@@ -124,4 +124,6 @@ group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"
+  gem "shoulda-matchers"
+  gem "webmock"
 end

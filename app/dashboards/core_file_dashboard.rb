@@ -20,7 +20,7 @@ class CoreFileDashboard < Administrate::BaseDashboard
     tei_contributors: Field::Text,
     title: Field::String,
     created_at: Field::DateTime,
-    updated_at: Field::DateTime,
+    updated_at: Field::DateTime
   }.freeze
 
   # COLLECTION_ATTRIBUTES
@@ -79,6 +79,8 @@ class CoreFileDashboard < Administrate::BaseDashboard
     public: ->(resources) { resources.where(is_public: true) },
     private: ->(resources) { resources.where(is_public: false) },
     ography: ->(resources) { resources.where.not(ography_type: nil) },
+    processing_failed: ->(resources) { resources.processing_failed },
+    processing_pending: ->(resources) { resources.processing_pending }
   }.freeze
 
   # Overwrite this method to customize how core files are displayed

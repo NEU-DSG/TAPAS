@@ -13,7 +13,7 @@ class User < ApplicationRecord
   has_many :projects, through: :project_members
 
   def role
-    ProjectMember.find_by_user_id(id).role ||= 'reader'
+    ProjectMember.find_by_user_id(id).role ||= "reader"
   end
 
   # Check if user is an admin based on admin_at timestamp

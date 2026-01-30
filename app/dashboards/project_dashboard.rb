@@ -20,7 +20,7 @@ class ProjectDashboard < Administrate::BaseDashboard
     title: Field::String,
     users: Field::HasMany,
     created_at: Field::DateTime,
-    updated_at: Field::DateTime,
+    updated_at: Field::DateTime
   }.freeze
 
   # COLLECTION_ATTRIBUTES
