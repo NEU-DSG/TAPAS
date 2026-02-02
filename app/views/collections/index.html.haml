@@ -1,0 +1,17 @@
+%h1 Collections
+%table.table.table-striped.table-hover.table-sm
+  %thead
+    %tr
+      %th{scope: "col"} Title
+      %th{scope: "col"} Description
+      %th{colspan: "3", scope: "col"}
+  %tbody
+    - @collections.each do |collection|
+      %tr
+        %td= collection.title
+        %td= collection.description
+        %td= link_to 'Show', collection
+        %td= link_to 'Edit', edit_collection_path(collection)
+        %td= link_to 'Destroy', collection, data: { confirm: 'Are you sure?' }, method: :delete
+%br
+= link_to 'New Collection', new_collection_path

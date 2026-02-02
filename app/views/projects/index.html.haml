@@ -1,0 +1,17 @@
+%h1 Projects
+%table.table.table-striped.table-hover.table-sm
+  %thead
+    %tr
+      %th{scope: "col"} Title
+      %th{scope: "col"} Description
+      %th{colspan: "3", scope: "col"}
+  %tbody
+    - @projects.each do |project|
+      %tr
+        %td= project.title
+        %td= project.description
+        %td= link_to 'Show', project
+        %td= link_to 'Edit', edit_project_path(project)
+        %td= link_to 'Destroy', project, data: { confirm: 'Are you sure?' }, method: :delete
+%br
+= link_to 'New Project', new_project_path

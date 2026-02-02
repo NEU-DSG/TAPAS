@@ -1,0 +1,11 @@
+%h1 Core File
+
+
+%dl
+  %dt Title:
+  %dd= @core_file.title
+  %dt Description:
+  %dd= @core_file.description
+= link_to 'Edit', edit_core_file_path(@core_file)
+|
+= link_to 'Back', core_files_path

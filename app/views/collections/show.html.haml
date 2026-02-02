@@ -1,0 +1,11 @@
+%h1 Collection
+
+
+%dl
+  %dt Title:
+  %dd= @collection.title
+  %dt Description:
+  %dd= @collection.description
+= link_to 'Edit', edit_collection_path(@collection)
+|
+= link_to 'Back', collections_path

@@ -13,7 +13,6 @@ RSpec.describe "collections/edit", type: :view do
     render
 
     assert_select "form[action=?][method=?]", collection_path(collection), "post" do
-
       assert_select "input[name=?]", "collection[title]"
 
       assert_select "textarea[name=?]", "collection[description]"

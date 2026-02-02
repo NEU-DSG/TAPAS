@@ -1,0 +1,17 @@
+%h1 Core Files
+%table.table.table-striped.table-hover.table-sm
+  %thead
+    %tr
+      %th{scope: "col"} Title
+      %th{scope: "col"} Description
+      %th{colspan: "3", scope: "col"}
+  %tbody
+    - @core_files.each do |core_file|
+      %tr
+        %td= core_file.title
+        %td= core_file.description
+        %td= link_to 'Show', core_file
+        %td= link_to 'Edit', edit_core_file_path(core_file)
+        %td= link_to 'Destroy', core_file, data: { confirm: 'Are you sure?' }, method: :delete
+%br
+= link_to 'New Core File', new_core_file_path

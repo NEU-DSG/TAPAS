@@ -13,7 +13,6 @@ RSpec.describe "core_files/edit", type: :view do
     render
 
     assert_select "form[action=?][method=?]", core_file_path(core_file), "post" do
-
       assert_select "input[name=?]", "core_file[title]"
 
       assert_select "textarea[name=?]", "core_file[description]"
