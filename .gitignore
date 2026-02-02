@@ -33,7 +33,8 @@
 
 # Ignore key files for decrypting credentials and more.
 /config/*.key
-
+/bin/rubymine_rubocop
+.DS_Store
 
 /app/assets/builds/*
 !/app/assets/builds/.keep
