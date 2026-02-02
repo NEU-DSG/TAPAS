@@ -1,0 +1,9 @@
+= simple_form_for(@core_file) do |f|
+  = errors_for(@core_file)
+
+  .form-inputs
+    = f.input :title
+    = f.input :description
+
+  .form-actions
+    = f.button :submit, class: 'btn-primary'

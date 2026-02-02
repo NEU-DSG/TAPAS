@@ -1,0 +1,9 @@
+= simple_form_for(@collection) do |f|
+  = errors_for(@collection)
+
+  .form-inputs
+    = f.input :title
+    = f.input :description
+
+  .form-actions
+    = f.button :submit, class: 'btn-primary'
