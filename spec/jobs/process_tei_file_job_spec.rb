@@ -59,15 +59,20 @@ RSpec.describe ProcessTeiFileJob, type: :job do
         }.to change { core_file.reload.processing_status }.from('pending').to('completed')
       end
 
-      it 'logs success message', skip: 'Rails 8 BroadcastLogger incompatible with receive expectations' do
+      it 'logs success message' do
         stub_tapas_xq_store(
           project_id: project.id,
           doc_id: core_file.id
         )
 
-        expect(Rails.logger).to receive(:info).with(/TAPAS-XQ processing completed/)
+        output = StringIO.new
+        test_logger = ActiveSupport::Logger.new(output)
+        Rails.logger.broadcast_to(test_logger)
 
         described_class.perform_now(core_file.id)
+
+        Rails.logger.stop_broadcasting_to(test_logger)
+        expect(output.string).to match(/TAPAS-XQ processing completed/)
       end
 
       it 'marks as failed and stores error on TapasXq::Error' do
@@ -97,14 +102,19 @@ RSpec.describe ProcessTeiFileJob, type: :job do
         expect(core_file.processing_error).to include('Unexpected error')
       end
 
-      it 'logs unexpected errors', skip: 'Rails 8 BroadcastLogger incompatible with receive expectations' do
+      it 'logs unexpected errors' do
         allow_any_instance_of(TapasXq::StorageService).to receive(:store).and_raise(RuntimeError, "Something went wrong")
 
-        expect(Rails.logger).to receive(:error).with(/Unexpected error processing CoreFile/)
+        output = StringIO.new
+        test_logger = ActiveSupport::Logger.new(output)
+        Rails.logger.broadcast_to(test_logger)
 
         expect {
           described_class.perform_now(core_file.id)
         }.to raise_error(RuntimeError)
+
+        Rails.logger.stop_broadcasting_to(test_logger)
+        expect(output.string).to match(/Unexpected error processing CoreFile/)
       end
 
       it 'skips processing if already processing' do
@@ -141,10 +151,15 @@ RSpec.describe ProcessTeiFileJob, type: :job do
         expect(WebMock).not_to have_requested(:post, /tapas-xq/)
       end
 
-      it 'logs that processing was skipped', skip: 'Rails 8 BroadcastLogger incompatible with receive expectations' do
-        expect(Rails.logger).to receive(:info).with(/TAPAS-XQ disabled, skipping/)
+      it 'logs that processing was skipped' do
+        output = StringIO.new
+        test_logger = ActiveSupport::Logger.new(output)
+        Rails.logger.broadcast_to(test_logger)
 
         described_class.perform_now(core_file.id)
+
+        Rails.logger.stop_broadcasting_to(test_logger)
+        expect(output.string).to match(/TAPAS-XQ disabled, skipping/)
       end
     end
 
@@ -198,12 +213,17 @@ RSpec.describe ProcessTeiFileJob, type: :job do
     end
 
     context 'with nonexistent core_file' do
-      it 'logs error and discards job', skip: 'Rails 8 BroadcastLogger incompatible with receive expectations' do
-        expect(Rails.logger).to receive(:error).with(/CoreFile not found: 99999/)
+      it 'logs error and discards job' do
+        output = StringIO.new
+        test_logger = ActiveSupport::Logger.new(output)
+        Rails.logger.broadcast_to(test_logger)
 
         perform_enqueued_jobs do
           described_class.perform_later(99999)
         end
+
+        Rails.logger.stop_broadcasting_to(test_logger)
+        expect(output.string).to match(/CoreFile not found: 99999/)
       end
     end
   end

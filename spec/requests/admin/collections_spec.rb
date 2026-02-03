@@ -13,4 +13,16 @@ RSpec.describe "Admin::Collections", type: :request do
   before { sign_in admin_user }
 
   it_behaves_like "an admin controller"
+
+  describe "GET /admin/collections (custom index view)" do
+    it "displays the 'All Collections' clear link" do
+      get admin_collections_path
+      expect(response.body).to include("All Collections")
+    end
+
+    it "displays search filter help text" do
+      get admin_collections_path
+      expect(response.body).to include("Search filters: public:, private:")
+    end
+  end
 end

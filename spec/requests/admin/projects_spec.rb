@@ -55,6 +55,65 @@ RSpec.describe "Admin::Projects", type: :request do
     end
   end
 
+  describe "GET /admin/projects (custom index view)" do
+    it "displays the 'All Projects' clear filter link" do
+      get admin_projects_path
+      expect(response.body).to include("All Projects")
+    end
+
+    it "displays the Public filter button" do
+      get admin_projects_path
+      expect(response.body).to include("Public")
+      expect(response.body).to include(admin_projects_path(visibility: "public"))
+    end
+
+    it "displays the Private filter button" do
+      get admin_projects_path
+      expect(response.body).to include("Private")
+      expect(response.body).to include(admin_projects_path(visibility: "private"))
+    end
+
+    it "includes the clear_filters param in All Projects link" do
+      get admin_projects_path
+      expect(response.body).to include(admin_projects_path(clear_filters: true))
+    end
+
+    it "marks a filter button as active when that filter is applied" do
+      get admin_projects_path, params: { visibility: "public" }
+      get admin_projects_path
+      expect(response.body).to match(/filter-btn\s+active/)
+    end
+  end
+
+  describe "admin navigation partial" do
+    it "displays the TAPAS Admin header" do
+      get admin_projects_path
+      expect(response.body).to include("TAPAS Admin")
+    end
+
+    it "displays the Back to App link" do
+      get admin_projects_path
+      expect(response.body).to include("Back to App")
+    end
+
+    it "shows navigation links for allowed resources" do
+      get admin_projects_path
+      expect(response.body).to include(admin_collections_path)
+      expect(response.body).to include(admin_core_files_path)
+      expect(response.body).to include(admin_projects_path)
+      expect(response.body).to include(admin_users_path)
+    end
+
+    it "does not show navigation links for restricted resources" do
+      get admin_projects_path
+      nav_section = response.body[/(<nav.*?<\/nav>)/m, 1]
+      expect(nav_section).not_to include(admin_image_files_path)
+      expect(nav_section).not_to include(admin_view_packages_path)
+      expect(nav_section).not_to include(admin_project_members_path)
+      expect(nav_section).not_to include(admin_collection_core_files_path)
+    end
+  end
+
   describe "GET /admin (admin root)" do
     it "routes to projects#index" do
       get admin_root_path
