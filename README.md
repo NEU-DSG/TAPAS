@@ -12,7 +12,8 @@ Before setting up the application, see the [Dev Environment Configuration guide]
 - **MySQL** 8.0 or higher
 - **Bundler** gem
 - **ImageMagick** (for image processing)
-- **Solr** 8.11.2 (for search functionality)
+- **Java** 21 LTS (required by Solr; Java 17 LTS is the minimum)
+- **Solr** 9.10.1 (for search functionality)
 - **Node.js** and **npm** (for asset compilation)
 
 ## Local Development Setup
@@ -83,11 +84,28 @@ bin/rails server
 
 ### 7. Setup Solr (Search)
 
-Start Solr for search functionality:
+Solr requires Java 17 or 21 LTS. Java 24 and other non-LTS releases are not supported and will produce startup warnings. Verify your Java version before starting:
+
+```bash
+java -version
+# Should show openjdk version "21.x.x" or "17.x.x"
+```
+
+If needed, install Java 21 via Homebrew:
+
+```bash
+brew install openjdk@21
+export JAVA_HOME=$(brew --prefix openjdk@21)
+```
+
+Start Solr and create the core:
 
 ```bash
 # Start Solr
 solr start
+
+# Create the tapas-core (first-time setup only)
+solr create -c tapas-core -d solrconfig/tapas/conf
 ```
 
 ## Running Tests

@@ -7,13 +7,7 @@
 
   <abortOnConfigurationError>${solr.abortOnConfigurationError:true}</abortOnConfigurationError>
 
-  <!-- Controls what version of Lucene various components of Solr
-      adhere to.  Generally, you want to use the latest version to
-      get all bug fixes and improvements. It is highly recommended
-      that you fully re-index after changing this setting as it can
-      affect both how text is indexed and queried. -->
-  <!-- Solr 9.10.1 version: <luceneMatchVersion>9.12</luceneMatchVersion>-->
-  <!-- Solr 8.11.2 version: --><luceneMatchVersion>8.11.2</luceneMatchVersion>
+  <luceneMatchVersion>9.0.0</luceneMatchVersion>
 
   <!-- The DirectoryFactory to use for indexes.
 
@@ -62,6 +56,14 @@
     information on options and migrating between factories. -->
   <schemaFactory class="ClassicIndexSchemaFactory"/>
 
+<<<<<<< HEAD
+=======
+  <!-- Solr 9: analysis-extras is now a module, not a contrib lib dir -->
+  <modules>
+    <module>analysis-extras</module>
+  </modules>
+
+>>>>>>> 5248db8 (Upgrade Solr config from 8.11.2 to 9.10.1)
   <dataDir>${solr.data.dir:}</dataDir>
 
   <query>
