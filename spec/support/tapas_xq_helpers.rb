@@ -47,8 +47,5 @@ module TapasXqHelpers
 end
 
 RSpec.configure do |config|
-  config.include TapasXqHelpers, type: :service
-  config.include TapasXqHelpers, type: :job
-  config.include TapasXqHelpers, type: :model
-  config.include TapasXqHelpers, type: :request
+  config.include TapasXqHelpers
 end

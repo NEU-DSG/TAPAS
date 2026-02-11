@@ -26,7 +26,7 @@ class CoreFile < ApplicationRecord
   # callbacks
   after_save :index_core_file
   after_update :update_indexed_core_file
-  after_create_commit :enqueue_tapas_xq_processing
+  after_create :enqueue_tapas_xq_processing
 
   def project
     collections[0]&.project
@@ -115,6 +115,7 @@ class CoreFile < ApplicationRecord
       errors.add(:is_public, "cannot be public when any associated collection is private")
     end
   end
+
 
   def collections_same_project
     project_ids = collections.map(&:project_id).uniq

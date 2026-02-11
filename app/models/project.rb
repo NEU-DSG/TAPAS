@@ -19,7 +19,7 @@ class Project < ApplicationRecord
 
   def project_group
     ProjectMember
-      .includes(:user)
+      .all
       .where(project_id: id)
       .group_by(&:role)
   end

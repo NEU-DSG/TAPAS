@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :collection_core_file do
-    association :collection
-    association :core_file
+    collection { nil }
+    core_file { nil }
   end
 end

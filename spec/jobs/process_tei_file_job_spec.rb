@@ -59,7 +59,7 @@ RSpec.describe ProcessTeiFileJob, type: :job do
         }.to change { core_file.reload.processing_status }.from('pending').to('completed')
       end
 
-      it 'logs success message', skip: 'Rails 8 BroadcastLogger incompatible with receive expectations' do
+      it 'logs success message' do
         stub_tapas_xq_store(
           project_id: project.id,
           doc_id: core_file.id
@@ -102,7 +102,7 @@ RSpec.describe ProcessTeiFileJob, type: :job do
         expect(core_file.processing_error).to include('Unexpected error')
       end
 
-      it 'logs unexpected errors', skip: 'Rails 8 BroadcastLogger incompatible with receive expectations' do
+      it 'logs unexpected errors' do
         allow_any_instance_of(TapasXq::StorageService).to receive(:store).and_raise(RuntimeError, "Something went wrong")
 
         output = StringIO.new

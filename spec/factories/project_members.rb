@@ -3,11 +3,9 @@ FactoryBot.define do
     association :project
     association :user
     role { "contributor" }
-    is_project_depositor { false }
 
     trait :owner do
       role { "owner" }
-      is_project_depositor { true }
     end
 
     trait :contributor do

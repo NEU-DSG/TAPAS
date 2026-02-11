@@ -18,6 +18,7 @@ Shoulda::Matchers.configure do |config|
   end
 end
 
+
 # Requires supporting ruby files with custom matchers and macros, etc, in
 # spec/support/ and its subdirectories. Files matching `spec/**/*_spec.rb` are
 # run as spec files by default. This means that files in spec/support that end
@@ -82,7 +83,7 @@ RSpec.configure do |config|
   config.include ActiveJob::TestHelper
 
   # Stub Solr operations in tests to avoid needing a running Solr instance
-  config.before(:each) do
+  config.before do
     # Stub the Solr connection methods
     allow_any_instance_of(SolrHelpers).to receive(:index_record).and_return(true)
     allow_any_instance_of(SolrHelpers).to receive(:update_record).and_return(true)

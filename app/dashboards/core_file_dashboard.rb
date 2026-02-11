@@ -19,10 +19,6 @@ class CoreFileDashboard < Administrate::BaseDashboard
     tei_authors: Field::Text,
     tei_contributors: Field::Text,
     title: Field::String,
-    tei_file: ActiveStorageField,
-    processing_status: Field::String,
-    processing_error: Field::Text,
-    mods_xml: Field::Text,
     created_at: Field::DateTime,
     updated_at: Field::DateTime
   }.freeze
@@ -37,7 +33,6 @@ class CoreFileDashboard < Administrate::BaseDashboard
     depositor
     ography_type
     is_public
-    processing_status
     created_at
   ].freeze
 
@@ -54,10 +49,6 @@ class CoreFileDashboard < Administrate::BaseDashboard
     tei_contributors
     is_public
     image_file
-    tei_file
-    processing_status
-    processing_error
-    mods_xml
     created_at
     updated_at
   ].freeze
@@ -72,7 +63,6 @@ class CoreFileDashboard < Administrate::BaseDashboard
     collections
     ography_type
     is_public
-    tei_file
   ].freeze
 
   # COLLECTION_FILTERS
