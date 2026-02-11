@@ -24,7 +24,7 @@ class CoreFile < ApplicationRecord
   scope :processing_completed, -> { where(processing_status: "completed") }
 
   # callbacks
-  after_save :index_core_file
+  after_create :index_core_file
   after_update :update_indexed_core_file
   after_create :enqueue_tapas_xq_processing
 
