@@ -1,5 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe ViewPackage, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  it "is an ApplicationRecord" do
+    expect(described_class.superclass).to eq(ApplicationRecord)
+  end
 end
