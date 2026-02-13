@@ -339,7 +339,7 @@ namespace :dummy_data_generator do
                        email: email,
                        bio: Faker::Lorem.paragraph,
                        password: password,
-                       admin_at: Time.now
+                       admin_at: Time.current
     )
 
     puts "Admin user #{user.id} has been created." unless user.nil?
