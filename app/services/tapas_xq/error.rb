@@ -19,6 +19,9 @@ module TapasXq
   # Raised when a requested resource is not found in TAPAS-XQ
   class NotFoundError < Error; end
 
+  # Raised when access to a TAPAS-XQ resource is forbidden (e.g. private file)
+  class ForbiddenError < Error; end
+
   # Raised when TAPAS-XQ returns a server error (5xx)
   class ServerError < Error; end
 end

@@ -32,6 +32,24 @@ RSpec.describe TapasXq::Client, type: :service do
       expect(result).to eq("<response/>")
     end
 
+    it 'sends params as form parameters in the request body' do
+      stub_request(:post, "#{base_url}/test-project/test-doc")
+        .with(body: { file: '<TEI/>', collections: 'col1,col2' })
+        .to_return(status: 201, body: "<mods/>")
+
+      result = client.post('/test-project/test-doc', { file: '<TEI/>', collections: 'col1,col2' })
+      expect(result).to eq("<mods/>")
+    end
+
+    it 'raises InvalidResponseError on unexpected 2xx status code' do
+      stub_request(:post, "#{base_url}/test")
+        .to_return(status: 204, body: "")
+
+      expect {
+        client.post('/test')
+      }.to raise_error(TapasXq::InvalidResponseError, /Unexpected status code: 204/)
+    end
+
     it 'raises ConnectionError on SocketError' do
       stub_request(:post, "#{base_url}/test")
         .to_raise(SocketError.new("Connection refused"))
@@ -104,6 +122,15 @@ RSpec.describe TapasXq::Client, type: :service do
       expect {
         client.get('/test')
       }.to raise_error(TapasXq::NotFoundError, /Resource not found/)
+    end
+
+    it 'raises ForbiddenError on 403' do
+      stub_request(:get, "#{base_url}/test")
+        .to_return(status: 403, body: "Forbidden")
+
+      expect {
+        client.get('/test')
+      }.to raise_error(TapasXq::ForbiddenError, /Access to resource is forbidden/)
     end
 
     it 'raises AuthenticationError on 401' do

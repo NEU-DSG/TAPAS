@@ -55,6 +55,8 @@ module TapasXq
       handle_response(response)
     rescue RestClient::NotFound
       raise TapasXq::NotFoundError, "Resource not found"
+    rescue RestClient::Forbidden
+      raise TapasXq::ForbiddenError, "Access to resource is forbidden"
     rescue RestClient::Unauthorized
       raise TapasXq::AuthenticationError, "Invalid TAPAS-XQ credentials"
     rescue RestClient::Exceptions::OpenTimeout, RestClient::Exceptions::ReadTimeout
