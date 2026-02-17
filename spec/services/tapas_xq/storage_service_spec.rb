@@ -70,7 +70,7 @@ RSpec.describe TapasXq::StorageService, type: :service do
         expect(mock_client).to have_received(:post).with(
           anything,
           hash_including(
-            collections: satisfy { |v| v.split(",").map(&:to_i).sort == [collection.id, collection2.id].sort }
+            collections: satisfy { |v| v.split(",").map(&:to_i).sort == [ collection.id, collection2.id ].sort }
           )
         )
       end

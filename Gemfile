@@ -95,6 +95,8 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
+gem "simplecov", require: false, group: :test
+
 group :development, :test do
   gem "rspec-rails"
   gem "rspec-its"
@@ -111,10 +113,21 @@ group :development, :test do
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
   gem "brakeman", require: false
 
+  gem "reek"
+  gem "rails_code_auditor"
+  gem "rubycritic", require: false
+
+  # Code analysis gems
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
+  # for static code analysis
   gem "rubocop-rails-omakase", require: false
 
+  # Boo, N+1 queries!
   gem "bullet"
+  # Suggests speed improvements
+  gem "fasterer"
+  gem "flog"
+  gem "flay"
 end
 
 group :development do
