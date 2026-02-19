@@ -40,5 +40,5 @@
 /.admin-documentation/
 
 .idea/
-
+/bin/rubymine_rubocop
 .DS_Store
