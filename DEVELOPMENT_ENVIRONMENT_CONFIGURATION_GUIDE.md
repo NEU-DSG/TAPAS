@@ -35,6 +35,8 @@ Apache Solr at major version 9 is recommended for TAPAS. (Solr at version 8.11.4
 brew install solr
 ```
 
+Solr must be run with Java at version 11 or higher. You can check which version you're using with `java -version`. If necessary, you can use Homebrew to install a newer version. For example: `brew install openjdk@11` .
+
 **Manual installation:**
 1. Download the [Apache Solr binary release](https://solr.apache.org/downloads.html).
 2. Extract the tarball, e.g.: `tar -xzf solr-9.10.1.tgz`
