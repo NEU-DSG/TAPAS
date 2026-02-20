@@ -28,46 +28,111 @@ TAPAS requires Ruby version >= 4.0.0.
 
 ### Install Apache Solr
 
-Apache Solr v8.11.x is recommended for TAPAS.
+Apache Solr at major version 9 is recommended for TAPAS. (Solr at version 8.11.4 is acceptable.)
 
 **macOS (with Homebrew):**
 ```bash
 brew install solr
 ```
 
+Solr must be run with Java at version 11 or higher. You can check which version you're using with `java -version`. If necessary, you can use Homebrew to install a newer version. For example: `brew install openjdk@11` .
+
 **Manual installation:**
-1. Download [Apache Solr 8.11.2](https://solr.apache.org/downloads.html).
-2. Extract the tarball: `tar -xzf solr-8.11.2.tgz`
-3. Move to a convenient location: `mv solr-8.11.2 /usr/local/solr` (or your preferred path)
+1. Download the [Apache Solr binary release](https://solr.apache.org/downloads.html).
+2. Extract the tarball, e.g.: `tar -xzf solr-9.10.1.tgz`
+3. Move Solr to a convenient location, e.g.: `mv solr-9.10.1 /usr/local/solr`
+
+#### Configure Solr
+
+The TAPAS configuration requires specific analysis packages that are packaged with Solr, but which are not used by default. To make sure Solr has access to these packages, `cd` to the directory where you installed Solr, and run:
+
+```shell
+cp modules/analysis-extras/lib/*.jar lib
+```
+
+By copying the optional JARs into Solr's `lib/` folder, the classes we need will be available when Solr starts up.
+
+Next, we set up a Solr [config set](https://solr.apache.org/guide/solr/latest/configuration-guide/config-sets.html) with TAPAS's configuration, schema, and other helpful settings. The configuration files are stored in this repository at `solrconfig/tapas/conf/`. To make sure that Solr always sees the most up-to-date version, we create a symbolic link (via the `ln -s` command) from Solr to your local repository.
+
+```shell
+# From the base Solr directory
+cd server/solr/configsets
+ln -s /path/to/TAPAS/solrconfig/tapas tapas_conf
+cd ../../..
+```
+
+#### Create TAPAS Solr core
 
 **Start Solr:**
-```bash
-# With Homebrew
-brew services start solr
 
-# Manual installation
-cd /usr/local/solr
+```bash
+# From the base Solr directory
 bin/solr start
 ```
 
-**Create TAPAS Solr core:**
+Note that if you installed Solr via Homebrew, you can also start Solr with this command: `brew services start solr`.
+
+Next, we need a Solr "core" — an individual Solr instance with an index specific to TAPAS. (The executable `bin/solr` can run multiple cores at once.) Use the command below to create a Solr core named `tapas-core` for TAPAS, referencing the configset we set up earlier:
+
 ```bash
-solr create -c tapas
+bin/solr create -c tapas-core -d tapas_conf
 ```
 
-**Configure the core:**
-1. Navigate to the core configuration directory: `cd server/solr/tapas/conf` (or the Homebrew equivalent path)
-2. Copy the configuration files: `cp /path/to/TAPAS/solrconfig/tapas/conf/solrconfig.xml /path/to/TAPAS/solrconfig/tapas/conf/schema.xml .`
-3. Restart Solr: `solr restart`
+Depending on your local Java version, you may see warnings about `sun.misc.Unsafe`. You can ignore those.
 
-**Verify the core:**
+If the command executed successfully, Solr should report back: "Created new core 'tapas-core'". If you check the contents of `SOLR/server/solr/tapas-core/conf/`, you will see copies of the same files that appear in the configset.
+
+#### Rebuilding the Solr core
+
+If Solr already had a core named `tapas-core`, you will see this error instead:
+
+> ERROR:
+> <br />Core 'tapas-core' already exists!
+> <br />Checked core existence using Core API command
+
+To rebuild the core with the latest files from the TAPAS configset, you can delete the current core and make a new one:
+
+```shell
+bin/solr delete -c tapas-core
+bin/solr create -c tapas-core -d tapas_conf
+```
+
+As of January 2026, TAPAS does not have a method for programmatically re-ingesting data from Rails back into Solr.
+
+#### Reindexing
+
+An alternative to deleting and re-creating `tapas-core` is to keep the existing core, but update its configuration files, using `cp` or any other manual method. 
+
+If you use this method, you may need to [reindex your Solr core](https://solr.apache.org/guide/solr/latest/indexing-guide/reindexing.html) by deleting all of the core's documents and re-uploading them to Solr. You should reindex in cases such as these:
+
+- Upgrading Solr to a newer version
+- Any changes to the `schema.xml` file
+- Changes to `solrconfig.xml` that affect what gets stored in an index, e.g.
+    - `<luceneMatchVersion>`
+    - [Update request processors](https://solr.apache.org/guide/solr/latest/configuration-guide/update-request-processors.html)
+    - `<codecFactory>`
+
+To reindex your core, delete all documents indexed the core:
+
+```shell
+rails dummy_data_generator:delete_indexed
+```
+
+Then, use the Solr dashboard to [check for leftover segments](http://localhost:8983/solr/#/tapas-core/segments).
+
+Then, re-ingest the TAPAS data in Solr. (As of January 2026, TAPAS does not have a method for programmatically re-ingesting data from Rails back into Solr.)
+
+#### Verify the core's existence
+
 1. Open the [Solr Admin Dashboard](http://localhost:8983/solr/#/) in your browser
 2. Click the **Core Selector** dropdown on the left
-3. Verify `tapas` is listed
+3. Verify `tapas-core` is listed
 
 To stop Solr: `solr stop` (or `brew services stop solr`)
 
+
 ### Install MySQL
+
 MySQL 8.0 or higher is recommended.
 
 **Install MySQL:**
