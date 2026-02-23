@@ -40,8 +40,7 @@
 /.admin-documentation/
 
 .idea/
+/bin/rubymine_rubocop
 .DS_Store
-bin/rubymine_rubocop
-coverage
-/rails_best_practices_output.json
+/coverage/
 /report/
