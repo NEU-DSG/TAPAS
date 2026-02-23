@@ -11,8 +11,8 @@
               %p.card-text You are signed in.
 
               .d-flex.gap-3.justify-content-center.mt-4
-                = link_to "Projects", projects_path, class: "btn btn-primary"
-                = link_to "Collections", collections_path, class: "btn btn-outline-primary"
+                = link_to "Projects", root_path, class: "btn btn-primary"
+                = link_to "Collections", root_path, class: "btn btn-outline-primary"
                 - if current_user.admin?
                   = link_to "Admin Dashboard", admin_root_path, class: "btn btn-success"
                 = button_to "Sign Out", destroy_user_session_path, method: :delete, class: "btn btn-outline-secondary"
