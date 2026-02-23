@@ -21,7 +21,7 @@ class ViewPackageDashboard < Administrate::BaseDashboard
     parameters: Field::Text,
     run_process: Field::Text,
     created_at: Field::DateTime,
-    updated_at: Field::DateTime,
+    updated_at: Field::DateTime
   }.freeze
 
   # COLLECTION_ATTRIBUTES

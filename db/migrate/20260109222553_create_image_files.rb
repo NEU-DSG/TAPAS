@@ -10,7 +10,7 @@ class CreateImageFiles < ActiveRecord::Migration[8.1]
       t.string "image_url", null: false
       t.timestamps
 
-      t.index ["imageable_type", "imageable_id"], name: "index_image_files_on_imageable_type_and_imageable_id"
+      t.index [ "imageable_type", "imageable_id" ], name: "index_image_files_on_imageable_type_and_imageable_id"
     end
   end
 end

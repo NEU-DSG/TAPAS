@@ -10,9 +10,9 @@ module Admin
 
       # Apply filters based on session state
       case session[:project_visibility]
-      when 'public'
+      when "public"
         resources.where(is_public: true)
-      when 'private'
+      when "private"
         resources.where(is_public: false)
       else
         resources

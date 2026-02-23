@@ -42,5 +42,13 @@ module Admin
 
     # See https://administrate-demo.herokuapp.com/customizing_controller_actions
     # for more information
+
+    def retry_processing
+      if requested_resource.retry_processing!
+        redirect_to admin_core_file_path(requested_resource), notice: "File re-queued for processing."
+      else
+        redirect_to admin_core_file_path(requested_resource), flash: { error: "Cannot retry processing for this file." }
+      end
+    end
   end
 end

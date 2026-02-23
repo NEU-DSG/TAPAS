@@ -7,6 +7,6 @@ class CreateCollectionCoreFiles < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :collection_core_files, [:collection_id, :core_file_id], unique: true, name: 'index_collection_core_files_on_collection_and_core_file'
+    add_index :collection_core_files, [ :collection_id, :core_file_id ], unique: true, name: 'index_collection_core_files_on_collection_and_core_file'
   end
 end

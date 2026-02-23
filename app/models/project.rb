@@ -15,6 +15,7 @@ class Project < ApplicationRecord
   # callbacks
   after_save :index_record
   after_update :update_record
+  after_create :assign_default_owner
 
   def project_group
     ProjectMember
@@ -34,22 +35,22 @@ class Project < ApplicationRecord
   end
 
   def contributors
-    members['contributor']
+    members["contributor"]
   end
 
   def owner
-    members['owner']
+    members["owner"]
   end
 
   def to_solr(solr_doc = {})
     solr_doc["active_record_model_ssi"] = self.class.to_s
-    solr_doc['depositor_tesim'] = depositor_id
-    solr_doc['table_id_ssi'] = id
-    solr_doc['id'] = "#{self.class.to_s}_#{id}"
-    solr_doc['edit_access_person_ssim'] = project_members.empty? ? depositor_id : owner.first.id
-    solr_doc['title_info_title_ssi'] = title
-    solr_doc['access_ssim'] = is_public ? "public" : "private"
-    solr_doc['image_file_ssi'] = 'public/assets/logo_no_text.png'
+    solr_doc["depositor_tesim"] = depositor_id
+    solr_doc["table_id_ssi"] = id
+    solr_doc["id"] = "#{self.class}_#{id}"
+    solr_doc["edit_access_person_ssim"] = project_members.empty? ? depositor_id : owner.first.id
+    solr_doc["title_info_title_ssi"] = title
+    solr_doc["access_ssim"] = is_public ? "public" : "private"
+    solr_doc["image_file_ssi"] = "public/assets/logo_no_text.png"
 
     solr_doc
   end
@@ -58,5 +59,13 @@ class Project < ApplicationRecord
 
   def publicly_visible
     where(is_public: true)
+  end
+
+  private
+
+  def assign_default_owner
+    return if project_members.exists?(role: "owner")
+
+    project_members.create!(user: depositor, role: "owner", is_project_depositor: true)
   end
 end

@@ -12,7 +12,7 @@ class CollectionCoreFileDashboard < Administrate::BaseDashboard
     collection: Field::BelongsTo,
     core_file: Field::BelongsTo,
     created_at: Field::DateTime,
-    updated_at: Field::DateTime,
+    updated_at: Field::DateTime
   }.freeze
 
   # COLLECTION_ATTRIBUTES

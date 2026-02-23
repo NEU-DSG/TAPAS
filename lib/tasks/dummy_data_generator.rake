@@ -1,7 +1,7 @@
 namespace :dummy_data_generator do
-  require 'faker'
-  require 'net/http'
-  require 'open-uri'
+  require "faker"
+  require "net/http"
+  require "open-uri"
 
   IMAGE_BASE_URL = ENV.fetch("IMAGE_BASE_URL", nil)
   RAW_TEI_URL = ENV.fetch("RAW_TEI_URL", nil)
@@ -16,24 +16,24 @@ namespace :dummy_data_generator do
     puts "=" * 80
 
     case adapter_name
-    when 'ActiveJob::QueueAdapters::AsyncAdapter'
+    when "ActiveJob::QueueAdapters::AsyncAdapter"
       puts "✓ Using AsyncAdapter (Development)"
       puts "  - Jobs process asynchronously in background threads"
       puts "  - No external workers required"
       puts "  - ActiveStorage file processing will happen automatically"
-    when 'ActiveJob::QueueAdapters::SolidQueueAdapter'
+    when "ActiveJob::QueueAdapters::SolidQueueAdapter"
       puts "✓ Using Solid Queue (Production)"
       puts "  - Database-backed persistent job queue"
       puts "  - Make sure workers are running: bin/rails solid_queue:start"
       puts ""
       print "Are Solid Queue workers running? (y/N): "
       response = STDIN.gets.chomp.downcase
-      unless response == 'y' || response == 'yes'
+      unless response == "y" || response == "yes"
         puts "\nWarning: File processing may be delayed without workers."
         puts "Start workers with: bin/rails solid_queue:start"
         print "Continue anyway? (y/N): "
         continue = STDIN.gets.chomp.downcase
-        unless continue == 'y' || continue == 'yes'
+        unless continue == "y" || continue == "yes"
           puts "Aborted. Please start Solid Queue workers and try again."
           exit 1
         end
@@ -47,7 +47,7 @@ namespace :dummy_data_generator do
     puts "=" * 80 + "\n"
   end
 
-  def record_image(record, image_name=nil)
+  def record_image(record, image_name = nil)
     url = "#{IMAGE_BASE_URL}"
     image_data = URI.open(url)
     image_name ||= "#{record.class}_#{record.__id__}"
@@ -80,7 +80,7 @@ namespace :dummy_data_generator do
 
         ProjectMember.create(project_id: project.id,
                              user_id: user_id,
-                             role: 'contributor'
+                             role: "contributor"
         )
       end
 
@@ -91,7 +91,7 @@ namespace :dummy_data_generator do
 
         ProjectMember.create(project_id: project.id,
                              user_id: user_id,
-                             role: 'owner'
+                             role: "owner"
         )
       end
 
@@ -213,7 +213,7 @@ namespace :dummy_data_generator do
     if RAW_TEI_URL.present?
       begin
         tei_data = URI.open(RAW_TEI_URL)
-        core_file.tei_file.attach(io: tei_data, filename: "#{core_file.title.parameterize}.xml", content_type: 'application/xml')
+        core_file.tei_file.attach(io: tei_data, filename: "#{core_file.title.parameterize}.xml", content_type: "application/xml")
         return
       rescue => e
         puts "Failed to fetch TEI from URL, using generated content: #{e.message}"
@@ -224,61 +224,61 @@ namespace :dummy_data_generator do
     core_file.tei_file.attach(
       io: StringIO.new(tei_content),
       filename: "#{core_file.title.parameterize}.xml",
-      content_type: 'application/xml'
+      content_type: "application/xml"
     )
   end
 
-  desc 'generate all dummy data'
-  task :run_all => :environment do
+  desc "generate all dummy data"
+  task run_all: :environment do
     # Check queue adapter configuration
     check_queue_adapter
     # Start or restart Solr service for connection to instance
-    system('solr restart')
+    system("solr restart")
 
-    Rake::Task['dummy_data_generator:user_records'].invoke
-    Rake::Task['dummy_data_generator:non_user_records'].invoke
+    Rake::Task["dummy_data_generator:user_records"].invoke
+    Rake::Task["dummy_data_generator:non_user_records"].invoke
   end
 
-  desc 'create user table records'
-  task :user_records => :environment do
-    puts 'Creating admin user...'
-    Rake::Task['dummy_data_generator:admin_user'].invoke
+  desc "create user table records"
+  task user_records: :environment do
+    puts "Creating admin user..."
+    Rake::Task["dummy_data_generator:admin_user"].invoke
 
-    puts 'Creating debug user...'
-    Rake::Task['dummy_data_generator:debug_non_admin_user'].invoke
+    puts "Creating debug user..."
+    Rake::Task["dummy_data_generator:debug_non_admin_user"].invoke
 
-    puts 'Creating non-admin users...'
-    Rake::Task['dummy_data_generator:non_admin_users'].invoke
+    puts "Creating non-admin users..."
+    Rake::Task["dummy_data_generator:non_admin_users"].invoke
   end
 
-  desc 'create non-user table records'
-  task :non_user_records => :environment do
-    puts 'Creating projects...'
-    Rake::Task['dummy_data_generator:projects'].invoke
+  desc "create non-user table records"
+  task non_user_records: :environment do
+    puts "Creating projects..."
+    Rake::Task["dummy_data_generator:projects"].invoke
 
-    puts 'Creating project members...'
-    Rake::Task['dummy_data_generator:project_members'].invoke
+    puts "Creating project members..."
+    Rake::Task["dummy_data_generator:project_members"].invoke
 
-    puts 'Creating collections...'
-    Rake::Task['dummy_data_generator:collections'].invoke
+    puts "Creating collections..."
+    Rake::Task["dummy_data_generator:collections"].invoke
 
-    if [User, Project, ProjectMember, Collection].map(&:any?).include?(false)
-      puts 'Deleting Solr index'
-      Rake::Task['dummy_data_generator:delete_indexed'].invoke
+    if [ User, Project, ProjectMember, Collection ].map(&:any?).include?(false)
+      puts "Deleting Solr index"
+      Rake::Task["dummy_data_generator:delete_indexed"].invoke
 
-      puts 'Recreating database'
-      Rake::Task['db:drop'].invoke
-      Rake::Task['db:create'].invoke
-      Rake::Task['db:migrate'].invoke
-      Rake::Task['dummy_data_generator:all_users'].invoke
+      puts "Recreating database"
+      Rake::Task["db:drop"].invoke
+      Rake::Task["db:create"].invoke
+      Rake::Task["db:migrate"].invoke
+      Rake::Task["dummy_data_generator:all_users"].invoke
     else
-      puts 'Creating core files'
-      Rake::Task['dummy_data_generator:core_files'].invoke
+      puts "Creating core files"
+      Rake::Task["dummy_data_generator:core_files"].invoke
     end
   end
 
   desc "creates projects"
-  task :projects => :environment do
+  task projects: :environment do
     22.times do
       Project.create(title: Faker::Company.bs,
                      description: Faker::Lorem.paragraph,
@@ -300,26 +300,26 @@ namespace :dummy_data_generator do
     puts Project.count >= 25 ? '25 Projects created.' : '"Create Projects" task failed.'
   end
 
-  desc 'creates project members'
-  task :project_members => :environment do
+  desc "creates project members"
+  task project_members: :environment do
     if Project.any?
       create_project_members
     else
-      puts 'Create projects task failed.'
+      puts "Create projects task failed."
     end
   end
 
-  desc 'creates collections'
-  task :collections => :environment do
+  desc "creates collections"
+  task collections: :environment do
     if Project.any?
       create_collections
     else
-      puts 'Create Project task failed.'
+      puts "Create Project task failed."
     end
   end
 
-  desc 'creates core files'
-  task :core_files => :environment do
+  desc "creates core files"
+  task core_files: :environment do
     # Check queue adapter before attaching files
     check_queue_adapter
 
@@ -331,26 +331,26 @@ namespace :dummy_data_generator do
   end
 
   desc "creates admin user"
-  task :admin_user => :environment do
-    email = ENV.fetch('DUMMY_ADMIN_EMAIL')
-    password = ENV.fetch('DUMMY_ADMIN_PASSWORD')
+  task admin_user: :environment do
+    email = ENV.fetch("DUMMY_ADMIN_EMAIL")
+    password = ENV.fetch("DUMMY_ADMIN_PASSWORD")
 
-    user = User.create(name: 'Admin',
+    user = User.create(name: "Admin",
                        email: email,
                        bio: Faker::Lorem.paragraph,
                        password: password,
-                       admin_at: Time.now
+                       admin_at: Time.current
     )
 
     puts "Admin user #{user.id} has been created." unless user.nil?
   end
 
   desc "creates debug non-admin user"
-  task :debug_non_admin_user => :environment do
-    email = ENV.fetch('DUMMY_DEBUG_EMAIL')
-    password = ENV.fetch('DUMMY_DEBUG_PASSWORD')
+  task debug_non_admin_user: :environment do
+    email = ENV.fetch("DUMMY_DEBUG_EMAIL")
+    password = ENV.fetch("DUMMY_DEBUG_PASSWORD")
 
-    user = User.create(name: 'Debug',
+    user = User.create(name: "Debug",
                        email: email,
                        bio: Faker::Lorem.paragraph,
                        password: password
@@ -360,7 +360,7 @@ namespace :dummy_data_generator do
   end
 
   desc "creates non-admin users"
-  task :non_admin_users => :environment do
+  task non_admin_users: :environment do
     275.times do
       user = User.create(name: Faker::Name.unique.name,
                          email: Faker::Internet.email,
@@ -372,8 +372,8 @@ namespace :dummy_data_generator do
     end
   end
 
-  desc 'deletes records from solr index'
-  task :delete_indexed => :environment do
+  desc "deletes records from solr index"
+  task delete_indexed: :environment do
     SolrHelpers.delete_all_indexed_records
   end
 end
