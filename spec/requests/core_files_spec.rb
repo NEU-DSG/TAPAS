@@ -68,7 +68,7 @@ RSpec.describe "CoreFiles", type: :request do
 
         it "returns unprocessable entity status" do
           post core_files_path, params: invalid_params
-          expect(response).to have_http_status(:unprocessable_entity)
+          expect(response).to have_http_status(:unprocessable_content)
         end
 
         it "returns error messages" do
@@ -100,7 +100,7 @@ RSpec.describe "CoreFiles", type: :request do
 
         it "returns unprocessable entity status" do
           post core_files_path, params: cross_project_params
-          expect(response).to have_http_status(:unprocessable_entity)
+          expect(response).to have_http_status(:unprocessable_content)
         end
       end
     end
@@ -153,7 +153,7 @@ RSpec.describe "CoreFiles", type: :request do
 
         it "returns unprocessable entity status" do
           patch core_file_path(core_file), params: { core_file: { title: "" } }
-          expect(response).to have_http_status(:unprocessable_entity)
+          expect(response).to have_http_status(:unprocessable_content)
         end
 
         it "returns error messages" do

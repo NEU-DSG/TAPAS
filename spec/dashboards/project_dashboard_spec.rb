@@ -47,22 +47,28 @@ RSpec.describe ProjectDashboard do
     let!(:recent_project) { create(:project, depositor: depositor, created_at: 5.days.ago) }
     let!(:old_project) { create(:project, depositor: depositor, created_at: 60.days.ago) }
 
-    it "public filter returns only public projects" do
-      result = described_class::COLLECTION_FILTERS[:public].call(Project.all)
-      expect(result).to include(public_project)
-      expect(result).not_to include(private_project)
+    context "with public filter applied" do
+      it "returns only public projects" do
+        result = described_class::COLLECTION_FILTERS[:public].call(Project.all)
+        expect(result).to include(public_project)
+        expect(result).not_to include(private_project)
+      end
     end
 
-    it "private filter returns only private projects" do
-      result = described_class::COLLECTION_FILTERS[:private].call(Project.all)
-      expect(result).to include(private_project)
-      expect(result).not_to include(public_project)
+    context "with private filter applied" do
+      it "returns only private projects" do
+        result = described_class::COLLECTION_FILTERS[:private].call(Project.all)
+        expect(result).to include(private_project)
+        expect(result).not_to include(public_project)
+      end
     end
 
-    it "recent filter returns projects created within 30 days" do
-      result = described_class::COLLECTION_FILTERS[:recent].call(Project.all)
-      expect(result).to include(recent_project)
-      expect(result).not_to include(old_project)
+    context "with recent filter applied" do
+      it "returns projects created within 30 days" do
+        result = described_class::COLLECTION_FILTERS[:recent].call(Project.all)
+        expect(result).to include(recent_project)
+        expect(result).not_to include(old_project)
+      end
     end
   end
 

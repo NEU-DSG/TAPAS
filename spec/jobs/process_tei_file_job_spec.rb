@@ -14,12 +14,10 @@ RSpec.describe ProcessTeiFileJob, type: :job do
     )
   end
 
-  let(:tei_content) { "<TEI><teiHeader><title>Test</title></teiHeader></TEI>" }
-
   before do
     core_file.tei_file.attach(
-      io: StringIO.new(tei_content),
-      filename: "test.xml",
+      io: file_fixture("sample.xml").open,
+      filename: "sample.xml",
       content_type: "application/xml"
     )
   end
@@ -142,11 +140,11 @@ RSpec.describe ProcessTeiFileJob, type: :job do
         allow(TapasXq.configuration).to receive(:disabled?).and_return(true)
       end
 
-      it 'marks as completed without making API call' do
+      it 'leaves status as pending without making API call' do
         described_class.perform_now(core_file.id)
 
         core_file.reload
-        expect(core_file.processing_status).to eq('completed')
+        expect(core_file.processing_status).to eq('pending')
         expect(core_file.mods_xml).to be_nil
         expect(WebMock).not_to have_requested(:post, /tapas-xq/)
       end
@@ -180,6 +178,7 @@ RSpec.describe ProcessTeiFileJob, type: :job do
 
         core_file.reload
         expect(core_file.processing_status).to eq('completed')
+        expect(WebMock).to have_requested(:post, tapas_xq_url(project_id: project.id, doc_id: core_file.id)).times(3)
       end
 
       it 'retries on ConnectionError' do
@@ -194,6 +193,7 @@ RSpec.describe ProcessTeiFileJob, type: :job do
 
         core_file.reload
         expect(core_file.processing_status).to eq('completed')
+        expect(WebMock).to have_requested(:post, tapas_xq_url(project_id: project.id, doc_id: core_file.id)).times(3)
       end
 
       it 'discards job on AuthenticationError' do

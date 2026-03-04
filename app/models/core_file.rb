@@ -8,6 +8,8 @@ class CoreFile < ApplicationRecord
   validates :collections, presence: true, if: -> { persisted? }
   validates :processing_status, inclusion: { in: PROCESSING_STATUSES }, allow_nil: true
   validate :collections_same_project, if: -> { collections.any? }
+  validate :depositor_is_project_member, if: -> { collections.any? }
+  validate :visibility_consistent_with_collections, if: -> { collections.any? }
 
   # associations
   belongs_to :depositor, class_name: "User"
@@ -96,6 +98,21 @@ class CoreFile < ApplicationRecord
 
   def enqueue_tapas_xq_processing
     ProcessTeiFileJob.perform_later(id) if tei_file.attached?
+  end
+
+  def depositor_is_project_member
+    project = collections.first&.project
+    return unless project
+    unless project.project_members.exists?(user: depositor)
+      errors.add(:depositor, "must be a project member to deposit a core file")
+    end
+  end
+
+  def visibility_consistent_with_collections
+    return unless is_public?
+    if collections.any? { |c| !c.is_public? }
+      errors.add(:is_public, "cannot be public when any associated collection is private")
+    end
   end
 
   def collections_same_project

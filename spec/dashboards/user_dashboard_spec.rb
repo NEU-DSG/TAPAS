@@ -37,16 +37,20 @@ RSpec.describe UserDashboard do
     let!(:active_user) { create(:user, sign_in_count: 5) }
     let!(:inactive_user) { create(:user, sign_in_count: 0) }
 
-    it "admin filter returns only admin users" do
-      result = described_class::COLLECTION_FILTERS[:admin].call(User.all)
-      expect(result).to include(admin_user)
-      expect(result).not_to include(regular_user)
+    context "with admin filter applied" do
+      it "returns only admin users" do
+        result = described_class::COLLECTION_FILTERS[:admin].call(User.all)
+        expect(result).to include(admin_user)
+        expect(result).not_to include(regular_user)
+      end
     end
 
-    it "active filter returns users with sign_in_count > 0" do
-      result = described_class::COLLECTION_FILTERS[:active].call(User.all)
-      expect(result).to include(active_user)
-      expect(result).not_to include(inactive_user)
+    context "with active filter applied" do
+      it "returns users with sign_in_count > 0" do
+        result = described_class::COLLECTION_FILTERS[:active].call(User.all)
+        expect(result).to include(active_user)
+        expect(result).not_to include(inactive_user)
+      end
     end
   end
 

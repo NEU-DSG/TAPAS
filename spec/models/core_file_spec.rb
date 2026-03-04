@@ -262,6 +262,57 @@ RSpec.describe CoreFile, type: :model do
     end
   end
 
+  describe 'project membership constraint' do
+    let(:depositor) { create(:user) }
+    let(:project) { create(:project, depositor: depositor) }
+    let(:collection) { create(:collection, project: project, depositor: depositor) }
+    let(:contributor) { create(:user) }
+    let(:non_member) { create(:user) }
+
+    before do
+      create(:project_member, :contributor, project: project, user: contributor)
+    end
+
+    it 'is valid when the depositor is a project owner' do
+      core_file = build(:core_file, depositor: depositor, collections: [ collection ])
+      expect(core_file).to be_valid
+    end
+
+    it 'is valid when the depositor is a project contributor' do
+      core_file = build(:core_file, depositor: contributor, collections: [ collection ])
+      expect(core_file).to be_valid
+    end
+
+    it 'is invalid when the depositor is not a project member' do
+      core_file = build(:core_file, depositor: non_member, collections: [ collection ])
+      expect(core_file).not_to be_valid
+      expect(core_file.errors[:depositor]).to be_present
+    end
+  end
+
+  describe 'collection visibility constraint' do
+    let(:depositor) { create(:user) }
+    let(:project) { create(:project, depositor: depositor, is_public: true) }
+    let(:public_collection) { create(:collection, project: project, depositor: depositor, is_public: true) }
+    let(:private_collection) { create(:collection, project: project, depositor: depositor, is_public: false) }
+
+    it 'is valid when public and all collections are public' do
+      core_file = build(:core_file, depositor: depositor, collections: [ public_collection ], is_public: true)
+      expect(core_file).to be_valid
+    end
+
+    it 'is invalid when public and any collection is private' do
+      core_file = build(:core_file, depositor: depositor, collections: [ private_collection ], is_public: true)
+      expect(core_file).not_to be_valid
+      expect(core_file.errors[:is_public]).to be_present
+    end
+
+    it 'is valid when private regardless of collection visibility' do
+      core_file = build(:core_file, depositor: depositor, collections: [ private_collection ], is_public: false)
+      expect(core_file).to be_valid
+    end
+  end
+
   describe '#collections_same_project validation' do
     let(:depositor) { create(:user) }
     let(:project_a) { create(:project, depositor: depositor) }

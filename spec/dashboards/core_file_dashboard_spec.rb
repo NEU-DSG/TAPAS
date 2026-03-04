@@ -62,33 +62,43 @@ RSpec.describe CoreFileDashboard do
       end
     end
 
-    it "public filter returns only public core files" do
-      result = described_class::COLLECTION_FILTERS[:public].call(CoreFile.all)
-      expect(result).to include(public_file)
-      expect(result).not_to include(private_file)
+    context "with public filter applied" do
+      it "returns only public core files" do
+        result = described_class::COLLECTION_FILTERS[:public].call(CoreFile.all)
+        expect(result).to include(public_file)
+        expect(result).not_to include(private_file)
+      end
     end
 
-    it "private filter returns only private core files" do
-      result = described_class::COLLECTION_FILTERS[:private].call(CoreFile.all)
-      expect(result).to include(private_file)
-      expect(result).not_to include(public_file)
+    context "with private filter applied" do
+      it "returns only private core files" do
+        result = described_class::COLLECTION_FILTERS[:private].call(CoreFile.all)
+        expect(result).to include(private_file)
+        expect(result).not_to include(public_file)
+      end
     end
 
-    it "ography filter returns files with ography_type set" do
-      result = described_class::COLLECTION_FILTERS[:ography].call(CoreFile.all)
-      expect(result).to include(ography_file)
+    context "with ography filter applied" do
+      it "returns files with ography_type set" do
+        result = described_class::COLLECTION_FILTERS[:ography].call(CoreFile.all)
+        expect(result).to include(ography_file)
+      end
     end
 
-    it "processing_failed filter returns files with failed status" do
-      result = described_class::COLLECTION_FILTERS[:processing_failed].call(CoreFile.all)
-      expect(result).to include(failed_file)
-      expect(result).not_to include(pending_file)
+    context "with processing_failed filter applied" do
+      it "returns files with failed status" do
+        result = described_class::COLLECTION_FILTERS[:processing_failed].call(CoreFile.all)
+        expect(result).to include(failed_file)
+        expect(result).not_to include(pending_file)
+      end
     end
 
-    it "processing_pending filter returns files with pending status" do
-      result = described_class::COLLECTION_FILTERS[:processing_pending].call(CoreFile.all)
-      expect(result).to include(pending_file)
-      expect(result).not_to include(failed_file)
+    context "with processing_pending filter applied" do
+      it "returns files with pending status" do
+        result = described_class::COLLECTION_FILTERS[:processing_pending].call(CoreFile.all)
+        expect(result).to include(pending_file)
+        expect(result).not_to include(failed_file)
+      end
     end
   end
 

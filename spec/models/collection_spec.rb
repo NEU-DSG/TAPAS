@@ -17,6 +17,55 @@ RSpec.describe Collection, type: :model do
     it { is_expected.to have_many(:core_files).through(:collection_core_files) }
   end
 
+  describe 'project membership constraint' do
+    let(:depositor) { create(:user) }
+    let(:project) { create(:project, depositor: depositor) }
+    let(:contributor) { create(:user) }
+    let(:non_member) { create(:user) }
+
+    before do
+      create(:project_member, :contributor, project: project, user: contributor)
+    end
+
+    it 'is valid when the depositor is a project owner' do
+      collection = build(:collection, project: project, depositor: depositor)
+      expect(collection).to be_valid
+    end
+
+    it 'is valid when the depositor is a project contributor' do
+      collection = build(:collection, project: project, depositor: contributor)
+      expect(collection).to be_valid
+    end
+
+    it 'is invalid when the depositor is not a project member' do
+      collection = build(:collection, project: project, depositor: non_member)
+      expect(collection).not_to be_valid
+      expect(collection.errors[:depositor]).to be_present
+    end
+  end
+
+  describe 'project visibility constraint' do
+    let(:depositor) { create(:user) }
+    let(:private_project) { create(:project, depositor: depositor, is_public: false) }
+    let(:public_project) { create(:project, depositor: depositor, is_public: true) }
+
+    it 'is invalid when public and the project is private' do
+      collection = build(:collection, project: private_project, depositor: depositor, is_public: true)
+      expect(collection).not_to be_valid
+      expect(collection.errors[:is_public]).to be_present
+    end
+
+    it 'is valid when private and the project is private' do
+      collection = build(:collection, project: private_project, depositor: depositor, is_public: false)
+      expect(collection).to be_valid
+    end
+
+    it 'is valid when public and the project is public' do
+      collection = build(:collection, project: public_project, depositor: depositor, is_public: true)
+      expect(collection).to be_valid
+    end
+  end
+
   describe '#to_solr' do
     let(:depositor) { create(:user) }
     let(:project) { create(:project, depositor: depositor) }
