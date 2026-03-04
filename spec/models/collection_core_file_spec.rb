@@ -32,13 +32,7 @@ RSpec.describe CollectionCoreFile, type: :model do
       new_depositor = create(:user)
       new_project = create(:project, depositor: new_depositor)
       new_collection = create(:collection, project: new_project, depositor: new_depositor)
-
-      # Create directly to bypass factory after(:build) which auto-adds collections
-      new_core_file = CoreFile.create!(
-        title: 'Orphan Core File',
-        depositor: new_depositor,
-        processing_status: 'pending'
-      )
+      new_core_file = create(:core_file, depositor: new_depositor)
 
       join = CollectionCoreFile.new(core_file: new_core_file, collection: new_collection)
       expect(join).to be_valid
