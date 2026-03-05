@@ -1,0 +1,22 @@
+directories:
+  "app":
+    IrresponsibleModule:
+      enabled: false
+    UtilityFunction:
+      exclude:
+        - "ApplicationHelper"
+  "lib":
+    IrresponsibleModule:
+      enabled: false
+
+detectors:
+  UncommunicativeVariableName:
+    accept:
+      - e
+      - i
+      - k
+      - v
+  TooManyStatements:
+    max_statements: 15
+  LongParameterList:
+    max_params: 4

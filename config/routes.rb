@@ -1,10 +1,20 @@
 Rails.application.routes.draw do
   root "welcome#index"
 
+  # Blacklight catalog routes
+  concern :searchable, Blacklight::Routes::Searchable.new
+  resources :catalog, only: [ :index ], controller: "catalog" do
+    concerns :searchable
+  end
+
   namespace :admin do
       resources :collections
       resources :collection_core_files
-      resources :core_files
+      resources :core_files do
+        member do
+          post :retry_processing
+        end
+      end
       resources :image_files
       resources :projects
       resources :project_members
@@ -16,8 +26,7 @@ Rails.application.routes.draw do
 
   devise_for :users, controllers: {
     sessions: "users/sessions",
-    registrations: "users/registrations",
-    invitations: "users/invitations"
+    registrations: "users/registrations"
   }
 
   resources :projects

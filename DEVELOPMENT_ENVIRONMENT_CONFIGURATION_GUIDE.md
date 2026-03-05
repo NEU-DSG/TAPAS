@@ -209,6 +209,26 @@ TAPAS uses Ruby on Rails v8.1.2.
 
    The `--skip-server` flag prevents the script from automatically starting the server.
 
+### Install and configure TAPAS-xq
+
+TAPAS-xq is the BaseX XML database that TAPAS uses to store and transform TEI files. It is required for full TEI file processing — uploading a TEI file, receiving MODS metadata back, and generating HTML fragments for the TAPAS reader.
+
+For full setup instructions, refer to the [TAPAS-xq README](https://github.com/NEU-DSG/tapas-xq).
+
+Once TAPAS-xq is running, configure the following environment variables in your `.env` file:
+
+| Variable | Description | Default |
+|---|---|---|
+| `TAPAS_XQ_BASE_URL` | Base URL of the TAPAS-xq API | `http://localhost:8080/tapas-xq` |
+| `TAPAS_XQ_USERNAME` | TAPAS-xq API username | — |
+| `TAPAS_XQ_PASSWORD` | TAPAS-xq API password | — |
+| `TAPAS_XQ_TIMEOUT` | Request timeout in seconds | `30` |
+| `TAPAS_XQ_ENABLED` | Set to `false` to disable TAPAS-xq integration | `true` |
+
+**Running without TAPAS-xq:**
+
+If you are working on parts of TAPAS that do not involve TEI file processing, you can disable the integration entirely by setting `TAPAS_XQ_ENABLED=false` in your `.env` file. With this setting, the job that processes TEI files will log that TAPAS-xq is disabled and leave the file's status as `pending` rather than attempting an API call. Files can be reprocessed once TAPAS-xq is enabled again.
+
 ### Create test data
 
 To create fake users, projects, collections, and core files for testing:
