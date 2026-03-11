@@ -1,0 +1,18 @@
+exclude_paths:
+  - db/
+  - config/
+  - bin/
+  - vendor/
+  - node_modules/
+  - tmp/
+  - log/
+  - public/
+  - storage/
+  - coverage/
+  - docker/
+  - solr_core_directories/
+  - .claude/
+  - .admin_documentation/
+
+speedups:
+  # All checks active (enabled by default)

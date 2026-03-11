@@ -1,0 +1,58 @@
+<%
+# Custom show page for CoreFile with TAPAS-XQ processing retry functionality
+%>
+
+<% content_for(:title) { "#{page.page_title}" } %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title">
+    <%= content_for(:title) %>
+  </h1>
+
+  <div>
+    <%= link_to(
+      t("administrate.actions.edit_resource", name: page.page_title),
+      [:edit, namespace, page.resource],
+      class: "button",
+    ) %>
+
+    <% if page.resource.processing_failed? %>
+      <%= button_to(
+        "Retry Processing",
+        retry_processing_admin_core_file_path(page.resource),
+        method: :post,
+        class: "button",
+        style: "background-color: #f39c12; display: inline-block;",
+        form: { data: { turbo_confirm: "Re-submit this file to TAPAS-XQ?" } }
+      ) %>
+    <% end %>
+  </div>
+</header>
+
+<section class="main-content__body">
+  <dl>
+    <% page.attributes.each do |_title, attributes| %>
+      <% attributes.each do |attribute| %>
+        <dt class="attribute-label" id="<%= attribute.name %>">
+          <%= t(
+            "helpers.label.#{resource_name}.#{attribute.name}",
+            default: attribute.name.titleize,
+          ) %>
+        </dt>
+
+        <dd class="attribute-data attribute-data--<%=attribute.html_class%>">
+          <%= render_field attribute, page: page %>
+        </dd>
+      <% end %>
+    <% end %>
+  </dl>
+</section>
+
+<% if page.resource.processing_failed? && page.resource.processing_error.present? %>
+  <section class="main-content__body" style="margin-top: 2rem;">
+    <div style="background-color: #fee; border: 1px solid #fcc; padding: 1rem; border-radius: 4px;">
+      <h3 style="color: #c00; margin-top: 0;">Processing Error</h3>
+      <pre style="white-space: pre-wrap; font-family: monospace; background-color: white; padding: 0.5rem; border-radius: 3px;"><%= page.resource.processing_error %></pre>
+    </div>
+  </section>
+<% end %>

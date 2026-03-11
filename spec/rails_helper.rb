@@ -23,7 +23,7 @@ require 'rspec/rails'
 # directory. Alternatively, in the individual `*_spec.rb` files, manually
 # require only the support files necessary.
 #
-# Rails.root.glob('spec/support/**/*.rb').sort_by(&:to_s).each { |f| require f }
+Rails.root.glob('spec/support/**/*.rb').sort_by(&:to_s).each { |f| require f }
 
 # Ensures that the test database schema matches the current schema file.
 # If there are pending migrations it will invoke `db:test:prepare` to
@@ -34,6 +34,10 @@ begin
 rescue ActiveRecord::PendingMigrationError => e
   abort e.to_s.strip
 end
+
+# Force routes to load so Devise mappings are populated
+Rails.application.routes.routes
+
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [
@@ -67,6 +71,36 @@ RSpec.configure do |config|
 
   # Filter lines from Rails gems in backtraces.
   config.filter_rails_from_backtrace!
-  # arbitrary gems may also be filtered via:
-  # config.filter_gems_from_backtrace("gem name")
+
+  # Include FactoryBot methods
+  config.include FactoryBot::Syntax::Methods
+
+  # Include Devise test helpers for request specs
+  config.include Devise::Test::IntegrationHelpers, type: :request
+
+  # Use Warden test mode for request specs
+  config.before(:each, type: :request) do
+    Warden.test_mode!
+  end
+
+  config.after(:each, type: :request) do
+    Warden.test_reset!
+  end
+
+  # Include ActiveJob test helpers
+  config.include ActiveJob::TestHelper
+
+  # Stub Solr operations in tests to avoid needing a running Solr instance
+  config.before do
+    # Stub the Solr connection methods
+    allow_any_instance_of(SolrHelpers).to receive(:index_record).and_return(true)
+    allow_any_instance_of(SolrHelpers).to receive(:update_record).and_return(true)
+    allow_any_instance_of(SolrHelpers).to receive(:delete_record).and_return(true)
+  end
+
+  # Clear jobs after each test
+  config.after do
+    ActiveJob::Base.queue_adapter.enqueued_jobs.clear
+    ActiveJob::Base.queue_adapter.performed_jobs.clear
+  end
 end

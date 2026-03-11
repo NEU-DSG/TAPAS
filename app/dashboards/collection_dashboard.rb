@@ -18,7 +18,7 @@ class CollectionDashboard < Administrate::BaseDashboard
     project: Field::BelongsTo,
     title: Field::String,
     created_at: Field::DateTime,
-    updated_at: Field::DateTime,
+    updated_at: Field::DateTime
   }.freeze
 
   # COLLECTION_ATTRIBUTES
