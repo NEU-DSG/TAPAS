@@ -30,7 +30,7 @@ RSpec.describe CoreFileDashboard do
   describe "COLLECTION_FILTERS behavior" do
     let(:depositor) { create(:user) }
     let(:project) { create(:project, depositor: depositor) }
-    let(:collection) { create(:collection, project: project, depositor: depositor) }
+    let(:collection) { create(:collection, project: project, depositor: depositor, is_public: true) }
 
     let!(:public_file) do
       create(:core_file, depositor: depositor, is_public: true).tap do |cf|
