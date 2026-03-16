@@ -3,10 +3,17 @@ class ProjectsController < ApplicationController
   before_action :set_project, only: [ :update, :destroy ]
 
   def index
-    @projects = Project.all
+    @projects = if current_user
+      member_project_ids = current_user.project_members.pluck(:project_id)
+      Project.where(is_public: true).or(Project.where(id: member_project_ids))
+    else
+      Project.where(is_public: true)
+    end
+    render json: @projects
   end
 
   def create
+    authorize! :create, Project
     @project = Project.new(project_params)
     @project.depositor = current_user
 
@@ -18,6 +25,8 @@ class ProjectsController < ApplicationController
   end
 
   def update
+    authorize! :update, @project
+
     if @project.update(project_params)
       render json: @project, status: :ok
     else
@@ -26,6 +35,7 @@ class ProjectsController < ApplicationController
   end
 
   def destroy
+    authorize! :destroy, @project
     @project.destroy
     head :no_content
   end

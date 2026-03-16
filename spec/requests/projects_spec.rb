@@ -4,7 +4,49 @@ require 'rails_helper'
 
 RSpec.describe "Projects", type: :request do
   let(:user) { create(:user) }
+  let(:other_user) { create(:user) }
   let(:project) { create(:project, depositor: user) }
+
+  describe "GET /projects" do
+    let!(:public_project) { create(:project, depositor: user, is_public: true) }
+    let!(:private_project) { create(:project, depositor: user, is_public: false) }
+    let!(:other_private_project) { create(:project, depositor: other_user, is_public: false) }
+
+    context "as a guest" do
+      it "returns only public projects" do
+        get projects_path
+        ids = JSON.parse(response.body).map { |p| p["id"] }
+        expect(ids).to include(public_project.id)
+        expect(ids).not_to include(private_project.id)
+        expect(ids).not_to include(other_private_project.id)
+      end
+    end
+
+    context "as the project owner" do
+      before { sign_in user }
+
+      it "returns public projects and own private projects" do
+        get projects_path
+        ids = JSON.parse(response.body).map { |p| p["id"] }
+        expect(ids).to include(public_project.id)
+        expect(ids).to include(private_project.id)
+        expect(ids).not_to include(other_private_project.id)
+      end
+    end
+
+    context "as a member of another user's private project" do
+      before do
+        create(:project_member, project: other_private_project, user: user)
+        sign_in user
+      end
+
+      it "returns the private project they are a member of" do
+        get projects_path
+        ids = JSON.parse(response.body).map { |p| p["id"] }
+        expect(ids).to include(other_private_project.id)
+      end
+    end
+  end
 
   describe "POST /projects" do
     let(:valid_params) { { project: { title: "New Project", description: "A description", institution: "NEU", is_public: true } } }
@@ -89,6 +131,20 @@ RSpec.describe "Projects", type: :request do
       end
     end
 
+    context "when signed in as a non-owner" do
+      before { sign_in other_user }
+
+      it "returns forbidden" do
+        patch project_path(project), params: update_params, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "does not update the project" do
+        patch project_path(project), params: update_params, as: :json
+        expect(project.reload.title).not_to eq("Updated Title")
+      end
+    end
+
     context "when signed in" do
       before { sign_in user }
 
@@ -144,6 +200,22 @@ RSpec.describe "Projects", type: :request do
         project # force creation
         expect {
           delete project_path(project)
+        }.not_to change(Project, :count)
+      end
+    end
+
+    context "when signed in as a non-owner" do
+      before { sign_in other_user }
+
+      it "returns forbidden" do
+        delete project_path(project), as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "does not delete the project" do
+        project # force creation
+        expect {
+          delete project_path(project), as: :json
         }.not_to change(Project, :count)
       end
     end
