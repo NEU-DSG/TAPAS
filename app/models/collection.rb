@@ -10,6 +10,7 @@ class Collection < ApplicationRecord
   belongs_to :depositor, class_name: "User"
   belongs_to :project
   has_one :image_file, as: :imageable
+  accepts_nested_attributes_for :image_file, allow_destroy: true
   has_many :collection_core_files, dependent: :destroy
   has_many :core_files, through: :collection_core_files
 

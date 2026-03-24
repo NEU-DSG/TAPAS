@@ -9,6 +9,9 @@ class ProjectsController < ApplicationController
   def create
     @project = Project.new(project_params)
     @project.depositor = current_user
+    if @project.image_file
+      @project.image_file.depositor_id = current_user.id
+    end
 
     if @project.save
       render json: @project, status: :created
@@ -18,7 +21,12 @@ class ProjectsController < ApplicationController
   end
 
   def update
-    if @project.update(project_params)
+    @project.assign_attributes(project_params)
+    if @project.image_file
+      @project.image_file.depositor_id = current_user.id
+    end
+
+    if @project.save
       render json: @project, status: :ok
     else
       render json: { errors: @project.errors.full_messages }, status: :unprocessable_entity
@@ -37,6 +45,7 @@ class ProjectsController < ApplicationController
   end
 
   def project_params
-    params.require(:project).permit(:title, :description, :institution, :is_public)
+    params.require(:project).permit(:title, :description, :institution, :is_public,
+      image_file_attributes: [:id, :title, :alt_text, :file, :image_url, :_destroy])
   end
 end
