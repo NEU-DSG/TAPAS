@@ -7,6 +7,7 @@ class Project < ApplicationRecord
   # associations
   belongs_to :depositor, class_name: "User"
   has_one :image_file, as: :imageable, dependent: :destroy
+  accepts_nested_attributes_for :image_file, allow_destroy: true
   has_many :collections
   has_many :core_files, through: :collections
   has_many :project_members
