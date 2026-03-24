@@ -9,6 +9,7 @@ class User < ApplicationRecord
          :trackable
 
   has_one :image_file, as: :imageable, dependent: :destroy
+  accepts_nested_attributes_for :image_file, allow_destroy: true
   has_many :project_members
   has_many :projects, through: :project_members
 
