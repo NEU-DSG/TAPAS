@@ -1,8 +1,9 @@
 FactoryBot.define do
   factory :collection do
     sequence(:title) { |n| "Test Collection #{n}" }
-    association :depositor, factory: :user
-    association :project
+    description { "A test collection description" }
     is_public { true }
+    association :depositor, factory: :user
+    project { association(:project, depositor: depositor) }
   end
 end
