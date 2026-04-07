@@ -29,7 +29,10 @@ Rails.application.routes.draw do
     registrations: "users/registrations"
   }
 
-  resources :projects
+  resources :projects do
+    resources :project_members, only: [ :create, :update, :destroy ]
+  end
+  resources :users, only: [ :show, :edit, :update ]
   resources :collections
   resources :core_files
 
