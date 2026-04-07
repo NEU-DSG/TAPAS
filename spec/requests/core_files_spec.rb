@@ -4,9 +4,46 @@ require 'rails_helper'
 
 RSpec.describe "CoreFiles", type: :request do
   let(:user) { create(:user) }
+  let(:other_user) { create(:user) }
   let(:project) { create(:project, depositor: user) }
   let(:collection) { create(:collection, project: project, depositor: user) }
   let(:core_file) { create(:core_file, depositor: user, collections: [ collection ]) }
+
+  describe "GET /core_files" do
+    let!(:public_core_file) { create(:core_file, depositor: user, collections: [ collection ], is_public: true) }
+    let!(:private_core_file) { create(:core_file, depositor: user, collections: [ collection ], is_public: false) }
+
+    context "as a guest" do
+      it "returns only public core files" do
+        get core_files_path, as: :json
+        ids = JSON.parse(response.body).map { |f| f["id"] }
+        expect(ids).to include(public_core_file.id)
+        expect(ids).not_to include(private_core_file.id)
+      end
+    end
+
+    context "as the project owner" do
+      before { sign_in user }
+
+      it "returns public and own private core files" do
+        get core_files_path, as: :json
+        ids = JSON.parse(response.body).map { |f| f["id"] }
+        expect(ids).to include(public_core_file.id)
+        expect(ids).to include(private_core_file.id)
+      end
+    end
+
+    context "as a non-member" do
+      before { sign_in other_user }
+
+      it "does not return private core files from other projects" do
+        get core_files_path, as: :json
+        ids = JSON.parse(response.body).map { |f| f["id"] }
+        expect(ids).to include(public_core_file.id)
+        expect(ids).not_to include(private_core_file.id)
+      end
+    end
+  end
 
   describe "POST /core_files" do
     let(:valid_params) { { core_file: { title: "New Core File", description: "A description", is_public: true, collection_ids: [ collection.id ] } } }
@@ -87,6 +124,23 @@ RSpec.describe "CoreFiles", type: :request do
         end
       end
 
+      context "as a non-member of the collection's project" do
+        before { sign_in other_user }
+
+        it "does not create the core file" do
+          expect {
+            post core_files_path, params: valid_params, as: :json
+          }.not_to change(CoreFile, :count)
+        end
+
+        it "returns unprocessable entity status" do
+          # CanCan permits any logged-in user to attempt create; the model's
+          # depositor_is_project_member validation rejects non-members with 422
+          post core_files_path, params: valid_params, as: :json
+          expect(response).to have_http_status(:unprocessable_content)
+        end
+      end
+
       context "with collections from different projects" do
         let(:other_project) { create(:project, depositor: user) }
         let(:other_collection) { create(:collection, project: other_project, depositor: user) }
@@ -108,6 +162,20 @@ RSpec.describe "CoreFiles", type: :request do
 
   describe "PATCH /core_files/:id" do
     let(:update_params) { { core_file: { title: "Updated Title", description: "Updated description" } } }
+
+    context "when signed in as a non-owner non-depositor" do
+      before { sign_in other_user }
+
+      it "returns forbidden" do
+        patch core_file_path(core_file), params: update_params, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "does not update the core file" do
+        patch core_file_path(core_file), params: update_params, as: :json
+        expect(core_file.reload.title).not_to eq("Updated Title")
+      end
+    end
 
     context "when not signed in" do
       it "redirects to sign in" do
@@ -175,6 +243,22 @@ RSpec.describe "CoreFiles", type: :request do
   end
 
   describe "DELETE /core_files/:id" do
+    context "when signed in as a non-owner non-depositor" do
+      before { sign_in other_user }
+
+      it "returns forbidden" do
+        delete core_file_path(core_file), as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "does not delete the core file" do
+        core_file # force creation
+        expect {
+          delete core_file_path(core_file), as: :json
+        }.not_to change(CoreFile, :count)
+      end
+    end
+
     context "when not signed in" do
       it "redirects to sign in" do
         delete core_file_path(core_file)
