@@ -71,12 +71,5 @@ class Ability
     if user.persisted?
       can [:edit, :update], User, id: user.id
     end
-
-    # --- ProjectMembers ---
-    if user.persisted?
-      can [:create, :update, :destroy], ProjectMember do |member|
-        member.project.project_members.exists?(user: user, role: "owner")
-      end
-    end
   end
 end
