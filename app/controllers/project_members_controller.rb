@@ -8,7 +8,9 @@ class ProjectMembersController < ApplicationController
   # POST /projects/:project_id/project_members
   def create
     authorize! :manage_members, @project
-    @member = @project.project_members.build(member_params)
+    @member = @project.project_members.build
+    @member.user = User.find(params.dig(:project_member, :user_id))
+    @member.role = params.dig(:project_member, :role)
 
     if @member.save
       render json: @member, status: :created
@@ -21,7 +23,9 @@ class ProjectMembersController < ApplicationController
   def update
     authorize! :manage_members, @project
 
-    if @member.update(member_params)
+    @member.role = params.dig(:project_member, :role) if params.dig(:project_member, :role).present?
+
+    if @member.save
       render json: @member, status: :ok
     else
       render json: { errors: @member.errors.full_messages }, status: :unprocessable_entity
@@ -49,10 +53,6 @@ class ProjectMembersController < ApplicationController
 
   def set_member
     @member = @project.project_members.find(params[:id])
-  end
-
-  def member_params
-    params.require(:project_member).permit(:user_id, :role)
   end
 
   def last_owner?
