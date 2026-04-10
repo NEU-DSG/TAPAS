@@ -57,6 +57,6 @@ class ProjectsController < ApplicationController
 
   def project_params
     params.require(:project).permit(:title, :description, :institution, :is_public,
-      image_file_attributes: [:id, :title, :alt_text, :file, :image_url, :_destroy])
+      image_file_attributes: [ :id, :title, :alt_text, :file, :image_url, :_destroy ])
   end
 end
