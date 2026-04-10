@@ -24,7 +24,7 @@ class Ability
       end
 
       # Owners can update, destroy, and manage members
-      can [:update, :destroy, :manage_members], Project do |project|
+      can [ :update, :destroy, :manage_members ], Project do |project|
         project.project_members.exists?(user: user, role: "owner")
       end
     end
@@ -41,7 +41,7 @@ class Ability
         collection.project&.project_members&.exists?(user: user)
       end
 
-      can [:update, :destroy], Collection do |collection|
+      can [ :update, :destroy ], Collection do |collection|
         collection.depositor == user ||
           collection.project.project_members.exists?(user: user, role: "owner")
       end
@@ -60,7 +60,7 @@ class Ability
       # is enforced by the model's depositor_is_project_member validation
       can :create, CoreFile
 
-      can [:update, :destroy], CoreFile do |core_file|
+      can [ :update, :destroy ], CoreFile do |core_file|
         project = core_file.project
         core_file.depositor == user ||
           project&.project_members&.exists?(user: user, role: "owner")
@@ -69,7 +69,7 @@ class Ability
 
     # --- Users ---
     if user.persisted?
-      can [:edit, :update], User, id: user.id
+      can [ :edit, :update ], User, id: user.id
     end
   end
 end
