@@ -3,12 +3,13 @@ class CollectionsController < ApplicationController
   before_action :set_collection, only: [ :update, :destroy ]
 
   def index
-    @collections = if current_user
+    collections = if current_user
       member_project_ids = current_user.project_members.pluck(:project_id)
       Collection.where(is_public: true).or(Collection.where(project_id: member_project_ids))
     else
       Collection.where(is_public: true)
     end
+    render json: collections
   end
 
   def create

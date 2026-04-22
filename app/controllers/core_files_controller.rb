@@ -3,7 +3,7 @@ class CoreFilesController < ApplicationController
   before_action :set_core_file, only: [ :update, :destroy ]
 
   def index
-    @core_files = if current_user
+    core_files = if current_user
       member_project_ids = current_user.project_members.pluck(:project_id)
       member_core_file_ids = CoreFile.joins(:collections)
         .where(collections: { project_id: member_project_ids }).select(:id)
@@ -11,6 +11,7 @@ class CoreFilesController < ApplicationController
     else
       CoreFile.where(is_public: true)
     end
+    render json: core_files
   end
 
   def create
