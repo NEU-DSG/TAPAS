@@ -1,16 +1,20 @@
 class CoreFilesController < ApplicationController
   before_action :authenticate_user!, only: [ :create, :update, :destroy ]
-  before_action :set_core_file, only: [ :update, :destroy ]
+  before_action :set_core_file, only: [ :show, :update, :destroy ]
 
   def index
     @core_files = if current_user
-      member_project_ids = current_user.project_members.pluck(:project_id)
-      member_core_file_ids = CoreFile.joins(:collections)
-        .where(collections: { project_id: member_project_ids }).select(:id)
+      collection_ids = accessible_collection_ids_for(current_user)
+      member_core_file_ids = CoreFile.joins(:collections).where(collections: { id: collection_ids }).select(:id)
       CoreFile.where(is_public: true).or(CoreFile.where(id: member_core_file_ids))
     else
       CoreFile.where(is_public: true)
     end
+  end
+
+  def show
+    authorize! :read, @core_file
+    render json: @core_file
   end
 
   def create

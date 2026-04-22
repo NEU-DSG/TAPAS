@@ -41,6 +41,7 @@ RSpec.describe ImageFile, type: :model do
   end
 
   describe 'associations' do
+    it { is_expected.to belong_to(:depositor) }
     it { is_expected.to belong_to(:imageable) }
   end
 

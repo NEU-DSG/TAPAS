@@ -16,6 +16,18 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
+  private
+
+  def accessible_collection_ids_for(user)
+    user.project_members.flat_map do |pm|
+      if pm.project_wide?
+        Collection.where(project: pm.project).pluck(:id)
+      else
+        pm.collection_scopes.pluck(:collection_id)
+      end
+    end
+  end
+
   protected
 
   def configure_permitted_parameters

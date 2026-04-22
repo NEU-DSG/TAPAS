@@ -44,6 +44,51 @@ RSpec.describe "Collections", type: :request do
     end
   end
 
+  describe "GET /collections/:id" do
+    let(:public_collection) { create(:collection, depositor: user, project: project, is_public: true) }
+    let(:private_collection) { create(:collection, depositor: user, project: project, is_public: false) }
+
+    context "as a guest" do
+      it "returns a public collection" do
+        get collection_path(public_collection), as: :json
+        expect(response).to have_http_status(:ok)
+        expect(JSON.parse(response.body)["id"]).to eq(public_collection.id)
+      end
+
+      it "returns forbidden for a private collection" do
+        get collection_path(private_collection), as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context "as a non-member" do
+      before { sign_in other_user }
+
+      it "returns a public collection" do
+        get collection_path(public_collection), as: :json
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "returns forbidden for a private collection" do
+        get collection_path(private_collection), as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context "as a project member" do
+      before do
+        project.project_members.create!(user: other_user, role: "contributor")
+        sign_in other_user
+      end
+
+      it "returns a private collection in their project" do
+        get collection_path(private_collection), as: :json
+        expect(response).to have_http_status(:ok)
+        expect(JSON.parse(response.body)["id"]).to eq(private_collection.id)
+      end
+    end
+  end
+
   describe "POST /collections" do
     let(:valid_params) { { collection: { title: "New Collection", description: "A description", project_id: project.id, is_public: true } } }
     let(:invalid_params) { { collection: { title: "", project_id: project.id } } }

@@ -34,11 +34,13 @@ class Ability
 
     if user.persisted?
       can :read, Collection do |collection|
-        collection.project.project_members.exists?(user: user)
+        member = collection.project.project_members.find_by(user: user)
+        member&.scoped_to?(collection)
       end
 
       can :create, Collection do |collection|
-        collection.project&.project_members&.exists?(user: user)
+        member = collection.project&.project_members&.find_by(user: user)
+        member&.project_wide?
       end
 
       can [ :update, :destroy ], Collection do |collection|
@@ -53,7 +55,9 @@ class Ability
     if user.persisted?
       can :read, CoreFile do |core_file|
         project = core_file.project
-        project&.project_members&.exists?(user: user)
+        member = project&.project_members&.find_by(user: user)
+        next false unless member
+        member.project_wide? || core_file.collections.any? { |c| member.collection_scopes.exists?(collection: c) }
       end
 
       # Fine-grained create authorization (depositor must be project member)
@@ -64,6 +68,31 @@ class Ability
         project = core_file.project
         core_file.depositor == user ||
           project&.project_members&.exists?(user: user, role: "owner")
+      end
+    end
+
+    # --- ImageFiles ---
+    if user.persisted?
+      can [ :create, :destroy ], ImageFile do |image_file|
+        case image_file.imageable_type
+        when "User"
+          image_file.imageable_id == user.id
+        when "Project"
+          image_file.imageable&.project_members&.exists?(user: user, role: "owner")
+        when "Collection"
+          image_file.imageable&.depositor == user ||
+            image_file.imageable&.project&.project_members&.exists?(user: user, role: "owner")
+        when "CoreFile"
+          image_file.imageable&.depositor == user ||
+            image_file.imageable&.project&.project_members&.exists?(user: user, role: "owner")
+        end
+      end
+    end
+
+    # --- CollectionCoreFiles ---
+    if user.persisted?
+      can [ :create, :destroy ], CollectionCoreFile do |ccf|
+        ccf.collection&.project&.project_members&.exists?(user: user)
       end
     end
 

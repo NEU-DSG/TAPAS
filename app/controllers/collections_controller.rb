@@ -1,14 +1,19 @@
 class CollectionsController < ApplicationController
   before_action :authenticate_user!, only: [ :create, :update, :destroy ]
-  before_action :set_collection, only: [ :update, :destroy ]
+  before_action :set_collection, only: [ :show, :update, :destroy ]
 
   def index
     @collections = if current_user
-      member_project_ids = current_user.project_members.pluck(:project_id)
-      Collection.where(is_public: true).or(Collection.where(project_id: member_project_ids))
+      ids = accessible_collection_ids_for(current_user)
+      Collection.where(is_public: true).or(Collection.where(id: ids))
     else
       Collection.where(is_public: true)
     end
+  end
+
+  def show
+    authorize! :read, @collection
+    render json: @collection
   end
 
   def create

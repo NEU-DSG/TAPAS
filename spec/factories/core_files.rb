@@ -9,5 +9,6 @@ FactoryBot.define do
         core_file.collections << build(:collection, project: project, depositor: core_file.depositor)
       end
     end
+
   end
 end
