@@ -127,12 +127,11 @@ RSpec.describe Ability, type: :model do
     # Collections — can read all collections in member project (public and private)
     it { is_expected.to be_able_to(:read, public_collection) }
     it { is_expected.to be_able_to(:read, private_collection) }
-    it { is_expected.to be_able_to(:create, Collection.new(project: public_project)) }
-    it { is_expected.not_to be_able_to(:create, Collection.new(project: other_project)) }
 
-    # Can update/destroy own deposited collections; not others'
-    it { is_expected.to be_able_to(:update, own_collection) }
-    it { is_expected.to be_able_to(:destroy, own_collection) }
+    # Contributors cannot create, update, or destroy collections — owners only
+    it { is_expected.not_to be_able_to(:create, Collection.new(project: public_project)) }
+    it { is_expected.not_to be_able_to(:update, own_collection) }
+    it { is_expected.not_to be_able_to(:destroy, own_collection) }
     it { is_expected.not_to be_able_to(:update, public_collection) }
     it { is_expected.not_to be_able_to(:destroy, public_collection) }
 
@@ -140,10 +139,10 @@ RSpec.describe Ability, type: :model do
     it { is_expected.to be_able_to(:read, public_core_file) }
     it { is_expected.to be_able_to(:read, private_core_file) }
 
-    # Can update/destroy own deposited core files; not others'
+    # Contributors can update any core file in their project; cannot destroy (owners only)
     it { is_expected.to be_able_to(:update, own_core_file) }
-    it { is_expected.to be_able_to(:destroy, own_core_file) }
-    it { is_expected.not_to be_able_to(:update, public_core_file) }
+    it { is_expected.to be_able_to(:update, public_core_file) }
+    it { is_expected.not_to be_able_to(:destroy, own_core_file) }
     it { is_expected.not_to be_able_to(:destroy, public_core_file) }
   end
 

@@ -39,13 +39,11 @@ class Ability
       end
 
       can :create, Collection do |collection|
-        member = collection.project&.project_members&.find_by(user: user)
-        member&.project_wide?
+        collection.project&.project_members&.exists?(user: user, role: "owner")
       end
 
       can [ :update, :destroy ], Collection do |collection|
-        collection.depositor == user ||
-          collection.project.project_members.exists?(user: user, role: "owner")
+        collection.project.project_members.exists?(user: user, role: "owner")
       end
     end
 
@@ -64,10 +62,12 @@ class Ability
       # is enforced by the model's depositor_is_project_member validation
       can :create, CoreFile
 
-      can [ :update, :destroy ], CoreFile do |core_file|
-        project = core_file.project
-        core_file.depositor == user ||
-          project&.project_members&.exists?(user: user, role: "owner")
+      can :update, CoreFile do |core_file|
+        core_file.project&.project_members&.exists?(user: user)
+      end
+
+      can :destroy, CoreFile do |core_file|
+        core_file.project&.project_members&.exists?(user: user, role: "owner")
       end
     end
 
