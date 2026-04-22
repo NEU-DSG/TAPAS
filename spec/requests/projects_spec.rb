@@ -49,7 +49,7 @@ RSpec.describe "Projects", type: :request do
   end
 
   describe "POST /projects" do
-    let(:valid_params) { { project: { title: "New Project", description: "A description", institution: "NEU", is_public: true } } }
+    let(:valid_params) { { project: { title: "New Project", description: "A description", institution: "NEU", is_public: true, contact: "pi@example.com", website: "https://example.com" } } }
     let(:invalid_params) { { project: { title: "" } } }
 
     context "when not signed in" do
@@ -87,6 +87,20 @@ RSpec.describe "Projects", type: :request do
           expect(json["description"]).to eq("A description")
           expect(json["institution"]).to eq("NEU")
           expect(json["is_public"]).to eq(true)
+          expect(json["contact"]).to eq("pi@example.com")
+          expect(json["website"]).to eq("https://example.com")
+        end
+
+        it "accepts a blank website" do
+          post projects_path, params: { project: valid_params[:project].merge(website: "") }
+          expect(response).to have_http_status(:created)
+        end
+
+        it "rejects an invalid website URL" do
+          post projects_path, params: { project: valid_params[:project].merge(website: "not-a-url") }, as: :json
+          expect(response).to have_http_status(:unprocessable_content)
+          json = JSON.parse(response.body)
+          expect(json["errors"]).to be_present
         end
 
         it "sets the depositor to the current user" do
@@ -154,6 +168,18 @@ RSpec.describe "Projects", type: :request do
           project.reload
           expect(project.title).to eq("Updated Title")
           expect(project.description).to eq("Updated description")
+        end
+
+        it "updates contact and website fields" do
+          patch project_path(project), params: { project: { contact: "new@example.com", website: "https://new.example.com" } }
+          project.reload
+          expect(project.contact).to eq("new@example.com")
+          expect(project.website).to eq("https://new.example.com")
+        end
+
+        it "rejects an invalid website URL on update" do
+          patch project_path(project), params: { project: { website: "ftp://bad" } }, as: :json
+          expect(response).to have_http_status(:unprocessable_content)
         end
 
         it "returns ok status" do

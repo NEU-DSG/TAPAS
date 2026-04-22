@@ -1,8 +1,11 @@
+require "uri"
+
 class Project < ApplicationRecord
   include SolrHelpers
 
   # validations
   validates_presence_of :depositor_id, :title
+  validates :website, format: { with: URI::DEFAULT_PARSER.make_regexp(%w[http https]), message: "must be a valid URL" }, allow_blank: true
 
   # associations
   belongs_to :depositor, class_name: "User"
