@@ -3,13 +3,7 @@ class ProjectsController < ApplicationController
   before_action :set_project, only: [ :update, :destroy ]
 
   def index
-    @projects = if current_user
-      member_project_ids = current_user.project_members.pluck(:project_id)
-      Project.where(is_public: true).or(Project.where(id: member_project_ids))
-    else
-      Project.where(is_public: true)
-    end
-    render json: @projects
+    render json: Project.accessible_by(current_ability)
   end
 
   def create
