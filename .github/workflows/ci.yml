@@ -85,7 +85,7 @@ jobs:
 
     steps:
       - name: Install packages
-        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y default-libmysqlclient-dev
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y default-libmysqlclient-dev libmagickwand-dev
 
       - name: Checkout code
         uses: actions/checkout@v6

@@ -3,10 +3,11 @@ class ProjectsController < ApplicationController
   before_action :set_project, only: [ :update, :destroy ]
 
   def index
-    @projects = Project.all
+    render json: Project.accessible_by(current_ability)
   end
 
   def create
+    authorize! :create, Project
     @project = Project.new(project_params)
     @project.depositor = current_user
     if @project.image_file
@@ -21,6 +22,9 @@ class ProjectsController < ApplicationController
   end
 
   def update
+    authorize! :update, @project
+
+
     @project.assign_attributes(project_params)
     if @project.image_file
       @project.image_file.depositor_id = current_user.id
@@ -34,6 +38,7 @@ class ProjectsController < ApplicationController
   end
 
   def destroy
+    authorize! :destroy, @project
     @project.destroy
     head :no_content
   end
@@ -46,6 +51,6 @@ class ProjectsController < ApplicationController
 
   def project_params
     params.require(:project).permit(:title, :description, :institution, :is_public,
-      image_file_attributes: [:id, :title, :alt_text, :file, :image_url, :_destroy])
+      image_file_attributes: [ :id, :title, :alt_text, :file, :image_url, :_destroy ])
   end
 end

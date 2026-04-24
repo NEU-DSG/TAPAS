@@ -4,12 +4,49 @@ require 'rails_helper'
 
 RSpec.describe "Collections", type: :request do
   let(:user) { create(:user) }
+  let(:other_user) { create(:user) }
   let(:project) { create(:project, depositor: user) }
   let(:collection) { create(:collection, depositor: user, project: project) }
 
+  describe "GET /collections" do
+    let!(:public_collection) { create(:collection, depositor: user, project: project, is_public: true) }
+    let!(:private_collection) { create(:collection, depositor: user, project: project, is_public: false) }
+
+    context "as a guest" do
+      it "returns only public collections" do
+        get collections_path, as: :json
+        ids = JSON.parse(response.body).map { |c| c["id"] }
+        expect(ids).to include(public_collection.id)
+        expect(ids).not_to include(private_collection.id)
+      end
+    end
+
+    context "as the project owner" do
+      before { sign_in user }
+
+      it "returns public and own private collections" do
+        get collections_path, as: :json
+        ids = JSON.parse(response.body).map { |c| c["id"] }
+        expect(ids).to include(public_collection.id)
+        expect(ids).to include(private_collection.id)
+      end
+    end
+
+    context "as a non-member" do
+      before { sign_in other_user }
+
+      it "does not return private collections from other projects" do
+        get collections_path, as: :json
+        ids = JSON.parse(response.body).map { |c| c["id"] }
+        expect(ids).to include(public_collection.id)
+        expect(ids).not_to include(private_collection.id)
+      end
+    end
+  end
+
   describe "POST /collections" do
     let(:valid_params) { { collection: { title: "New Collection", description: "A description", project_id: project.id, is_public: true } } }
-    let(:invalid_params) { { collection: { title: "" } } }
+    let(:invalid_params) { { collection: { title: "", project_id: project.id } } }
 
     context "when not signed in" do
       it "redirects to sign in" do
@@ -20,6 +57,21 @@ RSpec.describe "Collections", type: :request do
       it "does not create a collection" do
         expect {
           post collections_path, params: valid_params
+        }.not_to change(Collection, :count)
+      end
+    end
+
+    context "when signed in as a non-member" do
+      before { sign_in other_user }
+
+      it "returns forbidden" do
+        post collections_path, params: valid_params, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "does not create a collection" do
+        expect {
+          post collections_path, params: valid_params, as: :json
         }.not_to change(Collection, :count)
       end
     end
@@ -78,6 +130,20 @@ RSpec.describe "Collections", type: :request do
   describe "PATCH /collections/:id" do
     let(:update_params) { { collection: { title: "Updated Title", description: "Updated description" } } }
 
+    context "when signed in as a non-owner non-depositor" do
+      before { sign_in other_user }
+
+      it "returns forbidden" do
+        patch collection_path(collection), params: update_params, as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "does not update the collection" do
+        patch collection_path(collection), params: update_params, as: :json
+        expect(collection.reload.title).not_to eq("Updated Title")
+      end
+    end
+
     context "when not signed in" do
       it "redirects to sign in" do
         patch collection_path(collection), params: update_params
@@ -135,6 +201,22 @@ RSpec.describe "Collections", type: :request do
   end
 
   describe "DELETE /collections/:id" do
+    context "when signed in as a non-owner non-depositor" do
+      before { sign_in other_user }
+
+      it "returns forbidden" do
+        delete collection_path(collection), as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "does not delete the collection" do
+        collection # force creation
+        expect {
+          delete collection_path(collection), as: :json
+        }.not_to change(Collection, :count)
+      end
+    end
+
     context "when not signed in" do
       it "redirects to sign in" do
         delete collection_path(collection)

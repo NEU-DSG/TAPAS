@@ -5,7 +5,7 @@ require 'rails_helper'
 RSpec.describe TapasXq::StorageService, type: :service do
   let(:depositor) { create(:user) }
   let(:project) { create(:project, depositor: depositor) }
-  let(:collection) { create(:collection, project: project, depositor: depositor) }
+  let(:collection) { create(:collection, project: project, depositor: depositor, is_public: true) }
   let(:core_file) do
     create(:core_file,
       depositor: depositor,

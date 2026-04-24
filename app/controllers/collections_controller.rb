@@ -3,12 +3,13 @@ class CollectionsController < ApplicationController
   before_action :set_collection, only: [ :update, :destroy ]
 
   def index
-    @collections = Collection.all
+    render json: Collection.accessible_by(current_ability)
   end
 
   def create
     @collection = Collection.new(collection_params)
     @collection.depositor = current_user
+    authorize! :create, @collection
 
     if @collection.save
       render json: @collection, status: :created
@@ -18,6 +19,7 @@ class CollectionsController < ApplicationController
   end
 
   def update
+    authorize! :update, @collection
     if @collection.update(collection_params)
       render json: @collection, status: :ok
     else
@@ -26,6 +28,7 @@ class CollectionsController < ApplicationController
   end
 
   def destroy
+    authorize! :destroy, @collection
     @collection.destroy
     head :no_content
   end

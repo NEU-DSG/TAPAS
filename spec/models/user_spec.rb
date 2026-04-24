@@ -38,15 +38,15 @@ RSpec.describe User, type: :model do
     end
   end
 
-  describe '#role' do
+  describe '#role_in' do
     let(:depositor) { create(:user) }
     let(:project) { create(:project, depositor: depositor) }
 
     context 'when user is a project owner' do
       before { project } # trigger project creation so the depositor gets assigned as owner
 
-      it 'returns the role from project_members' do
-        expect(depositor.role).to eq('owner')
+      it 'returns "owner"' do
+        expect(depositor.role_in(project)).to eq('owner')
       end
     end
 
@@ -57,8 +57,18 @@ RSpec.describe User, type: :model do
         create(:project_member, :contributor, project: project, user: contributor)
       end
 
-      it 'returns contributor' do
-        expect(contributor.role).to eq('contributor')
+      it 'returns "contributor"' do
+        expect(contributor.role_in(project)).to eq('contributor')
+      end
+    end
+
+    context 'when user is not a member of the project' do
+      let(:non_member) { create(:user) }
+
+      before { project }
+
+      it 'returns nil' do
+        expect(non_member.role_in(project)).to be_nil
       end
     end
   end
