@@ -28,6 +28,7 @@ class ProcessTeiFileJob < ApplicationJob
     # Skip if TAPAS-XQ disabled (development without TAPAS-XQ)
     if TapasXq.configuration.disabled?
       Rails.logger.info("TAPAS-XQ disabled, skipping processing for CoreFile #{core_file_id}")
+      core_file.update!(processing_status: "completed")
       return
     end
 
