@@ -45,6 +45,26 @@ RSpec.describe "ProjectMembers", type: :request do
           expect(response).to have_http_status(:unprocessable_content)
         end
       end
+
+      context "with collection_ids" do
+        let(:collection) { create(:collection, project: project, depositor: owner) }
+
+        it "creates collection scopes for a contributor" do
+          post project_project_members_path(project),
+               params: { project_member: { user_id: other_user.id, role: "contributor" },
+                         collection_ids: [ collection.id ] }
+          member = ProjectMember.find_by(project: project, user: other_user)
+          expect(member.collection_scopes.pluck(:collection_id)).to contain_exactly(collection.id)
+        end
+
+        it "ignores collection_ids for an owner" do
+          post project_project_members_path(project),
+               params: { project_member: { user_id: other_user.id, role: "owner" },
+                         collection_ids: [ collection.id ] }
+          member = ProjectMember.find_by(project: project, user: other_user)
+          expect(member.collection_scopes).to be_empty
+        end
+      end
     end
 
     context "when signed in as a non-owner" do
@@ -84,6 +104,28 @@ RSpec.describe "ProjectMembers", type: :request do
       it "returns ok status" do
         patch project_project_member_path(project, contributor_member), params: update_params
         expect(response).to have_http_status(:ok)
+      end
+
+      context "replacing collection scopes" do
+        let(:collection_a) { create(:collection, project: project, depositor: owner) }
+        let(:collection_b) { create(:collection, project: project, depositor: owner) }
+
+        before do
+          contributor_member.collection_scopes.create!(collection: collection_a)
+        end
+
+        it "replaces existing scopes when collection_ids is provided" do
+          patch project_project_member_path(project, contributor_member),
+                params: { collection_ids: [ collection_b.id ] }
+          expect(contributor_member.reload.collection_scopes.pluck(:collection_id))
+            .to contain_exactly(collection_b.id)
+        end
+
+        it "clears all scopes when collection_ids is an empty array" do
+          patch project_project_member_path(project, contributor_member),
+                params: { collection_ids: [] }
+          expect(contributor_member.reload.collection_scopes).to be_empty
+        end
       end
     end
 
