@@ -37,9 +37,6 @@ gem "mini_magick" # Image processing for ActiveStorage
 # URL & Routing
 gem "friendly_id", "~> 5.5" # URL slugs (updated from 5.2.4)
 
-# Soft Delete
-gem "discard", "~> 1.2"
-
 # Forms & Views
 gem "simple_form"
 gem "haml-rails", "~> 3.0"
