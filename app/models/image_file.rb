@@ -1,5 +1,6 @@
 class ImageFile < ApplicationRecord
   # associations
+  belongs_to :depositor, class_name: "User"
   belongs_to :imageable, polymorphic: true
   has_one_attached :file
 
