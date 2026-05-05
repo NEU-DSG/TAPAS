@@ -31,10 +31,18 @@ Rails.application.routes.draw do
 
   resources :projects do
     resources :project_members, only: [ :create, :update, :destroy ]
+    resource :image_file, only: [ :create, :destroy ], controller: "image_files"
   end
-  resources :users, only: [ :show, :edit, :update ]
-  resources :collections
-  resources :core_files
+  resources :users, only: [ :show, :edit, :update ] do
+    resource :image_file, only: [ :create, :destroy ], controller: "image_files"
+  end
+  resources :collections do
+    resources :collection_core_files, only: [ :create, :destroy ]
+    resource :image_file, only: [ :create, :destroy ], controller: "image_files"
+  end
+  resources :core_files do
+    resource :image_file, only: [ :create, :destroy ], controller: "image_files"
+  end
 
   get "up" => "rails/health#show", as: :rails_health_check
 
