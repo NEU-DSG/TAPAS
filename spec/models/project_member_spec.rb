@@ -50,4 +50,29 @@ RSpec.describe ProjectMember, type: :model do
       expect(ProjectMember::ROLES).to match_array(%w[contributor owner])
     end
   end
+
+  describe 'status' do
+    it 'defaults to active' do
+      member = create(:project_member)
+      expect(member.status).to eq("active")
+    end
+
+    it 'can be set to pending' do
+      member = create(:project_member, status: :pending)
+      expect(member).to be_pending
+    end
+
+    it 'can transition from pending to active' do
+      member = create(:project_member, status: :pending)
+      member.active!
+      expect(member.reload).to be_active
+    end
+
+    it 'cannot transition from active to pending' do
+      member = create(:project_member, status: :active)
+      member.status = :pending
+      expect(member).not_to be_valid
+      expect(member.errors[:status]).to be_present
+    end
+  end
 end
