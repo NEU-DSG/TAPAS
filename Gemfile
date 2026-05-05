@@ -111,7 +111,6 @@ group :development, :test do
   gem "brakeman", require: false
 
   gem "reek"
-  gem "rails_code_auditor"
   gem "rubycritic", require: false
 
   # Code analysis gems
