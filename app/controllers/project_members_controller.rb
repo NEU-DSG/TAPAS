@@ -13,6 +13,7 @@ class ProjectMembersController < ApplicationController
     @member.role = params.dig(:project_member, :role)
 
     if @member.save
+      set_collection_scopes(@member, params[:collection_ids])
       render json: @member, status: :created
     else
       render json: { errors: @member.errors.full_messages }, status: :unprocessable_entity
@@ -26,6 +27,7 @@ class ProjectMembersController < ApplicationController
     @member.role = params.dig(:project_member, :role) if params.dig(:project_member, :role).present?
 
     if @member.save
+      replace_collection_scopes(@member, params[:collection_ids]) if params.key?(:collection_ids)
       render json: @member, status: :ok
     else
       render json: { errors: @member.errors.full_messages }, status: :unprocessable_entity
@@ -58,5 +60,17 @@ class ProjectMembersController < ApplicationController
   def last_owner?
     @member.role == "owner" &&
       @project.project_members.where(role: "owner").count == 1
+  end
+
+  def set_collection_scopes(member, collection_ids)
+    return if collection_ids.blank? || member.role == "owner"
+    Array(collection_ids).each do |collection_id|
+      member.collection_scopes.find_or_create_by!(collection_id: collection_id)
+    end
+  end
+
+  def replace_collection_scopes(member, collection_ids)
+    member.collection_scopes.destroy_all
+    set_collection_scopes(member, collection_ids)
   end
 end
