@@ -4,7 +4,7 @@ class Ability
   include CanCan::Ability
 
   def initialize(user)
-    user ||= User.new # guest user (not logged in)
+    user ||= User.new
 
     if user.admin?
       can :manage, :all
@@ -12,31 +12,38 @@ class Ability
     end
 
     # --- Projects ---
-    # Anyone can read public projects
     can :read, Project, is_public: true
-
-    if user.persisted?
-      can :create, Project
-
-      # Members (any role) can read projects they belong to
-      can :read, Project do |project|
-        project.project_members.exists?(user: user)
-      end
-
-      # Owners can update, destroy, and manage members
-      can [ :update, :destroy, :manage_members ], Project do |project|
-        project.project_members.exists?(user: user, role: "owner")
-      end
-    end
 
     # --- Collections ---
     can :read, Collection, is_public: true
 
+    # --- CoreFiles ---
+    can :read, CoreFile, is_public: true
+
     if user.persisted?
-      can :read, Collection do |collection|
-        member = collection.project.project_members.find_by(user: user)
-        member&.scoped_to?(collection)
+      can :create, Project
+      can :read, Project, project_members: { user_id: user.id }
+      can [ :update, :destroy, :manage_members ], Project do |project|
+        project.project_members.exists?(user: user, role: "owner")
       end
+
+      # Arrays (pluck) so CanCan can match against instances as well as generate SQL.
+      # Project-wide members have no collection scopes; scoped members have at least one.
+      project_wide_project_ids = ProjectMember
+        .left_joins(:collection_scopes)
+        .where(user: user)
+        .where(project_member_collection_scopes: { id: nil })
+        .pluck(:project_id)
+
+      scoped_collection_ids = ProjectMemberCollectionScope
+        .joins(:project_member)
+        .where(project_members: { user_id: user.id })
+        .pluck(:collection_id)
+
+      # Project-wide members can read any collection in their project.
+      # Scoped members can additionally read their explicitly assigned collections.
+      can :read, Collection, project_id: project_wide_project_ids if project_wide_project_ids.any?
+      can :read, Collection, id: scoped_collection_ids if scoped_collection_ids.any?
 
       can :create, Collection do |collection|
         collection.project&.project_members&.exists?(user: user, role: "owner")
@@ -45,34 +52,20 @@ class Ability
       can [ :update, :destroy ], Collection do |collection|
         collection.project.project_members.exists?(user: user, role: "owner")
       end
-    end
 
-    # --- CoreFiles ---
-    can :read, CoreFile, is_public: true
+      # Same scoping pattern for CoreFiles.
+      can :read, CoreFile, collections: { project_id: project_wide_project_ids } if project_wide_project_ids.any?
+      can :read, CoreFile, collections: { id: scoped_collection_ids } if scoped_collection_ids.any?
 
-    if user.persisted?
-      can :read, CoreFile do |core_file|
-        project = core_file.project
-        member = project&.project_members&.find_by(user: user)
-        next false unless member
-        member.project_wide? || core_file.collections.any? { |c| member.collection_scopes.exists?(collection: c) }
-      end
-
-      # Fine-grained create authorization (depositor must be project member)
-      # is enforced by the model's depositor_is_project_member validation
       can :create, CoreFile
 
-      can :update, CoreFile do |core_file|
-        core_file.project&.project_members&.exists?(user: user)
-      end
+      can :update, CoreFile, collections: { project: { project_members: { user_id: user.id } } }
 
       can :destroy, CoreFile do |core_file|
         core_file.project&.project_members&.exists?(user: user, role: "owner")
       end
-    end
 
-    # --- ImageFiles ---
-    if user.persisted?
+      # --- ImageFiles ---
       can [ :create, :destroy ], ImageFile do |image_file|
         case image_file.imageable_type
         when "User"
@@ -87,17 +80,13 @@ class Ability
             image_file.imageable&.project&.project_members&.exists?(user: user, role: "owner")
         end
       end
-    end
 
-    # --- CollectionCoreFiles ---
-    if user.persisted?
+      # --- CollectionCoreFiles ---
       can [ :create, :destroy ], CollectionCoreFile do |ccf|
         ccf.collection&.project&.project_members&.exists?(user: user)
       end
-    end
 
-    # --- Users ---
-    if user.persisted?
+      # --- Users ---
       can [ :edit, :update ], User, id: user.id
     end
   end

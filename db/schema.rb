@@ -95,6 +95,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_22_180203) do
     t.index ["imageable_type", "imageable_id"], name: "index_image_files_on_imageable_type_and_imageable_id"
   end
 
+  create_table "project_member_collection_scopes", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.bigint "collection_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "project_member_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["collection_id"], name: "index_project_member_collection_scopes_on_collection_id"
+    t.index ["project_member_id", "collection_id"], name: "index_pmcs_on_project_member_and_collection", unique: true
+    t.index ["project_member_id"], name: "index_project_member_collection_scopes_on_project_member_id"
+  end
+
   create_table "project_members", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.boolean "is_project_depositor"
@@ -161,4 +171,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_22_180203) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "collection_core_files", "collections"
   add_foreign_key "collection_core_files", "core_files"
+  add_foreign_key "project_member_collection_scopes", "collections"
+  add_foreign_key "project_member_collection_scopes", "project_members"
 end

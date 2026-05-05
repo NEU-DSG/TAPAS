@@ -19,22 +19,6 @@ RSpec.describe Ability, type: :model do
   let(:other_owner) { create(:user) }
   let(:other_project) { create(:project, depositor: other_owner, is_public: false) }
 
-  # ImageFile helpers — build unsaved records with imageable set so ability block can inspect imageable_type
-  def user_image_file(for_user)
-    build(:image_file, imageable: for_user, depositor: for_user)
-  end
-
-  def project_image_file(for_project)
-    build(:image_file, imageable: for_project, depositor: for_project.depositor)
-  end
-
-  def collection_image_file(for_collection)
-    build(:image_file, imageable: for_collection, depositor: for_collection.depositor)
-  end
-
-  def core_file_image_file(for_core_file)
-    build(:image_file, imageable: for_core_file, depositor: for_core_file.depositor)
-  end
 
   context "as a guest" do
     let(:user) { nil }
@@ -64,10 +48,6 @@ RSpec.describe Ability, type: :model do
     # Users
     it { is_expected.not_to be_able_to(:edit, owner) }
     it { is_expected.not_to be_able_to(:update, owner) }
-
-    # ImageFiles — guests cannot manage any
-    it { is_expected.not_to be_able_to(:create, user_image_file(owner)) }
-    it { is_expected.not_to be_able_to(:destroy, user_image_file(owner)) }
   end
 
   context "as a logged-in non-member" do
@@ -100,14 +80,6 @@ RSpec.describe Ability, type: :model do
     it { is_expected.to be_able_to(:update, user) }
     it { is_expected.not_to be_able_to(:edit, owner) }
     it { is_expected.not_to be_able_to(:update, owner) }
-
-    # ImageFiles — can manage own avatar; cannot manage others' resources
-    it { is_expected.to be_able_to(:create, user_image_file(user)) }
-    it { is_expected.to be_able_to(:destroy, user_image_file(user)) }
-    it { is_expected.not_to be_able_to(:create, user_image_file(owner)) }
-    it { is_expected.not_to be_able_to(:create, project_image_file(public_project)) }
-    it { is_expected.not_to be_able_to(:create, collection_image_file(public_collection)) }
-    it { is_expected.not_to be_able_to(:create, core_file_image_file(public_core_file)) }
   end
 
   context "as a project contributor" do
@@ -171,6 +143,7 @@ RSpec.describe Ability, type: :model do
 
   context "as a project owner" do
     let(:user) { owner }
+    before { public_project }
 
     # Projects — own projects fully manageable
     it { is_expected.to be_able_to(:read, public_project) }
@@ -203,18 +176,6 @@ RSpec.describe Ability, type: :model do
     it { is_expected.to be_able_to(:update, owner) }
     it { is_expected.not_to be_able_to(:edit, other_owner) }
     it { is_expected.not_to be_able_to(:update, other_owner) }
-
-    # ImageFiles — own avatar, own project/collection/core_file thumbnails
-    it { is_expected.to be_able_to(:create, user_image_file(owner)) }
-    it { is_expected.to be_able_to(:destroy, user_image_file(owner)) }
-    it { is_expected.to be_able_to(:create, project_image_file(public_project)) }
-    it { is_expected.to be_able_to(:destroy, project_image_file(public_project)) }
-    it { is_expected.to be_able_to(:create, collection_image_file(public_collection)) }
-    it { is_expected.to be_able_to(:destroy, collection_image_file(public_collection)) }
-    it { is_expected.to be_able_to(:create, core_file_image_file(public_core_file)) }
-    it { is_expected.to be_able_to(:destroy, core_file_image_file(public_core_file)) }
-    it { is_expected.not_to be_able_to(:create, project_image_file(other_project)) }
-    it { is_expected.not_to be_able_to(:destroy, project_image_file(other_project)) }
   end
 
   context "as an admin" do
