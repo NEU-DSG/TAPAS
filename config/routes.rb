@@ -44,6 +44,8 @@ Rails.application.routes.draw do
     resource :image_file, only: [ :create, :destroy ], controller: "image_files"
   end
 
+  get "dashboard", to: "dashboard#index"
+
   get "up" => "rails/health#show", as: :rails_health_check
 
   # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
