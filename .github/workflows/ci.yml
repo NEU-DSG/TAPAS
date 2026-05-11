@@ -89,6 +89,12 @@ jobs:
         with:
           bundler-cache: true
 
+      - name: Set up test database
+        env:
+          RAILS_ENV: test
+          DATABASE_URL: mysql2://127.0.0.1:3306
+        run: bin/rails db:test:prepare
+
       - name: Run RSpec test suite
         env:
           RAILS_ENV: test
