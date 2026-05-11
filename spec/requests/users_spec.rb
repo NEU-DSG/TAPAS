@@ -45,6 +45,67 @@ RSpec.describe "Users", type: :request do
     end
   end
 
+  describe "DELETE /users" do
+    context "when not signed in" do
+      it "redirects to sign in" do
+        delete user_registration_path
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context "when signed in" do
+      before { sign_in user }
+
+      context "when the user is not the sole owner of any project" do
+        it "deletes the account" do
+          expect { delete user_registration_path, as: :json }.to change(User, :count).by(-1)
+        end
+
+        it "also destroys the user's project memberships" do
+          project = create(:project)
+          project.project_members.create!(user: user, role: "contributor")
+          expect { delete user_registration_path, as: :json }.to change(ProjectMember, :count)
+          expect(ProjectMember.exists?(user: user)).to be false
+        end
+      end
+
+      context "when the user is the sole owner of a project" do
+        before do
+          project = create(:project, depositor: user)
+          project.project_members.where(user: user).update_all(role: "owner")
+        end
+
+        it "returns unprocessable content" do
+          delete user_registration_path, as: :json
+          expect(response).to have_http_status(:unprocessable_content)
+        end
+
+        it "does not delete the account" do
+          expect { delete user_registration_path, as: :json }.not_to change(User, :count)
+        end
+
+        it "returns an error message with the blocking project" do
+          delete user_registration_path, as: :json
+          json = JSON.parse(response.body)
+          expect(json["error"]).to include("sole owner")
+          expect(json["projects"]).not_to be_empty
+        end
+      end
+
+      context "when the user is a co-owner of a project" do
+        before do
+          co_owner = create(:user)
+          project = create(:project, depositor: user)
+          project.project_members.create!(user: co_owner, role: "owner")
+        end
+
+        it "deletes the account" do
+          expect { delete user_registration_path, as: :json }.to change(User, :count).by(-1)
+        end
+      end
+    end
+  end
+
   describe "PATCH /users/:id" do
     let(:valid_params) { { user: { name: "Updated Name", bio: "A new bio", institution: "NEU" } } }
 
