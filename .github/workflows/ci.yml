@@ -89,6 +89,9 @@ jobs:
         with:
           bundler-cache: true
 
+      - name: Build CSS assets
+        run: bin/rails dartsass:build
+
       - name: Set up test database
         env:
           RAILS_ENV: test
