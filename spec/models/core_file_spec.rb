@@ -343,6 +343,7 @@ RSpec.describe CoreFile, type: :model do
         depositor: depositor,
         collections: [ collection ],
         title: 'Solr Test Core File',
+        description: 'A test description',
         is_public: true,
         ography_type: nil
       )
@@ -358,9 +359,20 @@ RSpec.describe CoreFile, type: :model do
       expect(doc["collections_ssim"]).to eq(core_file.collections.map(&:id))
       expect(doc["project_ssim"]).to eq(project.id)
       expect(doc["title_info_title_ssi"]).to eq("Solr Test Core File")
+      expect(doc["description_tesim"]).to eq("A test description")
       expect(doc["type_ssim"]).to eq("TEI Record")
       expect(doc["access_ssim"]).to eq("public")
       expect(doc["image_file_ssi"]).to eq("public/assets/logo_no_text.png")
+    end
+
+    context 'when description is nil' do
+      let(:core_file) do
+        create(:core_file, depositor: depositor, collections: [ collection ], description: nil)
+      end
+
+      it 'sets description_tesim to nil' do
+        expect(core_file.to_solr["description_tesim"]).to be_nil
+      end
     end
 
     context 'when core file is an ography' do

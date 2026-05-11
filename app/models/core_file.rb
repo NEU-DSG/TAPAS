@@ -70,6 +70,7 @@ class CoreFile < ApplicationRecord
     solr_doc["collections_ssim"] = collections.map(&:id)
     solr_doc["project_ssim"] = project.id
     solr_doc["title_info_title_ssi"] = title
+    solr_doc["description_tesim"] = description
     solr_doc["creator_tesim"] = tei_authors
     solr_doc["all_text_timv"] => nil # TODO: 'timv' is a datetime object datafield type in Solr, so it's unclear what this was intended to capture
     solr_doc["type_ssim"] = self.is_ography? ? self.ography_type : "TEI Record"
