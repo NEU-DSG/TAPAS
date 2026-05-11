@@ -8,7 +8,8 @@ class ProjectMember < ApplicationRecord
   has_many :collection_scopes, class_name: "ProjectMemberCollectionScope", dependent: :destroy
 
   # validations
-  validates :user, uniqueness: { scope: :project }
+  validates :user, uniqueness: { scope: :project, message: "is already a member of
+  this project" }
   validates :role, inclusion: { in: ROLES, message: "%{value} is not a valid role" }
 
   def project_wide?
