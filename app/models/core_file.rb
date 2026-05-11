@@ -10,6 +10,7 @@ class CoreFile < ApplicationRecord
   validate :collections_same_project, if: -> { collections.any? }
   validate :depositor_is_project_member, if: -> { collections.any? }
   validate :visibility_consistent_with_collections, if: -> { collections.any? }
+  validate :tei_filename_unique_within_collections, if: -> { tei_file.attached? && collections.any? }
 
   # associations
   belongs_to :depositor, class_name: "User"
@@ -121,5 +122,20 @@ class CoreFile < ApplicationRecord
     if project_ids.size > 1
       errors.add(:collections, "must all belong to the same project")
     end
+  end
+
+  def tei_filename_unique_within_collections
+    filename = tei_file.filename.to_s
+    current_collection_ids = collections.map(&:id).compact
+
+    duplicate = CoreFile
+      .joins(:collection_core_files)
+      .joins(tei_file_attachment: :blob)
+      .where(collection_core_files: { collection_id: current_collection_ids })
+      .where(active_storage_blobs: { filename: filename })
+      .where.not(id: id)
+      .exists?
+
+    errors.add(:tei_file, "filename '#{filename}' is already in use within one of these collections") if duplicate
   end
 end

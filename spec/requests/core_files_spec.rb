@@ -242,6 +242,82 @@ RSpec.describe "CoreFiles", type: :request do
     end
   end
 
+  describe "TEI filename uniqueness within a collection" do
+    let(:tei_file) { fixture_file_upload("sample.xml", "application/xml") }
+    let(:alt_tei_file) { fixture_file_upload("sample.xml", "application/xml") }
+    let(:other_collection) { create(:collection, project: project, depositor: user) }
+
+    before { sign_in user }
+
+    context "when a core file with the same TEI filename already exists in the collection" do
+      before do
+        existing = create(:core_file, depositor: user, collections: [ collection ])
+        existing.tei_file.attach(io: File.open(Rails.root.join("spec/fixtures/files/sample.xml")), filename: "sample.xml", content_type: "application/xml")
+      end
+
+      it "rejects the duplicate with 422" do
+        post core_files_path, params: {
+          core_file: { title: "Duplicate TEI", collection_ids: [ collection.id ], tei_file: tei_file }
+        }
+        expect(response).to have_http_status(:unprocessable_content)
+      end
+
+      it "returns an error message referencing the filename" do
+        post core_files_path, params: {
+          core_file: { title: "Duplicate TEI", collection_ids: [ collection.id ], tei_file: tei_file }
+        }
+        json = JSON.parse(response.body)
+        expect(json["errors"].join).to include("sample.xml")
+      end
+
+      it "does not create the core file" do
+        expect {
+          post core_files_path, params: {
+            core_file: { title: "Duplicate TEI", collection_ids: [ collection.id ], tei_file: tei_file }
+          }
+        }.not_to change(CoreFile, :count)
+      end
+    end
+
+    context "when the same TEI filename is used in a different collection" do
+      before do
+        existing = create(:core_file, depositor: user, collections: [ other_collection ])
+        existing.tei_file.attach(io: File.open(Rails.root.join("spec/fixtures/files/sample.xml")), filename: "sample.xml", content_type: "application/xml")
+      end
+
+      it "allows the upload" do
+        expect {
+          post core_files_path, params: {
+            core_file: { title: "Different Collection TEI", collection_ids: [ collection.id ], tei_file: tei_file }
+          }
+        }.to change(CoreFile, :count).by(1)
+      end
+
+      it "returns created status" do
+        post core_files_path, params: {
+          core_file: { title: "Different Collection TEI", collection_ids: [ collection.id ], tei_file: tei_file }
+        }
+        expect(response).to have_http_status(:created)
+      end
+    end
+
+    context "when updating a core file to a TEI filename already used in the collection" do
+      let!(:existing) do
+        cf = create(:core_file, depositor: user, collections: [ collection ])
+        cf.tei_file.attach(io: File.open(Rails.root.join("spec/fixtures/files/sample.xml")), filename: "sample.xml", content_type: "application/xml")
+        cf
+      end
+      let!(:other_core_file) { create(:core_file, depositor: user, collections: [ collection ]) }
+
+      it "rejects the update with 422" do
+        patch core_file_path(other_core_file), params: {
+          core_file: { tei_file: alt_tei_file }
+        }
+        expect(response).to have_http_status(:unprocessable_content)
+      end
+    end
+  end
+
   describe "DELETE /core_files/:id" do
     context "when signed in as a non-owner non-depositor" do
       before { sign_in other_user }
