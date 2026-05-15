@@ -138,7 +138,7 @@ namespace :dummy_data_generator do
 
       # Create 3 regular TEI content files
       3.times do |i|
-        core_file = CoreFile.new(title: Faker::Book.title,
+        core_file = CoreFile.new(title: "#{Faker::Book.title} #{i + 1}",
                                  description: Faker::Book.genre,
                                  depositor_id: collection_users.sample&.id,
                                  collections: [ collection ].compact,
