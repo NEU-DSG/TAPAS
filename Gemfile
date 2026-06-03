@@ -35,7 +35,7 @@ gem "rubyzip" # Handle zipped content files from Drupal
 gem "mini_magick" # Image processing for ActiveStorage
 
 # URL & Routing
-gem "friendly_id", "~> 5.5" # URL slugs (updated from 5.2.4)
+gem "friendly_id", "~> 5.7" # URL slugs (updated from 5.2.4)
 
 # Forms & Views
 gem "simple_form"
