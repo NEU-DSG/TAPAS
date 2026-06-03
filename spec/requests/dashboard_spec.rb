@@ -72,12 +72,12 @@ RSpec.describe "Dashboard", type: :request do
         expect(json["core_files"].map { |f| f["id"] }).to include(core_file.id)
       end
 
-      it "does not include core files deposited by others" do
+      it "includes core files from contributed projects deposited by others" do
         other_collection = create(:collection, project: contributed_project, depositor: other_user)
         other_core_file = create(:core_file, depositor: other_user, collections: [ other_collection ])
         get dashboard_path, as: :json
         json = JSON.parse(response.body)
-        expect(json["core_files"].map { |f| f["id"] }).not_to include(other_core_file.id)
+        expect(json["core_files"].map { |f| f["id"] }).to include(other_core_file.id)
       end
     end
   end

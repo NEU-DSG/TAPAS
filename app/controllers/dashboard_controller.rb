@@ -11,7 +11,7 @@ class DashboardController < ApplicationController
       owned_projects: owned_projects,
       contributed_projects: contributed_projects,
       collections: Collection.accessible_by(current_ability),
-      core_files: CoreFile.where(depositor: current_user)
+      core_files: CoreFile.accessible_by(current_ability)
     }
   end
 end
