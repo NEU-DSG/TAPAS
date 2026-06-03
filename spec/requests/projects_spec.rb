@@ -13,8 +13,13 @@ RSpec.describe "Projects", type: :request do
     let!(:other_private_project) { create(:project, depositor: other_user, is_public: false) }
 
     context "as a guest" do
-      it "returns only public projects" do
+      it "returns 200" do
         get projects_path
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "returns only public projects" do
+        get projects_path, as: :json
         ids = JSON.parse(response.body).map { |p| p["id"] }
         expect(ids).to include(public_project.id)
         expect(ids).not_to include(private_project.id)
@@ -25,8 +30,13 @@ RSpec.describe "Projects", type: :request do
     context "as the project owner" do
       before { sign_in user }
 
-      it "returns public projects and own private projects" do
+      it "returns 200" do
         get projects_path
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "returns public projects and own private projects" do
+        get projects_path, as: :json
         ids = JSON.parse(response.body).map { |p| p["id"] }
         expect(ids).to include(public_project.id)
         expect(ids).to include(private_project.id)
@@ -41,7 +51,7 @@ RSpec.describe "Projects", type: :request do
       end
 
       it "returns the private project they are a member of" do
-        get projects_path
+        get projects_path, as: :json
         ids = JSON.parse(response.body).map { |p| p["id"] }
         expect(ids).to include(other_private_project.id)
       end

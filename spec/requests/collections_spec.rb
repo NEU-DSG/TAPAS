@@ -13,6 +13,11 @@ RSpec.describe "Collections", type: :request do
     let!(:private_collection) { create(:collection, depositor: user, project: project, is_public: false) }
 
     context "as a guest" do
+      it "returns 200" do
+        get collections_path
+        expect(response).to have_http_status(:ok)
+      end
+
       it "returns only public collections" do
         get collections_path, as: :json
         ids = JSON.parse(response.body).map { |c| c["id"] }
