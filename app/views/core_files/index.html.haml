@@ -1,0 +1,17 @@
+.container.py-5
+  %h1.mb-4 Files
+
+  - if @core_files.empty?
+    %p.text-muted No files available.
+  - else
+    %ul.list-unstyled
+      - @core_files.each do |core_file|
+        %li.mb-4
+          %h4= core_file.title
+          - if core_file.description.present?
+            %p= core_file.description
+          - if core_file.ography_type.present?
+            %p.text-muted Type: #{core_file.ography_type}
+          %p.text-muted Status: #{core_file.processing_status}
+          %span.badge{ class: core_file.is_public? ? "bg-success" : "bg-secondary" }
+            = core_file.is_public? ? "Public" : "Private"

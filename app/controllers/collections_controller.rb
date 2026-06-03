@@ -3,7 +3,7 @@ class CollectionsController < ApplicationController
   before_action :set_collection, only: [ :update, :destroy ]
 
   def index
-    @collections = Collection.accessible_by(current_ability)
+    @collections = Collection.accessible_by(current_ability).includes(:project)
     respond_to do |format|
       format.html
       format.json { render json: @collections }
