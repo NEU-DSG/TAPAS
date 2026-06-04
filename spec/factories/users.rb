@@ -4,7 +4,6 @@ FactoryBot.define do
     password { "password123" }
 
     trait :admin do
-      admin { true }
       admin_at { Time.current }
     end
   end

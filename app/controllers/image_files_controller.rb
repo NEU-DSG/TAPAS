@@ -37,6 +37,8 @@ class ImageFilesController < ApplicationController
       Collection.find(params[:collection_id])
     elsif params[:core_file_id]
       CoreFile.find(params[:core_file_id])
+    else
+      raise ActionController::RoutingError, "No imageable resource identified in request"
     end
   end
 

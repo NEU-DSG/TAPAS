@@ -21,7 +21,13 @@ class User < ApplicationRecord
     Project
       .joins(:project_members)
       .where(project_members: { user: self, role: "owner" })
-      .select { |p| p.project_members.where(role: "owner").count == 1 }
+      .where(
+        Project.joins(:project_members)
+               .where(project_members: { role: "owner" })
+               .group("projects.id")
+               .having("COUNT(project_members.id) = 1")
+               .select("projects.id").arel.exists
+      )
   end
 
   # Check if user is an admin based on admin_at timestamp

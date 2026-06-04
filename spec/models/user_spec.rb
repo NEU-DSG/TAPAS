@@ -73,6 +73,33 @@ RSpec.describe User, type: :model do
     end
   end
 
+  describe '#sole_owned_projects' do
+    let(:user) { create(:user) }
+
+    it 'returns projects where the user is the only owner' do
+      project = create(:project, depositor: user)
+      expect(user.sole_owned_projects).to include(project)
+    end
+
+    it 'excludes projects where the user is a co-owner' do
+      project = create(:project, depositor: user)
+      co_owner = create(:user)
+      create(:project_member, :owner, project: project, user: co_owner)
+      expect(user.sole_owned_projects).not_to include(project)
+    end
+
+    it 'excludes projects where the user is only a contributor' do
+      depositor = create(:user)
+      project = create(:project, depositor: depositor)
+      create(:project_member, :contributor, project: project, user: user)
+      expect(user.sole_owned_projects).not_to include(project)
+    end
+
+    it 'returns an empty collection when the user owns no projects' do
+      expect(user.sole_owned_projects).to be_empty
+    end
+  end
+
   describe 'devise modules' do
     it 'is database authenticatable' do
       expect(User.devise_modules).to include(:database_authenticatable)

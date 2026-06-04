@@ -9,11 +9,11 @@ class ProjectMembersController < ApplicationController
   def create
     authorize! :manage_members, @project
     @member = @project.project_members.build
-    @member.user = User.find(params.dig(:project_member, :user_id))
-    @member.role = params.dig(:project_member, :role)
+    @member.user = User.find(member_params[:user_id])
+    @member.role = member_params[:role]
 
     if @member.save
-      set_collection_scopes(@member, params[:collection_ids])
+      set_collection_scopes(@member, collection_ids_param)
       render json: @member, status: :created
     else
       render json: { errors: @member.errors.full_messages }, status: :unprocessable_entity
@@ -24,10 +24,10 @@ class ProjectMembersController < ApplicationController
   def update
     authorize! :manage_members, @project
 
-    @member.role = params.dig(:project_member, :role) if params.dig(:project_member, :role).present?
+    @member.role = member_params[:role] if params[:project_member].present? && member_params[:role].present?
 
     if @member.save
-      replace_collection_scopes(@member, params[:collection_ids]) if params.key?(:collection_ids)
+      replace_collection_scopes(@member, collection_ids_param) if params.key?(:collection_ids)
       render json: @member, status: :ok
     else
       render json: { errors: @member.errors.full_messages }, status: :unprocessable_entity
@@ -62,9 +62,17 @@ class ProjectMembersController < ApplicationController
       @project.project_members.where(role: "owner").count == 1
   end
 
+  def member_params
+    params.require(:project_member).permit(:user_id, :role)
+  end
+
+  def collection_ids_param
+    Array(params.permit(collection_ids: [])[:collection_ids])
+  end
+
   def set_collection_scopes(member, collection_ids)
     return if collection_ids.blank? || member.role == "owner"
-    Array(collection_ids).each do |collection_id|
+    collection_ids.each do |collection_id|
       member.collection_scopes.find_or_create_by!(collection_id: collection_id)
     end
   end
