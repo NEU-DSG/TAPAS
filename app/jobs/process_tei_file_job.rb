@@ -36,7 +36,7 @@ class ProcessTeiFileJob < ApplicationJob
 
     core_file.update!(processing_status: "processing")
 
-    storage_service = TapasXq::StorageService.new(core_file)
+    storage_service = TapasXq::Storage.new(core_file)
     result = storage_service.store
 
     core_file.update!(

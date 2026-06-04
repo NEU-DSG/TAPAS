@@ -89,7 +89,7 @@ RSpec.describe ProcessTeiFileJob, type: :job do
       end
 
       it 'marks as failed on unexpected error' do
-        allow_any_instance_of(TapasXq::StorageService).to receive(:store).and_raise(StandardError, "Unexpected error")
+        allow_any_instance_of(TapasXq::Storage).to receive(:store).and_raise(StandardError, "Unexpected error")
 
         expect {
           described_class.perform_now(core_file.id)
@@ -101,7 +101,7 @@ RSpec.describe ProcessTeiFileJob, type: :job do
       end
 
       it 'logs unexpected errors' do
-        allow_any_instance_of(TapasXq::StorageService).to receive(:store).and_raise(RuntimeError, "Something went wrong")
+        allow_any_instance_of(TapasXq::Storage).to receive(:store).and_raise(RuntimeError, "Something went wrong")
 
         output = StringIO.new
         test_logger = ActiveSupport::Logger.new(output)

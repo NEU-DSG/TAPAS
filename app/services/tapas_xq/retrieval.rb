@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module TapasXq
-  # Service for retrieving TEI, MODS, and TFE files from TAPAS-XQ
-  # Useful for debugging, syncing, and displaying stored content
-  class RetrievalService
+  # Retrieves TEI, MODS, and TFE files from TAPAS-XQ.
+  # Useful for debugging, syncing, and displaying stored content.
+  class Retrieval
     attr_reader :client, :project_id, :doc_id
 
     # @param project_id [String, Integer] The project ID

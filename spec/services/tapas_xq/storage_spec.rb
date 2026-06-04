@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe TapasXq::StorageService, type: :service do
+RSpec.describe TapasXq::Storage, type: :service do
   let(:depositor) { create(:user) }
   let(:project) { create(:project, depositor: depositor) }
   let(:collection) { create(:collection, project: project, depositor: depositor, is_public: true) }
@@ -216,9 +216,6 @@ RSpec.describe TapasXq::StorageService, type: :service do
       end
 
       it 'propagates ServerError on 500 response' do
-        # Per API docs: a 500 may indicate MODS generation failed while TEI/TFE
-        # were still stored. The service raises ServerError in either case —
-        # distinguishing partial vs full failure is a caller responsibility.
         stub_tapas_xq_store_failure(
           project_id: project.id,
           doc_id: core_file.id,

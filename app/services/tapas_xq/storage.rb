@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module TapasXq
-  # Service for storing TEI files in TAPAS-XQ and generating MODS/TFE metadata
-  class StorageService
+  # Stores TEI files in TAPAS-XQ and generates MODS/TFE metadata.
+  class Storage
     attr_reader :client, :core_file
 
     # @param core_file [CoreFile] The core file to process
