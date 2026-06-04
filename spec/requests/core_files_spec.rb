@@ -14,6 +14,11 @@ RSpec.describe "CoreFiles", type: :request do
     let!(:private_core_file) { create(:core_file, depositor: user, collections: [ collection ], is_public: false) }
 
     context "as a guest" do
+      it "returns 200" do
+        get core_files_path
+        expect(response).to have_http_status(:ok)
+      end
+
       it "returns only public core files" do
         get core_files_path, as: :json
         ids = JSON.parse(response.body).map { |f| f["id"] }

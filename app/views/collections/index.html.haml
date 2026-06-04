@@ -1,0 +1,15 @@
+.container.py-5
+  %h1.mb-4 Collections
+
+  - if @collections.empty?
+    %p.text-muted No collections available.
+  - else
+    %ul.list-unstyled
+      - @collections.each do |collection|
+        %li.mb-4
+          %h4= collection.title
+          - if collection.description.present?
+            %p= collection.description
+          %p.text-muted Project: #{collection.project.title}
+          %span.badge{ class: collection.is_public? ? "bg-success" : "bg-secondary" }
+            = collection.is_public? ? "Public" : "Private"

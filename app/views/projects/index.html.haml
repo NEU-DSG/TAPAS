@@ -1,0 +1,16 @@
+.container.py-5
+  %h1.mb-4 Projects
+
+  - if @projects.empty?
+    %p.text-muted No projects available.
+  - else
+    %ul.list-unstyled
+      - @projects.each do |project|
+        %li.mb-4
+          %h4= project.title
+          - if project.description.present?
+            %p= project.description
+          - if project.institution.present?
+            %p.text-muted= project.institution
+          %span.badge{ class: project.is_public? ? "bg-success" : "bg-secondary" }
+            = project.is_public? ? "Public" : "Private"

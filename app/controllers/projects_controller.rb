@@ -3,7 +3,11 @@ class ProjectsController < ApplicationController
   before_action :set_project, only: [ :update, :destroy ]
 
   def index
-    render json: Project.accessible_by(current_ability)
+    @projects = Project.accessible_by(current_ability)
+    respond_to do |format|
+      format.html
+      format.json { render json: @projects }
+    end
   end
 
   def create

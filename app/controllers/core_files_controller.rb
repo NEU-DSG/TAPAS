@@ -3,7 +3,11 @@ class CoreFilesController < ApplicationController
   before_action :set_core_file, only: [ :update, :destroy ]
 
   def index
-    render json: CoreFile.accessible_by(current_ability)
+    @core_files = CoreFile.accessible_by(current_ability)
+    respond_to do |format|
+      format.html
+      format.json { render json: @core_files }
+    end
   end
 
   def create
