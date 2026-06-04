@@ -20,13 +20,6 @@ module SolrHelpers
     SOLR_CORE_CONNECTION.commit
   end
 
-  def update_record(record = nil)
-    record ||= self unless self == "SolrHelpers"
-
-    SOLR_CORE_CONNECTION.update(record.to_solr)
-    SOLR_CORE_CONNECTION.commit
-  end
-
   def delete_record
     record_id = self.to_solr["id"]
 
@@ -35,7 +28,7 @@ module SolrHelpers
   end
 
   def self.delete_all_indexed_records
-    puts "Deleting solr indexed records."
+    Rails.logger.info("Deleting all Solr indexed records.")
 
     SOLR_CORE_CONNECTION.delete_by_query("*:*")
     SOLR_CORE_CONNECTION.commit

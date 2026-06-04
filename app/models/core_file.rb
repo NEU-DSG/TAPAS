@@ -26,8 +26,7 @@ class CoreFile < ApplicationRecord
   scope :processing_completed, -> { where(processing_status: "completed") }
 
   # callbacks
-  after_create :index_core_file
-  after_update :update_indexed_core_file
+  after_save :index_core_file
   after_create :enqueue_tapas_xq_processing
 
   def project
@@ -72,7 +71,7 @@ class CoreFile < ApplicationRecord
     solr_doc["title_info_title_ssi"] = title
     solr_doc["description_tesim"] = description
     solr_doc["creator_tesim"] = tei_authors
-    solr_doc["all_text_timv"] => nil # TODO: 'timv' is a datetime object datafield type in Solr, so it's unclear what this was intended to capture
+    solr_doc["all_text_timv"] = nil # TODO: determine correct Solr field type for full-text content
     solr_doc["type_ssim"] = self.is_ography? ? self.ography_type : "TEI Record"
     solr_doc["access_ssim"] = is_public ? "public" : "private"
     solr_doc["image_file_ssi"] = "public/assets/logo_no_text.png" # this string will be replaced with S3 storage bucket url
@@ -93,10 +92,6 @@ class CoreFile < ApplicationRecord
 
   def index_core_file
     index_record(self)
-  end
-
-  def update_indexed_core_file
-    update_record(self)
   end
 
   def enqueue_tapas_xq_processing

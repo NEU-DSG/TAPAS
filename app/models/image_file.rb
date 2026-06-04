@@ -9,7 +9,15 @@ class ImageFile < ApplicationRecord
   validate :validate_file_format
 
   def process_image_data
+    uri = URI.parse(image_url)
+    raise ArgumentError, "URL must use http or https" unless %w[http https].include?(uri.scheme)
+
+    addr = IPAddr.new(Resolv.getaddress(uri.host))
+    raise ArgumentError, "Private or loopback URLs are not allowed" if addr.loopback? || addr.private?
+
     URI.open(image_url)
+  rescue Resolv::ResolvError, IPAddr::InvalidAddressError
+    raise ArgumentError, "Invalid or unresolvable URL"
   end
 
   def validate_file_format
