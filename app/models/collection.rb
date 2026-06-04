@@ -16,7 +16,6 @@ class Collection < ApplicationRecord
 
   # callbacks
   after_save :index_record
-  after_update :update_record
 
   private
 

@@ -16,9 +16,11 @@ class Project < ApplicationRecord
   has_many :project_members
   has_many :users, through: :project_members
 
+  # scopes
+  scope :publicly_visible, -> { where(is_public: true) }
+
   # callbacks
   after_save :index_record
-  after_update :update_record
   after_create :assign_default_owner
 
   def project_group
@@ -32,7 +34,7 @@ class Project < ApplicationRecord
     user_members = {}
 
     project_group.each do |k, v|
-      user_members[k] = v.map!(&:user)
+      user_members[k] = v.map(&:user)
     end
 
     user_members
@@ -57,12 +59,6 @@ class Project < ApplicationRecord
     solr_doc["image_file_ssi"] = "public/assets/logo_no_text.png"
 
     solr_doc
-  end
-
-  public
-
-  def publicly_visible
-    where(is_public: true)
   end
 
   private

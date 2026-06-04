@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_03_155130) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_04_180135) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -58,6 +58,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_03_155130) do
     t.string "title", null: false
     t.datetime "updated_at", null: false
     t.index ["depositor_id"], name: "index_collections_on_depositor_id"
+    t.index ["project_id"], name: "index_collections_on_project_id"
   end
 
   create_table "core_files", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -77,6 +78,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_03_155130) do
     t.text "tfe_xml"
     t.string "title", null: false
     t.datetime "updated_at", null: false
+    t.index ["depositor_id"], name: "index_core_files_on_depositor_id"
     t.index ["processing_status"], name: "index_core_files_on_processing_status"
     t.index ["tapas_xq_project_id", "tapas_xq_doc_id"], name: "index_core_files_on_tapas_xq_ids", unique: true
   end
@@ -92,6 +94,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_03_155130) do
     t.string "imageable_type", null: false
     t.string "title", null: false
     t.datetime "updated_at", null: false
+    t.index ["depositor_id"], name: "index_image_files_on_depositor_id"
     t.index ["imageable_type", "imageable_id"], name: "index_image_files_on_imageable_type_and_imageable_id"
   end
 
@@ -114,6 +117,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_03_155130) do
     t.datetime "updated_at", null: false
     t.bigint "user_id"
     t.index ["project_id"], name: "index_project_members_on_project_id"
+    t.index ["user_id", "project_id"], name: "index_project_members_on_user_id_and_project_id", unique: true
     t.index ["user_id"], name: "index_project_members_on_user_id"
   end
 
@@ -130,7 +134,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_03_155130) do
   end
 
   create_table "users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.boolean "admin", default: false, null: false
     t.datetime "admin_at"
     t.text "bio"
     t.datetime "created_at", null: false

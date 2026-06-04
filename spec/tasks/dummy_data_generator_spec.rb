@@ -11,13 +11,10 @@ RSpec.describe 'dummy_data_generator rake tasks' do
 
   before do
     # Stub Solr to avoid needing a running Solr instance.
-    # Project, Collection, and CoreFile all fire after_save/after_update Solr callbacks.
-    solr_conn = SolrHelpers::SOLR_CORE_CONNECTION
-    allow(solr_conn).to receive(:add)
-    allow(solr_conn).to receive(:commit)
-    allow(solr_conn).to receive(:update)
-    allow(solr_conn).to receive(:delete_by_query)
-    allow(solr_conn).to receive(:delete_by_id)
+    # Project, Collection, and CoreFile all fire after_save Solr callbacks.
+    allow_any_instance_of(SolrHelpers).to receive(:index_record).and_return(true)
+    allow(SolrHelpers).to receive(:solr_connection).and_return(double("RSolr",
+      add: true, commit: true, delete_by_query: true, delete_by_id: true))
   end
 
   def invoke(task_name)

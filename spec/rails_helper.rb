@@ -94,7 +94,6 @@ RSpec.configure do |config|
   config.before do
     # Stub the Solr connection methods
     allow_any_instance_of(SolrHelpers).to receive(:index_record).and_return(true)
-    allow_any_instance_of(SolrHelpers).to receive(:update_record).and_return(true)
     allow_any_instance_of(SolrHelpers).to receive(:delete_record).and_return(true)
   end
 
