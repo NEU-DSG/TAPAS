@@ -114,14 +114,11 @@ class CatalogController < ApplicationController
     config.view.list.icon_class = "fa fa-list"
   end
 
-  # Override index action to redirect to welcome page
-  # Frontend will implement the actual search UI later
+  # Blacklight search/show UI not yet implemented — redirect to root until frontend is built.
   def index
     redirect_to root_path
   end
 
-  # Override show action to redirect to welcome page
-  # Frontend will implement the actual detail view later
   def show
     redirect_to root_path
   end

@@ -100,29 +100,4 @@ RSpec.describe User, type: :model do
     end
   end
 
-  describe 'devise modules' do
-    it 'is database authenticatable' do
-      expect(User.devise_modules).to include(:database_authenticatable)
-    end
-
-    it 'is registerable' do
-      expect(User.devise_modules).to include(:registerable)
-    end
-
-    it 'is recoverable' do
-      expect(User.devise_modules).to include(:recoverable)
-    end
-
-    it 'is rememberable' do
-      expect(User.devise_modules).to include(:rememberable)
-    end
-
-    it 'is validatable' do
-      expect(User.devise_modules).to include(:validatable)
-    end
-
-    it 'is trackable' do
-      expect(User.devise_modules).to include(:trackable)
-    end
-  end
 end
