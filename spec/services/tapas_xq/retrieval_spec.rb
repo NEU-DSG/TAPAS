@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe TapasXq::RetrievalService, type: :service do
+RSpec.describe TapasXq::Retrieval, type: :service do
   let(:project_id) { 123 }
   let(:doc_id) { 456 }
   let(:service) { described_class.new(project_id, doc_id) }
