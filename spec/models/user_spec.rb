@@ -99,5 +99,4 @@ RSpec.describe User, type: :model do
       expect(user.sole_owned_projects).to be_empty
     end
   end
-
 end
