@@ -14,9 +14,7 @@ class ProjectsController < ApplicationController
     authorize! :create, Project
     @project = Project.new(project_params)
     @project.depositor = current_user
-    if @project.image_file
-      @project.image_file.depositor_id = current_user.id
-    end
+    assign_image_depositor(@project)
 
     if @project.save
       render json: @project, status: :created
@@ -27,12 +25,8 @@ class ProjectsController < ApplicationController
 
   def update
     authorize! :update, @project
-
-
     @project.assign_attributes(project_params)
-    if @project.image_file
-      @project.image_file.depositor_id = current_user.id
-    end
+    assign_image_depositor(@project)
 
     if @project.save
       render json: @project, status: :ok
@@ -51,6 +45,10 @@ class ProjectsController < ApplicationController
 
   def set_project
     @project = Project.find(params[:id])
+  end
+
+  def assign_image_depositor(project)
+    project.image_file.depositor_id = current_user.id if project.image_file
   end
 
   def project_params
