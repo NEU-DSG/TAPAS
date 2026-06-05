@@ -1,4 +1,6 @@
 class ApplicationController < ActionController::Base
+  include Blacklight::Controller
+
   before_action :configure_permitted_parameters, if: :devise_controller?
 
   rescue_from CanCan::AccessDenied do |exception|
