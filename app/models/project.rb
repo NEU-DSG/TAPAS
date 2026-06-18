@@ -25,7 +25,6 @@ class Project < ApplicationRecord
 
   def project_group
     ProjectMember
-      .all
       .where(project_id: id)
       .group_by(&:role)
   end
