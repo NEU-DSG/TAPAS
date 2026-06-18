@@ -13,6 +13,8 @@ class User < ApplicationRecord
   has_many :project_members, dependent: :destroy
   has_many :projects, through: :project_members
 
+  before_destroy :notify_and_reassign_contributed_files, prepend: true
+
   def role_in(project)
     project_members.find_by(project: project)&.role
   end
@@ -33,5 +35,25 @@ class User < ApplicationRecord
   # Check if user is an admin based on admin_at timestamp
   def admin?
     admin_at.present?
+  end
+
+  private
+
+  def notify_and_reassign_contributed_files
+    contributed_project_ids = project_members.where.not(role: "owner").pluck(:project_id)
+    return if contributed_project_ids.empty?
+
+    Project.where(id: contributed_project_ids).each do |project|
+      files = project.core_files.where(depositor_id: id)
+      next if files.empty?
+
+      project_owner = project.owner.first
+      next unless project_owner
+
+      AccountDeletionMailer
+        .contributor_files_notification(project_owner, files.to_a, name || email)
+        .deliver_later
+      files.update_all(depositor_id: project_owner.id)
+    end
   end
 end
