@@ -110,7 +110,7 @@ RSpec.describe "Users", type: :request do
         let(:collection) { create(:collection, depositor: owner, project: project) }
         let!(:contributed_file) do
           project.project_members.create!(user: user, role: "contributor")
-          create(:core_file, depositor: user, collections: [collection])
+          create(:core_file, depositor: user, collections: [ collection ])
         end
 
         it "reassigns depositor_id on contributed files to the project owner" do
