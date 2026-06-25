@@ -3,7 +3,7 @@
 class ProjectMembersController < ApplicationController
   before_action :authenticate_user!
   before_action :set_project
-  before_action :set_member, only: [ :update, :destroy ]
+  before_action :set_member, only: [ :update, :destroy, :confirm ]
 
   # POST /projects/:project_id/project_members
   def create
@@ -28,6 +28,22 @@ class ProjectMembersController < ApplicationController
 
     if @member.save
       replace_collection_scopes(@member, collection_ids_param) if params.key?(:collection_ids)
+      render json: @member, status: :ok
+    else
+      render json: { errors: @member.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  # PATCH /projects/:project_id/project_members/:id/confirm
+  def confirm
+    authorize! :manage_members, @project
+
+    unless @member.pending?
+      render json: { errors: [ "Member is not in pending status" ] }, status: :unprocessable_entity
+      return
+    end
+
+    if @member.update(status: :active)
       render json: @member, status: :ok
     else
       render json: { errors: @member.errors.full_messages }, status: :unprocessable_entity

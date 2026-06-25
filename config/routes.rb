@@ -17,7 +17,11 @@ Rails.application.routes.draw do
       end
       resources :image_files
       resources :projects
-      resources :project_members
+      resources :project_members do
+        member do
+          patch :approve
+        end
+      end
       resources :users
       resources :view_packages
 
@@ -29,8 +33,17 @@ Rails.application.routes.draw do
     registrations: "users/registrations"
   }
 
+  # Invitation token routes (email-link driven, token as URL segment)
+  get  "invitations/:token",        to: "invitations#show",   as: :invitation
+  post "invitations/:token/accept", to: "invitations#accept", as: :accept_invitation
+
   resources :projects do
-    resources :project_members, only: [ :create, :update, :destroy ]
+    resources :project_invitations, only: [ :create, :destroy ]
+    resources :project_members, only: [ :create, :update, :destroy ] do
+      member do
+        patch :confirm
+      end
+    end
     resource :image_file, only: [ :create, :destroy ], controller: "image_files"
   end
   resources :users, only: [ :show, :edit, :update ] do
