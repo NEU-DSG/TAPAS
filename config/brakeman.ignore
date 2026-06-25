@@ -1,0 +1,10 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "3bf7fb18319343e48e902a5c333cb3e7a20d8ace1dfdf6a97451630c5ce6174b",
+      "note": "user_id in member_params is passed to User.find, not mass-assigned to the model. CanCan authorize! guards the action."
+    }
+  ],
+  "updated": "2026-06-25 00:00:00 -0400",
+  "brakeman_version": "8.0.5"
+}
