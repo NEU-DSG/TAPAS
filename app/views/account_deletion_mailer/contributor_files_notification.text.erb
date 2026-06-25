@@ -1,0 +1,11 @@
+Hello <%= @owner.name || @owner.email %>,
+
+The TAPAS account for <%= @deleted_user_display %> has been deleted.
+The following files they deposited in your project have been transferred to you as the project owner.
+The files themselves have not been changed.
+
+<% @core_files.each do |file| %>
+- <%= file.title %>
+<% end %>
+
+No action is required. Please contact TAPAS support if you have questions.

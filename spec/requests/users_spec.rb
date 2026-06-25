@@ -103,6 +103,35 @@ RSpec.describe "Users", type: :request do
           expect { delete user_registration_path, as: :json }.to change(User, :count).by(-1)
         end
       end
+
+      context "when the user has contributed files to a project they do not own" do
+        let(:owner) { create(:user) }
+        let(:project) { create(:project, depositor: owner) }
+        let(:collection) { create(:collection, depositor: owner, project: project) }
+        let!(:contributed_file) do
+          project.project_members.create!(user: user, role: "contributor")
+          create(:core_file, depositor: user, collections: [ collection ])
+        end
+
+        it "reassigns depositor_id on contributed files to the project owner" do
+          delete user_registration_path, as: :json
+          expect(contributed_file.reload.depositor_id).to eq(owner.id)
+        end
+
+        it "does not delete the contributed files" do
+          expect { delete user_registration_path, as: :json }.not_to change(CoreFile, :count)
+        end
+
+        it "emails the project owner with the list of transferred files" do
+          expect {
+            delete user_registration_path, as: :json
+          }.to have_enqueued_mail(AccountDeletionMailer, :contributor_files_notification)
+        end
+
+        it "still deletes the user account" do
+          expect { delete user_registration_path, as: :json }.to change(User, :count).by(-1)
+        end
+      end
     end
   end
 
