@@ -38,6 +38,11 @@ RSpec.describe "ProjectMembers", type: :request do
         expect(ProjectMember.last.role).to eq("contributor")
       end
 
+      it "creates an active member (not pending)" do
+        post project_project_members_path(project), params: valid_params
+        expect(ProjectMember.last.status).to eq("active")
+      end
+
       context "with an invalid role" do
         it "returns unprocessable entity" do
           post project_project_members_path(project),
@@ -183,6 +188,52 @@ RSpec.describe "ProjectMembers", type: :request do
       it "returns forbidden" do
         delete project_project_member_path(project, contributor_member), as: :json
         expect(response).to have_http_status(:forbidden)
+      end
+    end
+  end
+
+  describe "PATCH /projects/:project_id/project_members/:id/confirm" do
+    let!(:pending_member) { create(:project_member, :pending, project: project, user: other_user) }
+
+    context "when not signed in" do
+      it "redirects to sign in" do
+        patch confirm_project_project_member_path(project, pending_member)
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context "when signed in as the project owner" do
+      before { sign_in owner }
+
+      it "activates the member" do
+        patch confirm_project_project_member_path(project, pending_member), as: :json
+        expect(pending_member.reload.status).to eq("active")
+      end
+
+      it "returns ok" do
+        patch confirm_project_project_member_path(project, pending_member), as: :json
+        expect(response).to have_http_status(:ok)
+      end
+
+      context "when the member is already active" do
+        it "returns unprocessable entity" do
+          patch confirm_project_project_member_path(project, contributor_member), as: :json
+          expect(response).to have_http_status(:unprocessable_content)
+        end
+      end
+    end
+
+    context "when signed in as a non-owner" do
+      before { sign_in contributor }
+
+      it "returns forbidden" do
+        patch confirm_project_project_member_path(project, pending_member), as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "does not activate the member" do
+        patch confirm_project_project_member_path(project, pending_member), as: :json
+        expect(pending_member.reload.status).to eq("pending")
       end
     end
   end

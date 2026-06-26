@@ -39,14 +39,23 @@ class ProjectMembersController < ApplicationController
     authorize! :manage_members, @project
 
     unless @member.pending?
-      render json: { errors: [ "Member is not in pending status" ] }, status: :unprocessable_entity
+      respond_to do |format|
+        format.json { render json: { errors: [ "Member is not in pending status" ] }, status: :unprocessable_entity }
+        format.html { redirect_to project_path(@project), alert: "Member is not in pending status." }
+      end
       return
     end
 
     if @member.update(status: :active)
-      render json: @member, status: :ok
+      respond_to do |format|
+        format.json { render json: @member, status: :ok }
+        format.html { redirect_to project_path(@project), notice: "#{@member.user.name || @member.user.email} confirmed as a project member." }
+      end
     else
-      render json: { errors: @member.errors.full_messages }, status: :unprocessable_entity
+      respond_to do |format|
+        format.json { render json: { errors: @member.errors.full_messages }, status: :unprocessable_entity }
+        format.html { redirect_to project_path(@project), alert: @member.errors.full_messages.to_sentence }
+      end
     end
   end
 

@@ -10,10 +10,14 @@ class ProjectInvitationsController < ApplicationController
     authorize! :manage_members, @project
     @invitation = @project.project_invitations.build(creator: current_user)
 
-    if @invitation.save
-      render json: { token: @invitation.token, url: invitation_url(@invitation.token), expires_at: @invitation.expires_at }, status: :created
-    else
-      render json: { errors: @invitation.errors.full_messages }, status: :unprocessable_entity
+    respond_to do |format|
+      if @invitation.save
+        format.json { render json: { token: @invitation.token, url: invitation_url(@invitation.token), expires_at: @invitation.expires_at }, status: :created }
+        format.html { redirect_to project_path(@project), notice: "Invitation link generated." }
+      else
+        format.json { render json: { errors: @invitation.errors.full_messages }, status: :unprocessable_entity }
+        format.html { redirect_to project_path(@project), alert: @invitation.errors.full_messages.to_sentence }
+      end
     end
   end
 
@@ -21,7 +25,10 @@ class ProjectInvitationsController < ApplicationController
   def destroy
     authorize! :manage_members, @project
     @invitation.update!(revoked_at: Time.current)
-    head :no_content
+    respond_to do |format|
+      format.json { head :no_content }
+      format.html { redirect_to project_path(@project), notice: "Invitation revoked." }
+    end
   end
 
   private

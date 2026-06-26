@@ -1,6 +1,12 @@
 class ProjectsController < ApplicationController
   before_action :authenticate_user!, only: [ :create, :update, :destroy ]
-  before_action :set_project, only: [ :update, :destroy ]
+  before_action :set_project, only: [ :show, :update, :destroy ]
+
+  def show
+    authorize! :read, @project
+    @active_invitations = @project.project_invitations.active.includes(:creator)
+    @pending_members = @project.project_members.pending.includes(:user)
+  end
 
   def index
     @projects = Project.accessible_by(current_ability)

@@ -1,12 +1,13 @@
 <h1>Project Invitation</h1>
 
 <% if @invitation.usable? %>
-  <p>You've been invited to join <strong><%= @project.title %></strong>.</p>
+  <p>You've been invited to join <strong><%= @project.title %></strong>
+  by <strong><%= @invitation.creator.name || @invitation.creator.email %></strong>.</p>
   <p>This invitation expires on <%= @invitation.expires_at.strftime("%B %-d, %Y") %>.</p>
 
   <%= button_to "Accept Invitation", accept_invitation_path(params[:token]), method: :post %>
 <% elsif @invitation.revoked? %>
-  <p>This invitation has been revoked.</p>
+  <p>This invitation has been revoked. Please contact the project owner if you believe this is a mistake.</p>
 <% else %>
-  <p>This invitation has expired.</p>
+  <p>This invitation has expired. Please contact the project owner to request a new link.</p>
 <% end %>

@@ -1,0 +1,38 @@
+.container.py-5
+  %h1.mb-3= @project.title
+  - if @project.description.present?
+    %p= @project.description
+  - if @project.institution.present?
+    %p.text-muted= @project.institution
+  %span.badge{ class: @project.is_public? ? "bg-success" : "bg-secondary" }
+    = @project.is_public? ? "Public" : "Private"
+
+  - if can? :manage_members, @project
+    %hr.my-4
+
+    %section.mb-5
+      %h2.mb-3 Invitation Links
+      = button_to "Generate Invitation Link", project_project_invitations_path(@project), method: :post, class: "btn btn-primary mb-3"
+
+      - if @active_invitations.any?
+        %ul.list-group.mb-3
+          - @active_invitations.each do |invitation|
+            %li.list-group-item.d-flex.justify-content-between.align-items-center
+              .text-truncate.me-2
+                %code= invitation_url(invitation.token)
+              = button_to "Revoke", project_project_invitation_path(@project, invitation), method: :delete, class: "btn btn-sm btn-outline-danger flex-shrink-0", form: { data: { turbo_confirm: "Revoke this invitation link?" } }
+      - else
+        %p.text-muted No active invitation links.
+
+    %section.mb-5
+      %h2.mb-3 Pending Members
+      - if @pending_members.any?
+        %ul.list-group
+          - @pending_members.each do |member|
+            %li.list-group-item.d-flex.justify-content-between.align-items-center
+              = member.user.name || member.user.email
+              .btn-group
+                = button_to "Confirm", confirm_project_project_member_path(@project, member), method: :patch, class: "btn btn-sm btn-success"
+                = button_to "Dismiss", project_project_member_path(@project, member), method: :delete, class: "btn btn-sm btn-outline-secondary", form: { data: { turbo_confirm: "Remove this pending member?" } }
+      - else
+        %p.text-muted No pending members.
