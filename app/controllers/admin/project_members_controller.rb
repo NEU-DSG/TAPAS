@@ -9,12 +9,8 @@ module Admin
         return
       end
 
-      if member.update(status: :active)
-        InvitationMailer.owner_confirmation_request(member).deliver_later
-        redirect_to admin_project_member_path(member), notice: "Member approved; owner notified to confirm."
-      else
-        redirect_to admin_project_member_path(member), alert: member.errors.full_messages.to_sentence
-      end
+      InvitationMailer.owner_confirmation_request(member).deliver_later
+      redirect_to admin_project_member_path(member), notice: "Member approved; owner notified to confirm."
     end
 
     # Overwrite any of the RESTful controller actions to implement custom behavior

@@ -17,9 +17,9 @@ RSpec.describe "Admin::ProjectMembers", type: :request do
     let(:member_user) { create(:user) }
     let!(:pending_member) { create(:project_member, :pending, project: project, user: member_user) }
 
-    it "activates the member" do
+    it "leaves the member in pending status" do
       patch approve_admin_project_member_path(pending_member)
-      expect(pending_member.reload.status).to eq("active")
+      expect(pending_member.reload.status).to eq("pending")
     end
 
     it "enqueues an owner confirmation request email" do
