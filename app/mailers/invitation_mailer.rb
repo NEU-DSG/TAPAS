@@ -7,7 +7,7 @@ class InvitationMailer < ApplicationMailer
     @project = project_member.project
     @user    = project_member.user
 
-    admin_emails = User.where(account_type: "admin").pluck(:email)
+    admin_emails = User.where.not(admin_at: nil).pluck(:email)
     mail(to: admin_emails, subject: "New membership request for \"#{@project.title}\" needs review")
   end
 

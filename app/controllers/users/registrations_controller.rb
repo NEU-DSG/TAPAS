@@ -1,6 +1,13 @@
 # frozen_string_literal: true
 
 class Users::RegistrationsController < Devise::RegistrationsController
+  # POST /resource
+  def create
+    super do |resource|
+      session[:new_registration] = true if resource.persisted?
+    end
+  end
+
   # DELETE /resource
   def destroy
     blocking_projects = current_user.sole_owned_projects

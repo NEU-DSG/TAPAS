@@ -5,6 +5,7 @@ class InvitationsController < ApplicationController
 
   # GET /invitations/:token
   def show
+    store_location_for(:user, request.path) unless user_signed_in?
     # @invitation and @project set by before_action
     # renders invitations/show.html.erb
   end
@@ -12,7 +13,7 @@ class InvitationsController < ApplicationController
   # POST /invitations/:token/accept
   def accept
     unless user_signed_in?
-      store_location_for(:user, accept_invitation_path(params[:token]))
+      store_location_for(:user, invitation_path(params[:token]))
       redirect_to new_user_session_path, alert: "Please sign in to accept this invitation."
       return
     end
@@ -28,8 +29,16 @@ class InvitationsController < ApplicationController
     end
 
     member = @project.project_members.create!(user: current_user, role: "contributor", status: :pending)
-    InvitationMailer.admin_vetting_notification(member).deliver_later
-    redirect_to root_path, notice: "Your request to join \"#{@project.title}\" is pending review."
+
+    if session.delete(:new_registration)
+      # New-to-TAPAS accounts registered via the invite link go through admin vetting
+      # before the owner is asked to confirm — established users skip straight to the owner.
+      InvitationMailer.admin_vetting_notification(member).deliver_later
+      redirect_to root_path, notice: "Your account and your request to join \"#{@project.title}\" are pending admin review."
+    else
+      InvitationMailer.owner_confirmation_request(member).deliver_later
+      redirect_to root_path, notice: "Your request to join \"#{@project.title}\" is pending owner confirmation."
+    end
   rescue ActiveRecord::RecordInvalid => e
     redirect_to invitation_path(params[:token]), alert: e.message
   end

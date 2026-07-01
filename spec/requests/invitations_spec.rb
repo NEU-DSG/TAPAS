@@ -2,6 +2,8 @@
 
 require "rails_helper"
 
+RSpec::Matchers.define_negated_matcher :not_have_enqueued_mail, :have_enqueued_mail
+
 RSpec.describe "Invitations", type: :request do
   let(:owner) { create(:user) }
   let(:project) { create(:project, depositor: owner) }
@@ -104,10 +106,11 @@ RSpec.describe "Invitations", type: :request do
           expect(ProjectMember.last.status).to eq("pending")
         end
 
-        it "enqueues an admin vetting notification" do
+        it "enqueues an owner confirmation request, skipping admin vetting" do
           expect {
             post accept_invitation_path(invitation.token)
-          }.to have_enqueued_mail(InvitationMailer, :admin_vetting_notification)
+          }.to have_enqueued_mail(InvitationMailer, :owner_confirmation_request)
+            .and not_have_enqueued_mail(InvitationMailer, :admin_vetting_notification)
         end
 
         it "redirects with a notice" do
@@ -164,6 +167,32 @@ RSpec.describe "Invitations", type: :request do
           expect(flash[:alert]).to be_present
         end
       end
+    end
+  end
+
+  describe "accepting an invitation as a brand-new TAPAS user" do
+    before { invitation } # eager-load so project + its owner member exist before count checks
+
+    it "requires admin vetting before the owner is asked to confirm" do
+      get invitation_path(invitation.token)
+
+      post user_registration_path, params: {
+        user: { email: "new-invitee@example.com", password: "password123", password_confirmation: "password123" }
+      }
+
+      expect {
+        post accept_invitation_path(invitation.token)
+      }.to have_enqueued_mail(InvitationMailer, :admin_vetting_notification)
+        .and not_have_enqueued_mail(InvitationMailer, :owner_confirmation_request)
+    end
+
+    it "sets the new member to pending, same as an established user" do
+      get invitation_path(invitation.token)
+      post user_registration_path, params: {
+        user: { email: "new-invitee@example.com", password: "password123", password_confirmation: "password123" }
+      }
+      post accept_invitation_path(invitation.token)
+      expect(ProjectMember.last.status).to eq("pending")
     end
   end
 end
