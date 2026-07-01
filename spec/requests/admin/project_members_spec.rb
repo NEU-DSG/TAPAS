@@ -53,4 +53,21 @@ RSpec.describe "Admin::ProjectMembers", type: :request do
       end
     end
   end
+
+  describe "full approval workflow: admin approve → owner confirm" do
+    let(:owner)          { create(:user) }
+    let(:project)        { create(:project, depositor: owner) }
+    let(:invitee)        { create(:user) }
+    let!(:pending_member) { create(:project_member, :pending, project: project, user: invitee) }
+
+    it "leaves the member pending after admin approves, then activates on owner confirm" do
+      patch approve_admin_project_member_path(pending_member)
+      expect(pending_member.reload.status).to eq("pending")
+
+      sign_out admin_user
+      sign_in owner
+      patch confirm_project_project_member_path(project, pending_member)
+      expect(pending_member.reload.status).to eq("active")
+    end
+  end
 end
