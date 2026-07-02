@@ -50,6 +50,18 @@ RSpec.describe "CoreFiles", type: :request do
     end
   end
 
+  describe "flat URL structure (Card 1.52)" do
+    it "resolves a core file's record URL with no collection segment, regardless of collection membership" do
+      other_collection = create(:collection, project: project, depositor: user)
+      multi_collection_core_file = create(:core_file, depositor: user, collections: [ collection, other_collection ], is_public: true)
+
+      expect(core_file_path(multi_collection_core_file)).to eq("/core_files/#{multi_collection_core_file.id}")
+
+      get core_file_path(multi_collection_core_file)
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   describe "GET /core_files/:id" do
     let!(:public_core_file) { create(:core_file, depositor: user, collections: [ collection ], is_public: true) }
     let!(:private_core_file) { create(:core_file, depositor: user, collections: [ collection ], is_public: false) }
