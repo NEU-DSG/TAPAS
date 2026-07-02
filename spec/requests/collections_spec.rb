@@ -49,6 +49,41 @@ RSpec.describe "Collections", type: :request do
     end
   end
 
+  describe "GET /collections/:id" do
+    let!(:public_collection) { create(:collection, depositor: user, project: project, is_public: true) }
+    let!(:private_collection) { create(:collection, depositor: user, project: project, is_public: false) }
+
+    context "as a guest" do
+      it "returns 200 for a public collection" do
+        get collection_path(public_collection)
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "redirects away from a private collection" do
+        get collection_path(private_collection)
+        expect(response).to redirect_to(root_path)
+      end
+    end
+
+    context "as the depositor" do
+      before { sign_in user }
+
+      it "returns 200 for a private collection" do
+        get collection_path(private_collection)
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    context "as a non-member" do
+      before { sign_in other_user }
+
+      it "redirects away from a private collection" do
+        get collection_path(private_collection)
+        expect(response).to redirect_to(root_path)
+      end
+    end
+  end
+
   describe "POST /collections" do
     let(:valid_params) { { collection: { title: "New Collection", description: "A description", project_id: project.id, is_public: true } } }
     let(:invalid_params) { { collection: { title: "", project_id: project.id } } }

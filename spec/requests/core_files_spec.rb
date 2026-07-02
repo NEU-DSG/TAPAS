@@ -50,6 +50,41 @@ RSpec.describe "CoreFiles", type: :request do
     end
   end
 
+  describe "GET /core_files/:id" do
+    let!(:public_core_file) { create(:core_file, depositor: user, collections: [ collection ], is_public: true) }
+    let!(:private_core_file) { create(:core_file, depositor: user, collections: [ collection ], is_public: false) }
+
+    context "as a guest" do
+      it "returns 200 for a public core file" do
+        get core_file_path(public_core_file)
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "redirects away from a private core file" do
+        get core_file_path(private_core_file)
+        expect(response).to redirect_to(root_path)
+      end
+    end
+
+    context "as the depositor" do
+      before { sign_in user }
+
+      it "returns 200 for a private core file" do
+        get core_file_path(private_core_file)
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    context "as a non-member" do
+      before { sign_in other_user }
+
+      it "redirects away from a private core file" do
+        get core_file_path(private_core_file)
+        expect(response).to redirect_to(root_path)
+      end
+    end
+  end
+
   describe "POST /core_files" do
     let(:valid_params) { { core_file: { title: "New Core File", description: "A description", is_public: true, collection_ids: [ collection.id ] } } }
     let(:invalid_params) { { core_file: { title: "" } } }

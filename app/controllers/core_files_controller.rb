@@ -1,6 +1,11 @@
 class CoreFilesController < ApplicationController
   before_action :authenticate_user!, only: [ :create, :update, :destroy ]
-  before_action :set_core_file, only: [ :update, :destroy ]
+  before_action :set_core_file, only: [ :show, :update, :destroy ]
+
+  def show
+    authorize! :read, @core_file
+    @collections = @core_file.collections.accessible_by(current_ability)
+  end
 
   def index
     @core_files = CoreFile.accessible_by(current_ability)

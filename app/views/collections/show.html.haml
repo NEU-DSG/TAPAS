@@ -1,0 +1,23 @@
+.container.py-5
+  %h1.mb-3= @collection.title
+  - if @collection.description.present?
+    %p= @collection.description
+  %p.text-muted
+    Project:
+    = link_to @collection.project.title, project_path(@collection.project)
+  %span.badge{ class: @collection.is_public? ? "bg-success" : "bg-secondary" }
+    = @collection.is_public? ? "Public" : "Private"
+
+  %hr.my-4
+
+  %section
+    %h2.mb-3 Files
+    - if @core_files.any?
+      %ul.list-unstyled
+        - @core_files.each do |core_file|
+          %li.mb-3
+            %h5= link_to core_file.title, core_file_path(core_file)
+            - if core_file.description.present?
+              %p= core_file.description
+    - else
+      %p.text-muted No files in this collection.

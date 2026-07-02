@@ -1,6 +1,11 @@
 class CollectionsController < ApplicationController
   before_action :authenticate_user!, only: [ :create, :update, :destroy ]
-  before_action :set_collection, only: [ :update, :destroy ]
+  before_action :set_collection, only: [ :show, :update, :destroy ]
+
+  def show
+    authorize! :read, @collection
+    @core_files = @collection.core_files.accessible_by(current_ability)
+  end
 
   def index
     @collections = Collection.accessible_by(current_ability).includes(:project)
