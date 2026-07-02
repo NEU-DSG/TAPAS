@@ -1,6 +1,6 @@
 class ProjectsController < ApplicationController
-  before_action :authenticate_user!, only: [ :create, :update, :destroy ]
-  before_action :set_project, only: [ :show, :update, :destroy ]
+  before_action :authenticate_user!, only: [ :new, :create, :edit, :update, :destroy ]
+  before_action :set_project, only: [ :show, :edit, :update, :destroy ]
 
   def show
     authorize! :read, @project
@@ -16,6 +16,15 @@ class ProjectsController < ApplicationController
     end
   end
 
+  def new
+    authorize! :create, Project
+    @project = Project.new
+  end
+
+  def edit
+    authorize! :update, @project
+  end
+
   def create
     authorize! :create, Project
     @project = Project.new(project_params)
@@ -23,9 +32,15 @@ class ProjectsController < ApplicationController
     assign_image_depositor(@project)
 
     if @project.save
-      render json: @project, status: :created
+      respond_to do |format|
+        format.html { redirect_to project_path(@project), notice: "\"#{@project.title}\" has been created." }
+        format.json { render json: @project, status: :created }
+      end
     else
-      render json: { errors: @project.errors.full_messages }, status: :unprocessable_entity
+      respond_to do |format|
+        format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: { errors: @project.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
   end
 
@@ -35,16 +50,25 @@ class ProjectsController < ApplicationController
     assign_image_depositor(@project)
 
     if @project.save
-      render json: @project, status: :ok
+      respond_to do |format|
+        format.html { redirect_to project_path(@project), notice: "\"#{@project.title}\" has been updated." }
+        format.json { render json: @project, status: :ok }
+      end
     else
-      render json: { errors: @project.errors.full_messages }, status: :unprocessable_entity
+      respond_to do |format|
+        format.html { render :edit, status: :unprocessable_entity }
+        format.json { render json: { errors: @project.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
   end
 
   def destroy
     authorize! :destroy, @project
     @project.destroy
-    head :no_content
+    respond_to do |format|
+      format.html { redirect_to projects_path, notice: "\"#{@project.title}\" and its contents have been deleted." }
+      format.json { head :no_content }
+    end
   end
 
   private

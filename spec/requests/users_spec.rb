@@ -90,6 +90,12 @@ RSpec.describe "Users", type: :request do
           expect(json["error"]).to include("sole owner")
           expect(json["projects"]).not_to be_empty
         end
+
+        it "redirects back to account settings with an alert for HTML requests" do
+          delete user_registration_path
+          expect(response).to redirect_to(edit_user_registration_path)
+          expect(flash[:alert]).to include("sole owner")
+        end
       end
 
       context "when the user is a co-owner of a project" do
@@ -157,12 +163,12 @@ RSpec.describe "Users", type: :request do
       end
 
       it "returns ok status" do
-        patch user_path(user), params: valid_params
+        patch user_path(user), params: valid_params, as: :json
         expect(response).to have_http_status(:ok)
       end
 
       it "returns the updated user as JSON" do
-        patch user_path(user), params: valid_params
+        patch user_path(user), params: valid_params, as: :json
         json = JSON.parse(response.body)
         expect(json["name"]).to eq("Updated Name")
       end

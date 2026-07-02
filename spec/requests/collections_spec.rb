@@ -127,12 +127,12 @@ RSpec.describe "Collections", type: :request do
         end
 
         it "returns created status" do
-          post collections_path, params: valid_params
+          post collections_path, params: valid_params, as: :json
           expect(response).to have_http_status(:created)
         end
 
         it "returns the collection as JSON" do
-          post collections_path, params: valid_params
+          post collections_path, params: valid_params, as: :json
           json = JSON.parse(response.body)
           expect(json["title"]).to eq("New Collection")
           expect(json["description"]).to eq("A description")
@@ -159,7 +159,7 @@ RSpec.describe "Collections", type: :request do
         end
 
         it "returns error messages" do
-          post collections_path, params: invalid_params
+          post collections_path, params: invalid_params, as: :json
           json = JSON.parse(response.body)
           expect(json["errors"]).to be_present
         end
@@ -208,12 +208,12 @@ RSpec.describe "Collections", type: :request do
         end
 
         it "returns ok status" do
-          patch collection_path(collection), params: update_params
+          patch collection_path(collection), params: update_params, as: :json
           expect(response).to have_http_status(:ok)
         end
 
         it "returns the updated collection as JSON" do
-          patch collection_path(collection), params: update_params
+          patch collection_path(collection), params: update_params, as: :json
           json = JSON.parse(response.body)
           expect(json["title"]).to eq("Updated Title")
         end
@@ -232,7 +232,7 @@ RSpec.describe "Collections", type: :request do
         end
 
         it "returns error messages" do
-          patch collection_path(collection), params: { collection: { title: "" } }
+          patch collection_path(collection), params: { collection: { title: "" } }, as: :json
           json = JSON.parse(response.body)
           expect(json["errors"]).to be_present
         end
@@ -281,9 +281,15 @@ RSpec.describe "Collections", type: :request do
         }.to change(Collection, :count).by(-1)
       end
 
-      it "returns no content status" do
-        delete collection_path(collection)
+      it "returns no content status for JSON requests" do
+        delete collection_path(collection), as: :json
         expect(response).to have_http_status(:no_content)
+      end
+
+      it "redirects to the collection's project for HTML requests" do
+        project = collection.project
+        delete collection_path(collection)
+        expect(response).to redirect_to(project_path(project))
       end
 
       it "destroys core files left with no remaining collections" do

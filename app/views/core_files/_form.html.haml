@@ -1,0 +1,35 @@
+-# Placeholder form for manual testing until designed frontend replaces it.
+= form_with model: core_file do |f|
+  - if core_file.errors.any?
+    .alert.alert-danger
+      %ul.mb-0
+        - core_file.errors.full_messages.each do |message|
+          %li= message
+
+  .mb-3
+    = f.label :title, class: "form-label"
+    = f.text_field :title, class: "form-control"
+  .mb-3
+    = f.label :description, class: "form-label"
+    = f.text_area :description, rows: 4, class: "form-control"
+  .mb-3
+    = f.label :ography_type, "Ography type", class: "form-label"
+    = f.select :ography_type, CoreFile.all_ography_types.map { |t| [ t.humanize, t ] }, { include_blank: "None (TEI record)" }, { class: "form-select" }
+  .mb-3
+    = f.label :tei_file, "TEI file (XML)", class: "form-label"
+    - if core_file.tei_file.attached?
+      %p.text-muted.mb-1 Currently attached: #{core_file.tei_file.filename}
+    = f.file_field :tei_file, accept: ".xml,application/xml,text/xml", class: "form-control"
+  .mb-3
+    %span.form-label.d-block Collections
+    - depositable_collections.includes(:project).each do |collection|
+      .form-check
+        = f.check_box :collection_ids, { multiple: true, class: "form-check-input", id: "core_file_collection_ids_#{collection.id}", checked: core_file.collection_ids.include?(collection.id) }, collection.id, nil
+        %label.form-check-label{ for: "core_file_collection_ids_#{collection.id}" }
+          = "#{collection.project.title} — #{collection.title}"
+  .form-check.mb-3
+    = f.check_box :is_public, class: "form-check-input"
+    = f.label :is_public, "Publicly visible", class: "form-check-label"
+
+  = f.submit class: "btn btn-primary"
+  = link_to "Cancel", core_file.persisted? ? core_file_path(core_file) : core_files_path, class: "btn btn-outline-secondary ms-2"

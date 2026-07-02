@@ -7,6 +7,24 @@
   %span.badge{ class: @project.is_public? ? "bg-success" : "bg-secondary" }
     = @project.is_public? ? "Public" : "Private"
 
+  - if can? :update, @project
+    .mt-3
+      = link_to "Edit Project", edit_project_path(@project), class: "btn btn-outline-primary btn-sm"
+      = link_to "New Collection", new_collection_path(project_id: @project.id), class: "btn btn-outline-primary btn-sm ms-2"
+
+  %hr.my-4
+
+  %section.mb-5
+    %h2.mb-3 Collections
+    - project_collections = @project.collections.accessible_by(current_ability)
+    - if project_collections.any?
+      %ul.list-unstyled
+        - project_collections.each do |collection|
+          %li.mb-2
+            %h5.mb-0= link_to collection.title, collection_path(collection)
+    - else
+      %p.text-muted No collections you can view in this project.
+
   - if can? :manage_members, @project
     %hr.my-4
 

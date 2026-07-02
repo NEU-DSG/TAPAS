@@ -1,5 +1,8 @@
 .container.py-5
-  %h1.mb-4 Projects
+  .d-flex.justify-content-between.align-items-center.mb-4
+    %h1.mb-0 Projects
+    - if user_signed_in?
+      = link_to "New Project", new_project_path, class: "btn btn-primary"
 
   - if @projects.empty?
     %p.text-muted No projects available.

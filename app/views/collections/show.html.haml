@@ -8,6 +8,12 @@
   %span.badge{ class: @collection.is_public? ? "bg-success" : "bg-secondary" }
     = @collection.is_public? ? "Public" : "Private"
 
+  .mt-3
+    - if can? :update, @collection
+      = link_to "Edit Collection", edit_collection_path(@collection), class: "btn btn-outline-primary btn-sm"
+    - if user_signed_in? && can?(:create, CollectionCoreFile.new(collection: @collection))
+      = link_to "Add File", new_core_file_path(collection_id: @collection.id), class: "btn btn-outline-primary btn-sm ms-1"
+
   %hr.my-4
 
   %section

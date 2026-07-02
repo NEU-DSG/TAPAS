@@ -62,12 +62,18 @@ class ProjectMembersController < ApplicationController
     authorize! :manage_members, @project
 
     if last_owner?
-      render json: { errors: [ "Cannot remove the last owner of a project" ] }, status: :unprocessable_entity
+      respond_to do |format|
+        format.html { redirect_to project_path(@project), alert: "Cannot remove the last owner of a project." }
+        format.json { render json: { errors: [ "Cannot remove the last owner of a project" ] }, status: :unprocessable_entity }
+      end
       return
     end
 
     @member.destroy
-    head :no_content
+    respond_to do |format|
+      format.html { redirect_to project_path(@project), notice: "#{@member.user.name || @member.user.email} has been removed." }
+      format.json { head :no_content }
+    end
   end
 
   private

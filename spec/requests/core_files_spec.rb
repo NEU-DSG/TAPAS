@@ -125,12 +125,12 @@ RSpec.describe "CoreFiles", type: :request do
         end
 
         it "returns created status" do
-          post core_files_path, params: valid_params
+          post core_files_path, params: valid_params, as: :json
           expect(response).to have_http_status(:created)
         end
 
         it "returns the core file as JSON" do
-          post core_files_path, params: valid_params
+          post core_files_path, params: valid_params, as: :json
           json = JSON.parse(response.body)
           expect(json["title"]).to eq("New Core File")
           expect(json["description"]).to eq("A description")
@@ -161,7 +161,7 @@ RSpec.describe "CoreFiles", type: :request do
         end
 
         it "returns error messages" do
-          post core_files_path, params: invalid_params
+          post core_files_path, params: invalid_params, as: :json
           json = JSON.parse(response.body)
           expect(json["errors"]).to be_present
         end
@@ -253,12 +253,12 @@ RSpec.describe "CoreFiles", type: :request do
         end
 
         it "returns ok status" do
-          patch core_file_path(core_file), params: update_params
+          patch core_file_path(core_file), params: update_params, as: :json
           expect(response).to have_http_status(:ok)
         end
 
         it "returns the updated core file as JSON" do
-          patch core_file_path(core_file), params: update_params
+          patch core_file_path(core_file), params: update_params, as: :json
           json = JSON.parse(response.body)
           expect(json["title"]).to eq("Updated Title")
         end
@@ -277,7 +277,7 @@ RSpec.describe "CoreFiles", type: :request do
         end
 
         it "returns error messages" do
-          patch core_file_path(core_file), params: { core_file: { title: "" } }
+          patch core_file_path(core_file), params: { core_file: { title: "" } }, as: :json
           json = JSON.parse(response.body)
           expect(json["errors"]).to be_present
         end
@@ -317,7 +317,7 @@ RSpec.describe "CoreFiles", type: :request do
       it "returns an error message referencing the filename" do
         post core_files_path, params: {
           core_file: { title: "Duplicate TEI", collection_ids: [ collection.id ], tei_file: tei_file }
-        }
+        }, headers: { "ACCEPT" => "application/json" }
         json = JSON.parse(response.body)
         expect(json["errors"].join).to include("sample.xml")
       end
@@ -348,7 +348,7 @@ RSpec.describe "CoreFiles", type: :request do
       it "returns created status" do
         post core_files_path, params: {
           core_file: { title: "Different Collection TEI", collection_ids: [ collection.id ], tei_file: tei_file }
-        }
+        }, headers: { "ACCEPT" => "application/json" }
         expect(response).to have_http_status(:created)
       end
     end
@@ -411,9 +411,15 @@ RSpec.describe "CoreFiles", type: :request do
         }.to change(CoreFile, :count).by(-1)
       end
 
-      it "returns no content status" do
-        delete core_file_path(core_file)
+      it "returns no content status for JSON requests" do
+        delete core_file_path(core_file), as: :json
         expect(response).to have_http_status(:no_content)
+      end
+
+      it "redirects to the file's collection for HTML requests" do
+        collection = core_file.collections.first
+        delete core_file_path(core_file)
+        expect(response).to redirect_to(collection_path(collection))
       end
     end
   end

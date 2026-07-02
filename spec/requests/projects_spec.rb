@@ -86,12 +86,12 @@ RSpec.describe "Projects", type: :request do
         end
 
         it "returns created status" do
-          post projects_path, params: valid_params
+          post projects_path, params: valid_params, as: :json
           expect(response).to have_http_status(:created)
         end
 
         it "returns the project as JSON" do
-          post projects_path, params: valid_params
+          post projects_path, params: valid_params, as: :json
           json = JSON.parse(response.body)
           expect(json["title"]).to eq("New Project")
           expect(json["description"]).to eq("A description")
@@ -118,7 +118,7 @@ RSpec.describe "Projects", type: :request do
         end
 
         it "returns error messages" do
-          post projects_path, params: invalid_params
+          post projects_path, params: invalid_params, as: :json
           json = JSON.parse(response.body)
           expect(json["errors"]).to be_present
         end
@@ -167,12 +167,12 @@ RSpec.describe "Projects", type: :request do
         end
 
         it "returns ok status" do
-          patch project_path(project), params: update_params
+          patch project_path(project), params: update_params, as: :json
           expect(response).to have_http_status(:ok)
         end
 
         it "returns the updated project as JSON" do
-          patch project_path(project), params: update_params
+          patch project_path(project), params: update_params, as: :json
           json = JSON.parse(response.body)
           expect(json["title"]).to eq("Updated Title")
         end
@@ -191,7 +191,7 @@ RSpec.describe "Projects", type: :request do
         end
 
         it "returns error messages" do
-          patch project_path(project), params: { project: { title: "" } }
+          patch project_path(project), params: { project: { title: "" } }, as: :json
           json = JSON.parse(response.body)
           expect(json["errors"]).to be_present
         end
@@ -240,9 +240,14 @@ RSpec.describe "Projects", type: :request do
         }.to change(Project, :count).by(-1)
       end
 
-      it "returns no content status" do
-        delete project_path(project)
+      it "returns no content status for JSON requests" do
+        delete project_path(project), as: :json
         expect(response).to have_http_status(:no_content)
+      end
+
+      it "redirects to the projects list for HTML requests" do
+        delete project_path(project)
+        expect(response).to redirect_to(projects_path)
       end
 
       it "cascades to destroy the project's collections and core files" do

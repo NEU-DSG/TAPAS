@@ -4,6 +4,8 @@
     %ul.navbar-nav.me-auto
       %li.nav-item= link_to "Projects", projects_path, class: "nav-link"
       %li.nav-item= link_to "Collections", collections_path, class: "nav-link"
+      - if user_signed_in?
+        %li.nav-item= link_to "My TAPAS", dashboard_path, class: "nav-link"
     - if user_signed_in?
       %ul.navbar-nav
         %li.nav-item= link_to "My Account", user_path(current_user), class: "nav-link"

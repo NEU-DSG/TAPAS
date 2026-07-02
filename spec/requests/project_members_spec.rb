@@ -119,9 +119,14 @@ RSpec.describe "ProjectMembers", type: :request do
         }.to change(ProjectMember, :count).by(-1)
       end
 
-      it "returns no content status" do
-        delete project_project_member_path(project, contributor_member)
+      it "returns no content status for JSON requests" do
+        delete project_project_member_path(project, contributor_member), as: :json
         expect(response).to have_http_status(:no_content)
+      end
+
+      it "redirects to the project for HTML requests" do
+        delete project_project_member_path(project, contributor_member)
+        expect(response).to redirect_to(project_path(project))
       end
 
       context "when attempting to remove the last owner" do
