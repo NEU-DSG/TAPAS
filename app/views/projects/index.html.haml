@@ -7,7 +7,7 @@
     %ul.list-unstyled
       - @projects.each do |project|
         %li.mb-4
-          %h4= project.title
+          %h4= link_to project.title, project_path(project)
           - if project.description.present?
             %p= project.description
           - if project.institution.present?
