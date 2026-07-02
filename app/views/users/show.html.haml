@@ -1,0 +1,6 @@
+.container.py-5
+  %h1.mb-3= @user.name || @user.email
+  - if @user.bio.present?
+    %p= @user.bio
+  - if @user.institution.present?
+    %p.text-muted= @user.institution
