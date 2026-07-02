@@ -11,7 +11,8 @@ class InvitationMailer < ApplicationMailer
     mail(to: admin_emails, subject: "New membership request for \"#{@project.title}\" needs review")
   end
 
-  # Notifies project owner that admin has approved a pending member; owner must confirm.
+  # Asks the project owner to confirm a pending member (sent directly on accept
+  # for established users; after admin approval for new-to-TAPAS registrants).
   def owner_confirmation_request(project_member)
     @member       = project_member
     @project      = project_member.project
