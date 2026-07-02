@@ -361,7 +361,7 @@ GEM
       rails_autolink
       stanford-mods (~> 3.3, >= 3.3.9)
       view_component
-    msgpack (1.8.1)
+    msgpack (1.8.3)
     mysql2 (0.5.7)
       bigdecimal
     namae (1.2.0)
@@ -881,7 +881,7 @@ CHECKSUMS
   minitest (6.0.6) sha256=153ea36d1d987a62942382b61075745042a2b3123b1cd48f4c3675af9cc7d6f1
   mods (3.0.5) sha256=70b06c780025a9880b3cfb9727d99b7401c42a343976bf69abe862894786b88b
   mods_display (1.7.0) sha256=0b718c792765108e812ef7ad0c123a9e8c2c63326bd6ee3a293d3e2884b17b1b
-  msgpack (1.8.1) sha256=3fef787cd3965fd119c08a22724a56a93ca25008c3421fc15039f603a8b7c86c
+  msgpack (1.8.3) sha256=8bda4a6428d3244e50d6bd55854d354edbada88a4e1f4f5731a39a0f86bee6a1
   mysql2 (0.5.7) sha256=ba09ede515a0ae8a7192040a1b778c0fb0f025fa5877e9be895cd325fa5e9d7b
   namae (1.2.0) sha256=3541ce4b086fd4981d2376630c03e284402bfe1cdbab4e50e2222a72aeb9d59d
   net-http (0.9.1) sha256=25ba0b67c63e89df626ed8fac771d0ad24ad151a858af2cc8e6a716ca4336996
