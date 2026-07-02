@@ -27,24 +27,13 @@ class Ability
         project.project_members.exists?(user: user, role: "owner", status: :active)
       end
 
-      # Arrays (pluck) so CanCan can match against instances as well as generate SQL.
-      # Project-wide members have no collection scopes; scoped members have at least one.
+      # Array (pluck) so CanCan can match against instances as well as generate SQL.
       # Only active members receive access — pending members have no project permissions.
-      project_wide_project_ids = ProjectMember
-        .left_joins(:collection_scopes)
+      member_project_ids = ProjectMember
         .where(user: user, status: :active)
-        .where(project_member_collection_scopes: { id: nil })
         .pluck(:project_id)
 
-      scoped_collection_ids = ProjectMemberCollectionScope
-        .joins(:project_member)
-        .where(project_members: { user_id: user.id, status: :active })
-        .pluck(:collection_id)
-
-      # Project-wide members can read any collection in their project.
-      # Scoped members can additionally read their explicitly assigned collections.
-      can :read, Collection, project_id: project_wide_project_ids if project_wide_project_ids.any?
-      can :read, Collection, id: scoped_collection_ids if scoped_collection_ids.any?
+      can :read, Collection, project_id: member_project_ids if member_project_ids.any?
 
       can :create, Collection do |collection|
         collection.project&.project_members&.exists?(user: user, role: "owner", status: :active)
@@ -54,9 +43,7 @@ class Ability
         collection.project.project_members.exists?(user: user, role: "owner", status: :active)
       end
 
-      # Same scoping pattern for CoreFiles.
-      can :read, CoreFile, collections: { project_id: project_wide_project_ids } if project_wide_project_ids.any?
-      can :read, CoreFile, collections: { id: scoped_collection_ids } if scoped_collection_ids.any?
+      can :read, CoreFile, collections: { project_id: member_project_ids } if member_project_ids.any?
 
       can :create, CoreFile
 

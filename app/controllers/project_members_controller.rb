@@ -13,7 +13,6 @@ class ProjectMembersController < ApplicationController
     @member.role = member_params[:role]
 
     if @member.save
-      set_collection_scopes(@member, collection_ids_param)
       render json: @member, status: :created
     else
       render json: { errors: @member.errors.full_messages }, status: :unprocessable_entity
@@ -27,7 +26,6 @@ class ProjectMembersController < ApplicationController
     @member.role = member_params[:role] if params[:project_member].present? && member_params[:role].present?
 
     if @member.save
-      replace_collection_scopes(@member, collection_ids_param) if params.key?(:collection_ids)
       render json: @member, status: :ok
     else
       render json: { errors: @member.errors.full_messages }, status: :unprocessable_entity
@@ -89,21 +87,5 @@ class ProjectMembersController < ApplicationController
 
   def member_params
     params.require(:project_member).permit(:user_id, :role)
-  end
-
-  def collection_ids_param
-    Array(params.permit(collection_ids: [])[:collection_ids])
-  end
-
-  def set_collection_scopes(member, collection_ids)
-    return if collection_ids.blank? || member.role == "owner"
-    collection_ids.each do |collection_id|
-      member.collection_scopes.find_or_create_by!(collection_id: collection_id)
-    end
-  end
-
-  def replace_collection_scopes(member, collection_ids)
-    member.collection_scopes.destroy_all
-    set_collection_scopes(member, collection_ids)
   end
 end
