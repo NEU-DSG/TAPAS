@@ -9,13 +9,15 @@ class Collection < ApplicationRecord
   # associations
   belongs_to :depositor, class_name: "User"
   belongs_to :project
-  has_one :image_file, as: :imageable
+  has_one :image_file, as: :imageable, dependent: :destroy
   accepts_nested_attributes_for :image_file, allow_destroy: true
   has_many :collection_core_files, dependent: :destroy
   has_many :core_files, through: :collection_core_files
 
   # callbacks
   after_save :index_record
+  before_destroy :capture_core_file_ids_for_orphan_cleanup, prepend: true
+  after_destroy :destroy_core_files_orphaned_by_this_collection
 
   def to_solr(solr_doc = {})
     solr_doc["active_record_model_ssi"] = self.class.to_s
@@ -45,5 +47,17 @@ class Collection < ApplicationRecord
     unless project.is_public?
       errors.add(:is_public, "cannot be public when the project is private")
     end
+  end
+
+  def capture_core_file_ids_for_orphan_cleanup
+    @core_file_ids_pending_orphan_check = core_files.pluck(:id)
+  end
+
+  def destroy_core_files_orphaned_by_this_collection
+    CoreFile
+      .where(id: @core_file_ids_pending_orphan_check)
+      .left_joins(:collection_core_files)
+      .where(collection_core_files: { id: nil })
+      .destroy_all
   end
 end

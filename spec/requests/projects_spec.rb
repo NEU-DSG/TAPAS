@@ -244,6 +244,32 @@ RSpec.describe "Projects", type: :request do
         delete project_path(project)
         expect(response).to have_http_status(:no_content)
       end
+
+      it "cascades to destroy the project's collections and core files" do
+        collection = create(:collection, project: project, depositor: user)
+        core_file = create(:core_file, depositor: user, collections: [ collection ])
+
+        expect {
+          delete project_path(project)
+        }.to change(Collection, :count).by(-1).and change(CoreFile, :count).by(-1)
+
+        expect(Collection.exists?(collection.id)).to be false
+        expect(CoreFile.exists?(core_file.id)).to be false
+      end
+    end
+  end
+
+  describe "GET /projects/:id (delete confirmation)" do
+    before { sign_in user }
+
+    it "shows the collection and core file counts in the delete confirmation" do
+      collection = create(:collection, project: project, depositor: user)
+      create(:core_file, depositor: user, collections: [ collection ])
+
+      get project_path(project)
+
+      expect(response.body).to include("1 collection(s)")
+      expect(response.body).to include("1 file(s)")
     end
   end
 end

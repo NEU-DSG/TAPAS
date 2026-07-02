@@ -36,3 +36,9 @@
                 = button_to "Dismiss", project_project_member_path(@project, member), method: :delete, class: "btn btn-sm btn-outline-secondary", form: { data: { turbo_confirm: "Remove this pending member?" } }
       - else
         %p.text-muted No pending members.
+
+  - if can? :destroy, @project
+    %hr.my-4
+    - collection_count = @project.collections.count
+    - core_file_count = @project.core_files.count
+    = button_to "Delete Project", project_path(@project), method: :delete, class: "btn btn-outline-danger", form: { data: { turbo_confirm: "Delete this project? This will permanently delete #{collection_count} collection(s) and #{core_file_count} file(s). This cannot be undone." } }

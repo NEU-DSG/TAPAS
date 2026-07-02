@@ -285,6 +285,39 @@ RSpec.describe "Collections", type: :request do
         delete collection_path(collection)
         expect(response).to have_http_status(:no_content)
       end
+
+      it "destroys core files left with no remaining collections" do
+        core_file = create(:core_file, depositor: user, collections: [ collection ])
+
+        expect {
+          delete collection_path(collection)
+        }.to change(CoreFile, :count).by(-1)
+
+        expect(CoreFile.exists?(core_file.id)).to be false
+      end
+
+      it "does not destroy core files that still belong to another collection" do
+        other_collection = create(:collection, project: project, depositor: user)
+        core_file = create(:core_file, depositor: user, collections: [ collection, other_collection ])
+
+        expect {
+          delete collection_path(collection)
+        }.not_to change(CoreFile, :count)
+
+        expect(CoreFile.exists?(core_file.id)).to be true
+      end
+    end
+  end
+
+  describe "GET /collections/:id (delete confirmation)" do
+    before { sign_in user }
+
+    it "shows the core file count in the delete confirmation" do
+      create(:core_file, depositor: user, collections: [ collection ])
+
+      get collection_path(collection)
+
+      expect(response.body).to include("1 file(s)")
     end
   end
 end

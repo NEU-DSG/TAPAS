@@ -21,3 +21,7 @@
               %p= core_file.description
     - else
       %p.text-muted No files in this collection.
+
+  - if can? :destroy, @collection
+    %hr.my-4
+    = button_to "Delete Collection", collection_path(@collection), method: :delete, class: "btn btn-outline-danger", form: { data: { turbo_confirm: "Delete this collection? This will permanently delete #{@core_files.count} file(s). This cannot be undone." } }
