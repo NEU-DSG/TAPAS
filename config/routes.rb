@@ -17,7 +17,15 @@ Rails.application.routes.draw do
       end
       resources :image_files
       resources :projects
+      resources :project_invitations, only: [ :index ] do
+        member do
+          patch :revoke
+        end
+      end
       resources :project_members do
+        collection do
+          get :review_queue
+        end
         member do
           patch :approve
         end

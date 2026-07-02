@@ -28,11 +28,14 @@ class InvitationsController < ApplicationController
       return
     end
 
-    member = @project.project_members.create!(user: current_user, role: "contributor", status: :pending)
+    # New-to-TAPAS accounts registered via the invite link go through admin vetting
+    # before the owner is asked to confirm — established users skip straight to the owner.
+    needs_admin_vetting = session.delete(:new_registration).present?
+    member = @project.project_members.create!(
+      user: current_user, role: "contributor", status: :pending, needs_admin_vetting: needs_admin_vetting
+    )
 
-    if session.delete(:new_registration)
-      # New-to-TAPAS accounts registered via the invite link go through admin vetting
-      # before the owner is asked to confirm — established users skip straight to the owner.
+    if needs_admin_vetting
       InvitationMailer.admin_vetting_notification(member).deliver_later
       redirect_to root_path, notice: "Your account and your request to join \"#{@project.title}\" are pending admin review."
     else

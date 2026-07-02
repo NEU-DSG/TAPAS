@@ -1,0 +1,50 @@
+<%
+# Admin-wide view of active invitation links, mirroring what a project owner
+# sees on their own project page (app/views/projects/show.html.haml) so admins
+# have the same revoke capability regardless of their own project membership.
+%>
+
+<% content_for(:title) { "Invitation Links" } %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title">
+    <%= content_for(:title) %>
+  </h1>
+</header>
+
+<section class="main-content__body">
+  <% if @active_invitations.empty? %>
+    <p>No active invitation links.</p>
+  <% else %>
+    <table>
+      <thead>
+        <tr>
+          <th>Project</th>
+          <th>Created By</th>
+          <th>Link</th>
+          <th>Expires</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @active_invitations.each do |invitation| %>
+          <tr>
+            <td><%= link_to invitation.project.title, [:admin, invitation.project] %></td>
+            <td><%= invitation.creator.name || invitation.creator.email %></td>
+            <td><code><%= invitation_url(invitation.token) %></code></td>
+            <td><%= invitation.expires_at.to_fs(:long) %></td>
+            <td>
+              <%= button_to(
+                "Revoke",
+                revoke_admin_project_invitation_path(invitation),
+                method: :patch,
+                class: "button",
+                form: { data: { turbo_confirm: "Revoke this invitation link?" } }
+              ) %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</section>

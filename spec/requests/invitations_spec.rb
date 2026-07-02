@@ -106,6 +106,11 @@ RSpec.describe "Invitations", type: :request do
           expect(ProjectMember.last.status).to eq("pending")
         end
 
+        it "does not flag the member as needing admin vetting" do
+          post accept_invitation_path(invitation.token)
+          expect(ProjectMember.last.needs_admin_vetting).to eq(false)
+        end
+
         it "enqueues an owner confirmation request, skipping admin vetting" do
           expect {
             post accept_invitation_path(invitation.token)
@@ -193,6 +198,15 @@ RSpec.describe "Invitations", type: :request do
       }
       post accept_invitation_path(invitation.token)
       expect(ProjectMember.last.status).to eq("pending")
+    end
+
+    it "flags the member as needing admin vetting" do
+      get invitation_path(invitation.token)
+      post user_registration_path, params: {
+        user: { email: "new-invitee@example.com", password: "password123", password_confirmation: "password123" }
+      }
+      post accept_invitation_path(invitation.token)
+      expect(ProjectMember.last.needs_admin_vetting).to eq(true)
     end
   end
 end

@@ -20,6 +20,11 @@ as defined by the routes in the `admin/` namespace
 
   <div class="mt-3"></div>
 
+  <%= link_to("Membership Review Queue", review_queue_admin_project_members_path, class: "navigation__link") %>
+  <%= link_to("Invitation Links", admin_project_invitations_path, class: "navigation__link") %>
+
+  <div class="mt-3"></div>
+
   <% allowed_resources = ['collections', 'core_files', 'projects', 'users'] %>
   <% Administrate::Namespace.new(namespace).resources_with_index_route.each do |resource| %>
     <% if allowed_resources.include?(resource.to_s) && accessible_action?(model_from_resource(resource), :index) %>

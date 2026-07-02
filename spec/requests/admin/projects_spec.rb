@@ -107,10 +107,24 @@ RSpec.describe "Admin::Projects", type: :request do
     it "does not show navigation links for restricted resources" do
       get admin_projects_path
       nav_section = response.body[/(<nav.*?<\/nav>)/m, 1]
-      expect(nav_section).not_to include(admin_image_files_path)
-      expect(nav_section).not_to include(admin_view_packages_path)
-      expect(nav_section).not_to include(admin_project_members_path)
-      expect(nav_section).not_to include(admin_collection_core_files_path)
+      expect(nav_section).not_to include(%(href="#{admin_image_files_path}"))
+      expect(nav_section).not_to include(%(href="#{admin_view_packages_path}"))
+      # The plain project_members index is restricted, but the scoped review
+      # queue (a sub-path) is intentionally linked — see spec below.
+      expect(nav_section).not_to include(%(href="#{admin_project_members_path}"))
+      expect(nav_section).not_to include(%(href="#{admin_collection_core_files_path}"))
+    end
+
+    it "shows the membership review queue link" do
+      get admin_projects_path
+      nav_section = response.body[/(<nav.*?<\/nav>)/m, 1]
+      expect(nav_section).to include(%(href="#{review_queue_admin_project_members_path}"))
+    end
+
+    it "shows the invitation links queue link" do
+      get admin_projects_path
+      nav_section = response.body[/(<nav.*?<\/nav>)/m, 1]
+      expect(nav_section).to include(%(href="#{admin_project_invitations_path}"))
     end
   end
 

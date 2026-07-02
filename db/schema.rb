@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_23_195324) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_02_142642) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -124,6 +124,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_23_195324) do
   create_table "project_members", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.boolean "is_project_depositor"
+    t.boolean "needs_admin_vetting", default: false, null: false
     t.bigint "project_id"
     t.string "role", null: false
     t.integer "status", default: 1, null: false
