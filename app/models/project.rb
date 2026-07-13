@@ -14,7 +14,7 @@ class Project < ApplicationRecord
   has_many :collections, dependent: :destroy
   has_many :core_files, through: :collections
   has_many :project_members
-  has_many :project_invitations
+  has_many :project_invitations, dependent: :destroy
   has_many :users, through: :project_members
 
   # scopes
