@@ -49,6 +49,7 @@ Rails.application.routes.draw do
     resources :project_invitations, only: [ :create, :destroy ]
     resources :project_members, only: [ :create, :update, :destroy ] do
       member do
+        get :confirm, action: :confirm_show, as: :confirm_landing
         patch :confirm
       end
     end

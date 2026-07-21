@@ -17,7 +17,7 @@ class InvitationMailer < ApplicationMailer
     @member       = project_member
     @project      = project_member.project
     @user         = project_member.user
-    @confirm_url  = confirm_project_project_member_url(@project, @member)
+    @confirm_url  = confirm_landing_project_project_member_url(@project, @member)
 
     owner_emails = @project.project_members.where(role: "owner", status: :active).joins(:user).pluck("users.email")
     mail(to: owner_emails, subject: "Please confirm #{@user.name || @user.email}'s membership in \"#{@project.title}\"")

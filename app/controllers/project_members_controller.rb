@@ -5,6 +5,19 @@ class ProjectMembersController < ApplicationController
   before_action :set_project
   before_action :set_member, only: [ :update, :destroy, :confirm ]
 
+  # GET /projects/:project_id/project_members/:id/confirm
+  #
+  # Landing page for the confirm link sent by email. A plain link inside a
+  # mailer view can only ever be followed as a GET request — there's no JS
+  # running in an email client to rewrite the click into the PATCH the
+  # confirm action actually needs — so this renders a page with a real form
+  # (see confirm_show view) that performs the PATCH via the confirm action
+  # below, the same way the in-app "Confirm" button already does.
+  def confirm_show
+    authorize! :manage_members, @project
+    @member = @project.project_members.find_by(id: params[:id])
+  end
+
   # POST /projects/:project_id/project_members
   def create
     authorize! :manage_members, @project

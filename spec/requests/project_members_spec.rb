@@ -155,6 +155,50 @@ RSpec.describe "ProjectMembers", type: :request do
     end
   end
 
+  describe "GET /projects/:project_id/project_members/:id/confirm" do
+    let!(:pending_member) { create(:project_member, :pending, project: project, user: other_user) }
+
+    context "when not signed in" do
+      it "redirects to sign in" do
+        get confirm_landing_project_project_member_path(project, pending_member)
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context "when signed in as the project owner" do
+      before { sign_in owner }
+
+      it "returns ok" do
+        get confirm_landing_project_project_member_path(project, pending_member)
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "shows a confirm button targeting the PATCH confirm action" do
+        get confirm_landing_project_project_member_path(project, pending_member)
+        expect(response.body).to include(confirm_project_project_member_path(project, pending_member))
+      end
+
+      context "when the member has already been removed" do
+        it "returns ok with a message instead of raising" do
+          member_id = pending_member.id
+          pending_member.destroy
+          get confirm_landing_project_project_member_path(project, member_id)
+          expect(response).to have_http_status(:ok)
+          expect(response.body).to include("no longer exists")
+        end
+      end
+    end
+
+    context "when signed in as a non-owner" do
+      before { sign_in contributor }
+
+      it "returns forbidden" do
+        get confirm_landing_project_project_member_path(project, pending_member), as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+  end
+
   describe "PATCH /projects/:project_id/project_members/:id/confirm" do
     let!(:pending_member) { create(:project_member, :pending, project: project, user: other_user) }
 
