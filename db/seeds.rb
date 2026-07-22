@@ -26,12 +26,12 @@ end
 
 SEED_PASSWORD = "password123"
 
-def seed_user(email, name, admin: false)
+def seed_user(email, name, admin: false, account_status: :active)
   User.find_or_create_by!(email: email) do |user|
     user.name = name
     user.bio = Faker::Lorem.paragraph
     user.password = SEED_PASSWORD
-    user.account_status = :active
+    user.account_status = account_status
     user.admin_at = Time.current if admin
   end
 end
@@ -95,7 +95,6 @@ admin       = seed_user("admin@example.com",       "Ada Admin", admin: true)
 owner       = seed_user("owner@example.com",       "Olivia Owner")
 contributor = seed_user("contributor@example.com", "Carl Contributor")
 outsider    = seed_user("outsider@example.com",    "Odette Outsider")
-new_reg     = seed_user("pending-vetting@example.com", "Nadia Newcomer")
 known_user  = seed_user("pending-owner@example.com",   "Kip Knownuser")
 
 puts "Seeding projects..."
@@ -130,25 +129,23 @@ puts "Seeding memberships..."
   end
 end
 
-# Mid-flow invite states for the membership workflow:
-# a brand-new registrant awaiting admin vetting (shows in the admin review
-# queue), and an established user awaiting owner confirmation (shows in the
-# pending list on the project page).
-ProjectMember.find_or_create_by!(project: public_project, user: new_reg) do |member|
-  member.role = "contributor"
-  member.status = :pending
-  member.needs_admin_vetting = true
-end
-
+# Mid-flow invite state for the membership workflow: an established user
+# awaiting owner confirmation (shows in the pending list on the project page).
 ProjectMember.find_or_create_by!(project: public_project, user: known_user) do |member|
   member.role = "contributor"
   member.status = :pending
-  member.needs_admin_vetting = false
 end
 
 puts "Seeding invitation links..."
 invitation = public_project.project_invitations.active.first ||
              public_project.project_invitations.create!(creator: owner)
+
+# Mid-flow account-vetting state: a brand-new registrant blocked at signup,
+# waiting in the admin account review queue, carrying the invitation they
+# registered from. They have no ProjectMember row yet — account vetting
+# happens before an invite can even be accepted.
+new_reg = seed_user("pending-vetting@example.com", "Nadia Newcomer", account_status: :pending_review)
+new_reg.update!(signup_invitation_token: invitation.token) if new_reg.signup_invitation_token.blank?
 
 puts "Seeding collections..."
 public_collection = Collection.find_or_create_by!(title: "Public Demo Collection", project: public_project) do |collection|
@@ -190,11 +187,11 @@ puts <<~SUMMARY
   #{"=" * 72}
   Seed data ready. All accounts use password: #{SEED_PASSWORD}
 
-    admin@example.com            admin (review queue, admin panel)
+    admin@example.com            admin (account review queue, admin panel)
     owner@example.com            owns Public + Private Demo Projects
     contributor@example.com      contributor on both; owns own project
     outsider@example.com         no memberships (sees public content only)
-    pending-vetting@example.com  pending member awaiting ADMIN vetting
+    pending-vetting@example.com  blocked account awaiting ADMIN review (cannot sign in yet)
     pending-owner@example.com    pending member awaiting OWNER confirmation
 
   Active invitation link for Public Demo Project:
