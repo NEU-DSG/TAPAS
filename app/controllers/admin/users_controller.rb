@@ -1,5 +1,29 @@
 module Admin
   class UsersController < Admin::ApplicationController
+    # GET /admin/users/review_queue
+    def review_queue
+      @pending_users = User.pending_review.order(created_at: :asc)
+      @invitations_by_token = ProjectInvitation
+        .where(token: @pending_users.filter_map(&:signup_invitation_token))
+        .includes(:project).index_by(&:token)
+    end
+
+    # PATCH /admin/users/:id/approve_account
+    def approve_account
+      user = User.pending_review.find(params[:id])
+      user.update!(account_status: :active)
+      AccountReviewMailer.account_approved(user).deliver_later
+      redirect_to review_queue_admin_users_path, notice: "#{user.name || user.email}'s account is now active and they have been notified."
+    end
+
+    # DELETE /admin/users/:id/reject_account
+    # Rejection is silent by design — the registrant gets no email.
+    def reject_account
+      user = User.pending_review.find(params[:id])
+      user.destroy!
+      redirect_to review_queue_admin_users_path, notice: "#{user.name || user.email}'s registration was rejected and the account removed."
+    end
+
     # Overwrite any of the RESTful controller actions to implement custom behavior
     # For example, you may want to send an email after a foo is updated.
     #

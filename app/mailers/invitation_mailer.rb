@@ -1,18 +1,8 @@
 # frozen_string_literal: true
 
 class InvitationMailer < ApplicationMailer
-  # Notifies admin that a user has requested to join a project and needs vetting.
-  def admin_vetting_notification(project_member)
-    @member  = project_member
-    @project = project_member.project
-    @user    = project_member.user
-
-    admin_emails = User.where.not(admin_at: nil).pluck(:email)
-    mail(to: admin_emails, subject: "New membership request for \"#{@project.title}\" needs review")
-  end
-
-  # Asks the project owner to confirm a pending member (sent directly on accept
-  # for established users; after admin approval for new-to-TAPAS registrants).
+  # Asks the project owner to confirm a pending member. Sent on every
+  # acceptance — account-level vetting has already happened by this point.
   def owner_confirmation_request(project_member)
     @member       = project_member
     @project      = project_member.project

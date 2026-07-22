@@ -31,6 +31,7 @@ def seed_user(email, name, admin: false)
     user.name = name
     user.bio = Faker::Lorem.paragraph
     user.password = SEED_PASSWORD
+    user.account_status = :active
     user.admin_at = Time.current if admin
   end
 end

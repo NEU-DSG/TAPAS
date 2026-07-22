@@ -1,0 +1,64 @@
+<%
+# Lists newly registered accounts that are blocked pending admin review.
+# Approval activates the account and emails the user; rejection deletes the
+# account silently (no email — past spam registrations came from real people).
+%>
+
+<% content_for(:title) { "New Account Review" } %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title">
+    <%= content_for(:title) %>
+  </h1>
+</header>
+
+<section class="main-content__body">
+  <% if @pending_users.empty? %>
+    <p>No new accounts are awaiting review.</p>
+  <% else %>
+    <table>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Email</th>
+          <th>Invited to</th>
+          <th>Registered</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @pending_users.each do |user| %>
+          <% invitation = @invitations_by_token[user.signup_invitation_token] %>
+          <tr>
+            <td><%= user.name || user.email %></td>
+            <td><%= user.email %></td>
+            <td>
+              <% if invitation %>
+                <%= link_to invitation.project.title, [:admin, invitation.project] %>
+              <% else %>
+                <em>Direct sign-up (no invitation)</em>
+              <% end %>
+            </td>
+            <td><%= user.created_at.to_fs(:long) %></td>
+            <td>
+              <%= button_to(
+                "Approve",
+                approve_account_admin_user_path(user),
+                method: :patch,
+                class: "button",
+                form: { data: { turbo_confirm: "Approve #{user.name || user.email}'s account and notify them by email?" } }
+              ) %>
+              <%= button_to(
+                "Reject",
+                reject_account_admin_user_path(user),
+                method: :delete,
+                class: "button button--danger",
+                form: { data: { turbo_confirm: "Reject and delete #{user.name || user.email}'s account? They will not be notified." } }
+              ) %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</section>

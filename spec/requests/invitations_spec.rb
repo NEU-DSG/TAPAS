@@ -106,16 +106,11 @@ RSpec.describe "Invitations", type: :request do
           expect(ProjectMember.last.status).to eq("pending")
         end
 
-        it "does not flag the member as needing admin vetting" do
-          post accept_invitation_path(invitation.token)
-          expect(ProjectMember.last.needs_admin_vetting).to eq(false)
-        end
-
-        it "enqueues an owner confirmation request, skipping admin vetting" do
+        it "enqueues an owner confirmation request with no admin step" do
           expect {
             post accept_invitation_path(invitation.token)
           }.to have_enqueued_mail(InvitationMailer, :owner_confirmation_request)
-            .and not_have_enqueued_mail(InvitationMailer, :admin_vetting_notification)
+            .and not_have_enqueued_mail(AccountReviewMailer, :new_registration)
         end
 
         it "redirects with a notice" do
@@ -175,38 +170,54 @@ RSpec.describe "Invitations", type: :request do
     end
   end
 
-  describe "accepting an invitation as a brand-new TAPAS user" do
+  describe "registering a brand-new TAPAS account from an invitation link" do
     before { invitation } # eager-load so project + its owner member exist before count checks
 
-    it "requires admin vetting before the owner is asked to confirm" do
-      get invitation_path(invitation.token)
-
-      post user_registration_path, params: {
+    let(:signup_params) do
+      {
+        invitation_token: invitation.token,
         user: { email: "new-invitee@example.com", password: "password123", password_confirmation: "password123" }
       }
+    end
+
+    it "creates a blocked account carrying the invitation token and notifies admins" do
+      expect {
+        post user_registration_path, params: signup_params
+      }.to have_enqueued_mail(AccountReviewMailer, :new_registration)
+
+      new_user = User.find_by(email: "new-invitee@example.com")
+      expect(new_user).to be_pending_review
+      expect(new_user.signup_invitation_token).to eq(invitation.token)
+    end
+
+    it "does not sign the registrant in, so they cannot accept before review" do
+      post user_registration_path, params: signup_params
 
       expect {
         post accept_invitation_path(invitation.token)
-      }.to have_enqueued_mail(InvitationMailer, :admin_vetting_notification)
-        .and not_have_enqueued_mail(InvitationMailer, :owner_confirmation_request)
+      }.not_to change(ProjectMember, :count)
+      expect(response).to redirect_to(new_user_session_path)
     end
 
-    it "sets the new member to pending, same as an established user" do
-      get invitation_path(invitation.token)
-      post user_registration_path, params: {
-        user: { email: "new-invitee@example.com", password: "password123", password_confirmation: "password123" }
-      }
-      post accept_invitation_path(invitation.token)
+    it "follows the normal acceptance path once an admin approves the account" do
+      post user_registration_path, params: signup_params
+      new_user = User.find_by(email: "new-invitee@example.com")
+
+      admin = create(:user, :admin)
+      sign_in admin
+      expect {
+        patch approve_account_admin_user_path(new_user)
+      }.to have_enqueued_mail(AccountReviewMailer, :account_approved)
+      sign_out admin
+
+      sign_in new_user.reload
+      expect {
+        post accept_invitation_path(invitation.token)
+      }.to change(ProjectMember, :count).by(1)
+        .and have_enqueued_mail(InvitationMailer, :owner_confirmation_request)
+
       expect(ProjectMember.last.status).to eq("pending")
-    end
-
-    it "flags the member as needing admin vetting" do
-      get invitation_path(invitation.token)
-      post user_registration_path, params: {
-        user: { email: "new-invitee@example.com", password: "password123", password_confirmation: "password123" }
-      }
-      post accept_invitation_path(invitation.token)
-      expect(ProjectMember.last.needs_admin_vetting).to eq(true)
+      expect(new_user.reload.signup_invitation_token).to be_nil
     end
   end
 end

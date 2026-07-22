@@ -4,7 +4,7 @@ require "rails_helper"
 
 RSpec.describe UserDashboard do
   let(:expected_attribute_types_keys) do
-    %i[id admin_at bio current_sign_in_at current_sign_in_ip email
+    %i[id account_status admin_at bio current_sign_in_at current_sign_in_ip email
        encrypted_password image_file institution last_sign_in_at
        last_sign_in_ip name project_members projects remember_created_at
        reset_password_sent_at reset_password_token sign_in_count
@@ -16,7 +16,7 @@ RSpec.describe UserDashboard do
   end
 
   let(:expected_show_page_attributes) do
-    %i[id admin_at bio current_sign_in_at current_sign_in_ip email
+    %i[id account_status admin_at bio current_sign_in_at current_sign_in_ip email
        encrypted_password image_file institution last_sign_in_at
        last_sign_in_ip name project_members projects remember_created_at
        reset_password_sent_at reset_password_token sign_in_count
@@ -24,7 +24,7 @@ RSpec.describe UserDashboard do
   end
 
   let(:expected_form_attributes) do
-    %i[email name bio institution admin_at image_file]
+    %i[account_status email name bio institution admin_at image_file]
   end
 
   let(:expected_collection_filter_keys) { %i[admin active] }

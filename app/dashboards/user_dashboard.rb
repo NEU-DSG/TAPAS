@@ -9,6 +9,7 @@ class UserDashboard < Administrate::BaseDashboard
   # on pages throughout the dashboard.
   ATTRIBUTE_TYPES = {
     id: Field::Number,
+    account_status: Field::Select.with_options(collection: User.account_statuses.keys),
     admin_at: Field::DateTime,
     bio: Field::Text,
     current_sign_in_at: Field::DateTime,
@@ -48,6 +49,7 @@ class UserDashboard < Administrate::BaseDashboard
   # an array of attributes that will be displayed on the model's show page.
   SHOW_PAGE_ATTRIBUTES = %i[
     id
+    account_status
     admin_at
     bio
     current_sign_in_at
@@ -73,6 +75,7 @@ class UserDashboard < Administrate::BaseDashboard
   # an array of attributes that will be displayed
   # on the model's form (`new` and `edit`) pages.
   FORM_ATTRIBUTES = %i[
+    account_status
     email
     name
     bio

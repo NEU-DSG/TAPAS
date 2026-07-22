@@ -115,10 +115,10 @@ RSpec.describe "Admin::Projects", type: :request do
       expect(nav_section).not_to include(%(href="#{admin_collection_core_files_path}"))
     end
 
-    it "shows the membership review queue link" do
+    it "shows the account review queue link" do
       get admin_projects_path
       nav_section = response.body[/(<nav.*?<\/nav>)/m, 1]
-      expect(nav_section).to include(%(href="#{review_queue_admin_project_members_path}"))
+      expect(nav_section).to include(%(href="#{review_queue_admin_users_path}"))
     end
 
     it "shows the invitation links queue link" do

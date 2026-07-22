@@ -1,25 +1,5 @@
 module Admin
   class ProjectMembersController < Admin::ApplicationController
-    # GET /admin/project_members/review_queue
-    def review_queue
-      @pending_members = ProjectMember.pending.where(needs_admin_vetting: true)
-        .includes(:user, :project).order(created_at: :asc)
-    end
-
-    # PATCH /admin/project_members/:id/approve
-    def approve
-      member = ProjectMember.find(params[:id])
-
-      unless member.pending?
-        redirect_to admin_project_member_path(member), alert: "Member is not in pending status."
-        return
-      end
-
-      member.update!(needs_admin_vetting: false)
-      InvitationMailer.owner_confirmation_request(member).deliver_later
-      redirect_to admin_project_member_path(member), notice: "Member approved; owner notified to confirm."
-    end
-
     # Overwrite any of the RESTful controller actions to implement custom behavior
     # For example, you may want to send an email after a foo is updated.
     #

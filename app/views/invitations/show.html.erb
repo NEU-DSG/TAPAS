@@ -8,9 +8,11 @@
   <% if user_signed_in? %>
     <%= button_to "Accept Invitation", accept_invitation_path(params[:token]), method: :post %>
   <% else %>
-    <p>Sign in or create a TAPAS account to accept this invitation.</p>
+    <p>Sign in or create a TAPAS account to accept this invitation.
+    New accounts are reviewed by a TAPAS admin before they can sign in —
+    you'll receive an email with this invitation once your account is approved.</p>
     <%= link_to "Sign In", new_user_session_path, class: "btn btn-primary" %>
-    <%= link_to "Sign Up", new_user_registration_path, class: "btn btn-outline-primary" %>
+    <%= link_to "Sign Up", new_user_registration_path(invitation_token: params[:token]), class: "btn btn-outline-primary" %>
   <% end %>
 <% elsif @invitation.revoked? %>
   <p>This invitation has been revoked. Please contact the project owner if you believe this is a mistake.</p>

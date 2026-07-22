@@ -22,15 +22,16 @@ Rails.application.routes.draw do
           patch :revoke
         end
       end
-      resources :project_members do
+      resources :project_members
+      resources :users do
         collection do
           get :review_queue
         end
         member do
-          patch :approve
+          patch :approve_account
+          delete :reject_account
         end
       end
-      resources :users
       resources :view_packages
 
       root to: "projects#index"

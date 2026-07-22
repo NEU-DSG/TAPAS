@@ -15,10 +15,5 @@ FactoryBot.define do
     trait :pending do
       status { :pending }
     end
-
-    trait :needs_admin_vetting do
-      status { :pending }
-      needs_admin_vetting { true }
-    end
   end
 end

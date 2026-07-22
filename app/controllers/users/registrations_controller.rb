@@ -4,7 +4,13 @@ class Users::RegistrationsController < Devise::RegistrationsController
   # POST /resource
   def create
     super do |resource|
-      session[:new_registration] = true if resource.persisted?
+      if resource.persisted?
+        # New accounts start pending_review (DB default) and can't sign in
+        # until an admin approves them. If the signup came from an invitation
+        # page, keep the token so the approval email can link back to it.
+        resource.update!(signup_invitation_token: params[:invitation_token]) if params[:invitation_token].present?
+        AccountReviewMailer.new_registration(resource).deliver_later
+      end
     end
   end
 
