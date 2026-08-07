@@ -257,11 +257,12 @@ GEM
     google-protobuf (4.34.0-x86_64-linux-musl)
       bigdecimal
       rake (~> 13.3)
-    haml (7.2.0)
+    haml (7.3.0)
+      prism (>= 1.1.0)
       temple (>= 0.8.2)
       thor
       tilt
-    haml-rails (3.0.0)
+    haml-rails (3.1.0)
       actionpack (>= 5.1)
       activesupport (>= 5.1)
       haml (>= 4.0.6)
@@ -628,14 +629,14 @@ GEM
       mods (~> 3.0, >= 3.0.4)
     stimulus-rails (1.3.4)
       railties (>= 6.0.0)
-    temple (0.10.4)
+    temple (0.10.6)
     thor (1.5.0)
     thread_safe (0.3.6)
     thruster (0.1.23)
     thruster (0.1.23-aarch64-linux)
     thruster (0.1.23-x86_64-darwin)
     thruster (0.1.23-x86_64-linux)
-    tilt (2.7.0)
+    tilt (2.8.0)
     timeout (0.6.1)
     track_open_instances (0.1.15)
     tsort (0.2.0)
@@ -716,7 +717,7 @@ DEPENDENCIES
   flog
   friendly_id (~> 5.7)
   git
-  haml-rails (~> 3.0)
+  haml-rails (~> 3.1)
   image_processing (~> 2.0)
   importmap-rails
   jbuilder
@@ -837,8 +838,8 @@ CHECKSUMS
   google-protobuf (4.34.0-x86_64-darwin) sha256=4a5b67281993345adca54bb32947f25a289597eafaa240e5b714d0a740f99321
   google-protobuf (4.34.0-x86_64-linux-gnu) sha256=bbb333fbe79c16f35a2e2154cf29f3ce26f60390dba286b339861206d5435ef9
   google-protobuf (4.34.0-x86_64-linux-musl) sha256=0b75858a388b17e73aa4176df2e722762dbc92551b7075fdc562d33c1c6de0b0
-  haml (7.2.0) sha256=87fd2b71f7feab1724337b090a7d767f5ab2d42f08c974f3ead673f18cfcd55a
-  haml-rails (3.0.0) sha256=091fe496a85ca521d9cac87fb50f1ecf77a57974a99aa7e267130add81a5585f
+  haml (7.3.0) sha256=4383cb90bb0b525d4025dcb9721fec085edda1c43525043fc327c80127f6cf37
+  haml-rails (3.1.0) sha256=4366474d973e4b9d5326cb216f2073150cfeff4c2a3c07fadb49a490ffdf610b
   hashdiff (1.2.1) sha256=9c079dbc513dfc8833ab59c0c2d8f230fa28499cc5efb4b8dd276cf931457cd1
   http-accept (1.7.0) sha256=c626860682bfbb3b46462f8c39cd470fd7b0584f61b3cc9df5b2e9eb9972a126
   http-cookie (1.1.0) sha256=38a5e60d1527eebc396831b8c4b9455440509881219273a6c99943d29eadbb19
@@ -968,14 +969,14 @@ CHECKSUMS
   sshkit (1.25.0) sha256=c8c6543cdb60f91f1d277306d585dd11b6a064cb44eab0972827e4311ff96744
   stanford-mods (3.3.11) sha256=f089b987f3cb4c481b46ceba612f5f3623c56f644097a4a72f12fb03912dc0cf
   stimulus-rails (1.3.4) sha256=765676ffa1f33af64ce026d26b48e8ffb2e0b94e0f50e9119e11d6107d67cb06
-  temple (0.10.4) sha256=b7a1e94b6f09038ab0b6e4fe0126996055da2c38bec53a8a336f075748fff72c
+  temple (0.10.6) sha256=0f2ed8a885a81ef5b13b1d99a02948e36da34f2212390f0a0228bfd0412c400a
   thor (1.5.0) sha256=e3a9e55fe857e44859ce104a84675ab6e8cd59c650a49106a05f55f136425e73
   thread_safe (0.3.6) sha256=9ed7072821b51c57e8d6b7011a8e282e25aeea3a4065eab326e43f66f063b05a
   thruster (0.1.23) sha256=ad3081e8ff3b5cb413768292c367f1e015c423bb6b35919b9b9f533af50d639f
   thruster (0.1.23-aarch64-linux) sha256=042a05581dd1d750d1583d83817460b1f7fde254ed0b2bcd7ec56f9bed278c7a
   thruster (0.1.23-x86_64-darwin) sha256=2b22a951f6ac1218c9f461bfc6004b61854147308649475a07bc05fae2e69869
   thruster (0.1.23-x86_64-linux) sha256=9cd7265bf54e954575c8442e42d050ed8eb55df4f9d7da8fd6f94fcc0339baa5
-  tilt (2.7.0) sha256=0d5b9ba69f6a36490c64b0eee9f6e9aad517e20dcc848800a06eb116f08c6ab3
+  tilt (2.8.0) sha256=ba472eb2716fe1e04112d6d219a9dae938ec09a6a1e2ad3ecc7922e79bde3721
   timeout (0.6.1) sha256=78f57368a7e7bbadec56971f78a3f5ecbcfb59b7fcbb0a3ed6ddc08a5094accb
   track_open_instances (0.1.15) sha256=7f0e48821e6b4c881daaa40fb1583e308937c22a9c84883c150b399c3b5c3029
   tsort (0.2.0) sha256=9650a793f6859a43b6641671278f79cfead60ac714148aabe4e3f0060480089f

@@ -39,7 +39,7 @@ gem "friendly_id", "~> 5.7" # URL slugs (updated from 5.2.4)
 
 # Forms & Views
 gem "simple_form"
-gem "haml-rails", "~> 3.0"
+gem "haml-rails", "~> 3.1"
 
 # External Services
 gem "rest-client" # API calls
