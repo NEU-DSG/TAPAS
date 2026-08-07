@@ -3,7 +3,20 @@
 class ProjectMembersController < ApplicationController
   before_action :authenticate_user!
   before_action :set_project
-  before_action :set_member, only: [ :update, :destroy ]
+  before_action :set_member, only: [ :update, :destroy, :confirm ]
+
+  # GET /projects/:project_id/project_members/:id/confirm
+  #
+  # Landing page for the confirm link sent by email. A plain link inside a
+  # mailer view can only ever be followed as a GET request — there's no JS
+  # running in an email client to rewrite the click into the PATCH the
+  # confirm action actually needs — so this renders a page with a real form
+  # (see confirm_show view) that performs the PATCH via the confirm action
+  # below, the same way the in-app "Confirm" button already does.
+  def confirm_show
+    authorize! :manage_members, @project
+    @member = @project.project_members.find_by(id: params[:id])
+  end
 
   # POST /projects/:project_id/project_members
   def create
@@ -13,7 +26,6 @@ class ProjectMembersController < ApplicationController
     @member.role = member_params[:role]
 
     if @member.save
-      set_collection_scopes(@member, collection_ids_param)
       render json: @member, status: :created
     else
       render json: { errors: @member.errors.full_messages }, status: :unprocessable_entity
@@ -27,10 +39,34 @@ class ProjectMembersController < ApplicationController
     @member.role = member_params[:role] if params[:project_member].present? && member_params[:role].present?
 
     if @member.save
-      replace_collection_scopes(@member, collection_ids_param) if params.key?(:collection_ids)
       render json: @member, status: :ok
     else
       render json: { errors: @member.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  # PATCH /projects/:project_id/project_members/:id/confirm
+  def confirm
+    authorize! :manage_members, @project
+
+    unless @member.pending?
+      respond_to do |format|
+        format.json { render json: { errors: [ "Member is not in pending status" ] }, status: :unprocessable_entity }
+        format.html { redirect_to project_path(@project), alert: "Member is not in pending status." }
+      end
+      return
+    end
+
+    if @member.update(status: :active)
+      respond_to do |format|
+        format.json { render json: @member, status: :ok }
+        format.html { redirect_to project_path(@project), notice: "#{@member.user.name || @member.user.email} confirmed as a project member." }
+      end
+    else
+      respond_to do |format|
+        format.json { render json: { errors: @member.errors.full_messages }, status: :unprocessable_entity }
+        format.html { redirect_to project_path(@project), alert: @member.errors.full_messages.to_sentence }
+      end
     end
   end
 
@@ -39,12 +75,18 @@ class ProjectMembersController < ApplicationController
     authorize! :manage_members, @project
 
     if last_owner?
-      render json: { errors: [ "Cannot remove the last owner of a project" ] }, status: :unprocessable_entity
+      respond_to do |format|
+        format.html { redirect_to project_path(@project), alert: "Cannot remove the last owner of a project." }
+        format.json { render json: { errors: [ "Cannot remove the last owner of a project" ] }, status: :unprocessable_entity }
+      end
       return
     end
 
     @member.destroy
-    head :no_content
+    respond_to do |format|
+      format.html { redirect_to project_path(@project), notice: "#{@member.user.name || @member.user.email} has been removed." }
+      format.json { head :no_content }
+    end
   end
 
   private
@@ -64,21 +106,5 @@ class ProjectMembersController < ApplicationController
 
   def member_params
     params.require(:project_member).permit(:user_id, :role)
-  end
-
-  def collection_ids_param
-    Array(params.permit(collection_ids: [])[:collection_ids])
-  end
-
-  def set_collection_scopes(member, collection_ids)
-    return if collection_ids.blank? || member.role == "owner"
-    collection_ids.each do |collection_id|
-      member.collection_scopes.find_or_create_by!(collection_id: collection_id)
-    end
-  end
-
-  def replace_collection_scopes(member, collection_ids)
-    member.collection_scopes.destroy_all
-    set_collection_scopes(member, collection_ids)
   end
 end

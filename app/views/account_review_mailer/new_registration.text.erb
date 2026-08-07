@@ -1,0 +1,5 @@
+<%= @user.name || @user.email %> (<%= @user.email %>) has registered a new TAPAS account and is waiting for admin review.
+
+Approve or reject the account in the review queue:
+
+<%= review_queue_admin_users_url %>

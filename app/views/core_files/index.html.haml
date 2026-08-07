@@ -7,7 +7,7 @@
     %ul.list-unstyled
       - @core_files.each do |core_file|
         %li.mb-4
-          %h4= core_file.title
+          %h4= link_to core_file.title, core_file_path(core_file)
           - if core_file.description.present?
             %p= core_file.description
           - if core_file.ography_type.present?

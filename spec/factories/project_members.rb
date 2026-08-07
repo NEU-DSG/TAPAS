@@ -11,5 +11,9 @@ FactoryBot.define do
     trait :contributor do
       role { "contributor" }
     end
+
+    trait :pending do
+      status { :pending }
+    end
   end
 end

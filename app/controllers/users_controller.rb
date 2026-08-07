@@ -6,13 +6,19 @@ class UsersController < ApplicationController
 
   # GET /users/:id
   def show
-    render json: @user
+    respond_to do |format|
+      format.html
+      format.json { render json: @user }
+    end
   end
 
   # GET /users/:id/edit
   def edit
     authorize! :edit, @user
-    render json: @user
+    respond_to do |format|
+      format.html
+      format.json { render json: @user }
+    end
   end
 
   # PATCH /users/:id
@@ -20,9 +26,15 @@ class UsersController < ApplicationController
     authorize! :update, @user
 
     if @user.update(user_params)
-      render json: @user, status: :ok
+      respond_to do |format|
+        format.html { redirect_to user_path(@user), notice: "Profile updated." }
+        format.json { render json: @user, status: :ok }
+      end
     else
-      render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+      respond_to do |format|
+        format.html { render :edit, status: :unprocessable_entity }
+        format.json { render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
   end
 

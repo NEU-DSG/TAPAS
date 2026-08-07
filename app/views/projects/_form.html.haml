@@ -1,0 +1,26 @@
+-# Placeholder form for manual testing until designed frontend replaces it.
+= form_with model: project do |f|
+  - if project.errors.any?
+    .alert.alert-danger
+      %ul.mb-0
+        - project.errors.full_messages.each do |message|
+          %li= message
+
+  .mb-3
+    = f.label :title, class: "form-label"
+    = f.text_field :title, class: "form-control"
+  .mb-3
+    = f.label :description, class: "form-label"
+    = f.text_area :description, rows: 4, class: "form-control"
+  .mb-3
+    = f.label :institution, class: "form-label"
+    = f.text_field :institution, class: "form-control"
+  .mb-3
+    = f.label :website, class: "form-label"
+    = f.url_field :website, class: "form-control", placeholder: "https://"
+  .form-check.mb-3
+    = f.check_box :is_public, class: "form-check-input"
+    = f.label :is_public, "Publicly visible", class: "form-check-label"
+
+  = f.submit class: "btn btn-primary"
+  = link_to "Cancel", project.persisted? ? project_path(project) : projects_path, class: "btn btn-outline-secondary ms-2"

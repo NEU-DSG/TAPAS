@@ -118,29 +118,6 @@ RSpec.describe Ability, type: :model do
     it { is_expected.not_to be_able_to(:destroy, public_core_file) }
   end
 
-  context "as a collection-scoped contributor" do
-    let(:user) { create(:user) }
-    let(:allowed_collection) { public_collection }
-    let(:off_limits_collection) { create(:collection, project: public_project, depositor: owner, is_public: false) }
-    let(:off_limits_core_file) { create(:core_file, depositor: owner, collections: [ off_limits_collection ], is_public: false) }
-
-    before do
-      member = create(:project_member, project: public_project, user: user, role: "contributor")
-      create(:project_member_collection_scope, project_member: member, collection: allowed_collection)
-    end
-
-    # Collections — can read allowed collection; cannot read others in same project
-    it { is_expected.to be_able_to(:read, allowed_collection) }
-    it { is_expected.not_to be_able_to(:read, off_limits_collection) }
-
-    # Cannot create new collections — scoped contributors are not project-wide
-    it { is_expected.not_to be_able_to(:create, Collection.new(project: public_project)) }
-
-    # CoreFiles — can read files in allowed collection; not files in off-limits collections
-    it { is_expected.to be_able_to(:read, public_core_file) }
-    it { is_expected.not_to be_able_to(:read, off_limits_core_file) }
-  end
-
   context "as a project owner" do
     let(:user) { owner }
     before { public_project }

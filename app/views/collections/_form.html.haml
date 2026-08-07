@@ -1,0 +1,23 @@
+-# Placeholder form for manual testing until designed frontend replaces it.
+= form_with model: collection do |f|
+  - if collection.errors.any?
+    .alert.alert-danger
+      %ul.mb-0
+        - collection.errors.full_messages.each do |message|
+          %li= message
+
+  .mb-3
+    = f.label :title, class: "form-label"
+    = f.text_field :title, class: "form-control"
+  .mb-3
+    = f.label :description, class: "form-label"
+    = f.text_area :description, rows: 4, class: "form-control"
+  .mb-3
+    = f.label :project_id, "Project", class: "form-label"
+    = f.collection_select :project_id, ownable_projects, :id, :title, { include_blank: "Select a project" }, { class: "form-select" }
+  .form-check.mb-3
+    = f.check_box :is_public, class: "form-check-input"
+    = f.label :is_public, "Publicly visible", class: "form-check-label"
+
+  = f.submit class: "btn btn-primary"
+  = link_to "Cancel", collection.persisted? ? collection_path(collection) : collections_path, class: "btn btn-outline-secondary ms-2"

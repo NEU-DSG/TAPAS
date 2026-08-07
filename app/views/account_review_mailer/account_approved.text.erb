@@ -1,0 +1,10 @@
+Your TAPAS account has been approved — you can now sign in.
+
+<%= new_user_session_url %>
+<% if @invitation %>
+
+You signed up from an invitation to join "<%= @invitation.project.title %>".
+Once you're signed in, accept it here:
+
+<%= invitation_url(@invitation.token) %>
+<% end %>

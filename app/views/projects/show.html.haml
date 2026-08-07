@@ -1,0 +1,62 @@
+.container.py-5
+  %h1.mb-3= @project.title
+  - if @project.description.present?
+    %p= @project.description
+  - if @project.institution.present?
+    %p.text-muted= @project.institution
+  %span.badge{ class: @project.is_public? ? "bg-success" : "bg-secondary" }
+    = @project.is_public? ? "Public" : "Private"
+
+  - if can? :update, @project
+    .mt-3
+      = link_to "Edit Project", edit_project_path(@project), class: "btn btn-outline-primary btn-sm"
+      = link_to "New Collection", new_collection_path(project_id: @project.id), class: "btn btn-outline-primary btn-sm ms-2"
+
+  %hr.my-4
+
+  %section.mb-5
+    %h2.mb-3 Collections
+    - project_collections = @project.collections.accessible_by(current_ability)
+    - if project_collections.any?
+      %ul.list-unstyled
+        - project_collections.each do |collection|
+          %li.mb-2
+            %h5.mb-0= link_to collection.title, collection_path(collection)
+    - else
+      %p.text-muted No collections you can view in this project.
+
+  - if can? :manage_members, @project
+    %hr.my-4
+
+    %section.mb-5
+      %h2.mb-3 Invitation Links
+      = button_to "Generate Invitation Link", project_project_invitations_path(@project), method: :post, class: "btn btn-primary mb-3"
+
+      - if @active_invitations.any?
+        %ul.list-group.mb-3
+          - @active_invitations.each do |invitation|
+            %li.list-group-item.d-flex.justify-content-between.align-items-center
+              .text-truncate.me-2
+                %code= invitation_url(invitation.token)
+              = button_to "Revoke", project_project_invitation_path(@project, invitation), method: :delete, class: "btn btn-sm btn-outline-danger flex-shrink-0", form: { data: { turbo_confirm: "Revoke this invitation link?" } }
+      - else
+        %p.text-muted No active invitation links.
+
+    %section.mb-5
+      %h2.mb-3 Pending Members
+      - if @pending_members.any?
+        %ul.list-group
+          - @pending_members.each do |member|
+            %li.list-group-item.d-flex.justify-content-between.align-items-center
+              = member.user.name || member.user.email
+              .btn-group
+                = button_to "Confirm", confirm_project_project_member_path(@project, member), method: :patch, class: "btn btn-sm btn-success"
+                = button_to "Dismiss", project_project_member_path(@project, member), method: :delete, class: "btn btn-sm btn-outline-secondary", form: { data: { turbo_confirm: "Remove this pending member?" } }
+      - else
+        %p.text-muted No pending members.
+
+  - if can? :destroy, @project
+    %hr.my-4
+    - collection_count = @project.collections.count
+    - core_file_count = @project.core_files.count
+    = button_to "Delete Project", project_path(@project), method: :delete, class: "btn btn-outline-danger", form: { data: { turbo_confirm: "Delete this project? This will permanently delete #{collection_count} collection(s) and #{core_file_count} file(s). This cannot be undone." } }

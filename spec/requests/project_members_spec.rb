@@ -38,31 +38,16 @@ RSpec.describe "ProjectMembers", type: :request do
         expect(ProjectMember.last.role).to eq("contributor")
       end
 
+      it "creates an active member (not pending)" do
+        post project_project_members_path(project), params: valid_params
+        expect(ProjectMember.last.status).to eq("active")
+      end
+
       context "with an invalid role" do
         it "returns unprocessable entity" do
           post project_project_members_path(project),
             params: { project_member: { user_id: other_user.id, role: "admin" } }
           expect(response).to have_http_status(:unprocessable_content)
-        end
-      end
-
-      context "with collection_ids" do
-        let(:collection) { create(:collection, project: project, depositor: owner) }
-
-        it "creates collection scopes for a contributor" do
-          post project_project_members_path(project),
-               params: { project_member: { user_id: other_user.id, role: "contributor" },
-                         collection_ids: [ collection.id ] }
-          member = ProjectMember.find_by(project: project, user: other_user)
-          expect(member.collection_scopes.pluck(:collection_id)).to contain_exactly(collection.id)
-        end
-
-        it "ignores collection_ids for an owner" do
-          post project_project_members_path(project),
-               params: { project_member: { user_id: other_user.id, role: "owner" },
-                         collection_ids: [ collection.id ] }
-          member = ProjectMember.find_by(project: project, user: other_user)
-          expect(member.collection_scopes).to be_empty
         end
       end
     end
@@ -105,28 +90,6 @@ RSpec.describe "ProjectMembers", type: :request do
         patch project_project_member_path(project, contributor_member), params: update_params
         expect(response).to have_http_status(:ok)
       end
-
-      context "replacing collection scopes" do
-        let(:collection_a) { create(:collection, project: project, depositor: owner) }
-        let(:collection_b) { create(:collection, project: project, depositor: owner) }
-
-        before do
-          contributor_member.collection_scopes.create!(collection: collection_a)
-        end
-
-        it "replaces existing scopes when collection_ids is provided" do
-          patch project_project_member_path(project, contributor_member),
-                params: { collection_ids: [ collection_b.id ] }
-          expect(contributor_member.reload.collection_scopes.pluck(:collection_id))
-            .to contain_exactly(collection_b.id)
-        end
-
-        it "clears all scopes when collection_ids is an empty array" do
-          patch project_project_member_path(project, contributor_member),
-                params: { collection_ids: [] }
-          expect(contributor_member.reload.collection_scopes).to be_empty
-        end
-      end
     end
 
     context "when signed in as a non-owner" do
@@ -156,9 +119,14 @@ RSpec.describe "ProjectMembers", type: :request do
         }.to change(ProjectMember, :count).by(-1)
       end
 
-      it "returns no content status" do
-        delete project_project_member_path(project, contributor_member)
+      it "returns no content status for JSON requests" do
+        delete project_project_member_path(project, contributor_member), as: :json
         expect(response).to have_http_status(:no_content)
+      end
+
+      it "redirects to the project for HTML requests" do
+        delete project_project_member_path(project, contributor_member)
+        expect(response).to redirect_to(project_path(project))
       end
 
       context "when attempting to remove the last owner" do
@@ -183,6 +151,96 @@ RSpec.describe "ProjectMembers", type: :request do
       it "returns forbidden" do
         delete project_project_member_path(project, contributor_member), as: :json
         expect(response).to have_http_status(:forbidden)
+      end
+    end
+  end
+
+  describe "GET /projects/:project_id/project_members/:id/confirm" do
+    let!(:pending_member) { create(:project_member, :pending, project: project, user: other_user) }
+
+    context "when not signed in" do
+      it "redirects to sign in" do
+        get confirm_landing_project_project_member_path(project, pending_member)
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context "when signed in as the project owner" do
+      before { sign_in owner }
+
+      it "returns ok" do
+        get confirm_landing_project_project_member_path(project, pending_member)
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "shows a confirm button targeting the PATCH confirm action" do
+        get confirm_landing_project_project_member_path(project, pending_member)
+        expect(response.body).to include(confirm_project_project_member_path(project, pending_member))
+      end
+
+      context "when the member has already been removed" do
+        it "returns ok with a message instead of raising" do
+          member_id = pending_member.id
+          pending_member.destroy
+          get confirm_landing_project_project_member_path(project, member_id)
+          expect(response).to have_http_status(:ok)
+          expect(response.body).to include("no longer exists")
+        end
+      end
+    end
+
+    context "when signed in as a non-owner" do
+      before { sign_in contributor }
+
+      it "returns forbidden" do
+        get confirm_landing_project_project_member_path(project, pending_member), as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+  end
+
+  describe "PATCH /projects/:project_id/project_members/:id/confirm" do
+    let!(:pending_member) { create(:project_member, :pending, project: project, user: other_user) }
+
+    context "when not signed in" do
+      it "redirects to sign in" do
+        patch confirm_project_project_member_path(project, pending_member)
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
+    context "when signed in as the project owner" do
+      before { sign_in owner }
+
+      it "activates the member" do
+        patch confirm_project_project_member_path(project, pending_member), as: :json
+        expect(pending_member.reload.status).to eq("active")
+      end
+
+      it "returns ok" do
+        patch confirm_project_project_member_path(project, pending_member), as: :json
+        expect(response).to have_http_status(:ok)
+      end
+
+      context "when the member is already active" do
+        it "returns unprocessable entity" do
+          patch confirm_project_project_member_path(project, contributor_member), as: :json
+          expect(response).to have_http_status(:unprocessable_content)
+        end
+      end
+    end
+
+    context "when signed in as a non-owner" do
+      before { sign_in contributor }
+
+      it "returns forbidden" do
+        patch confirm_project_project_member_path(project, pending_member), as: :json
+        expect(response).to have_http_status(:forbidden)
+      end
+
+      it "does not activate the member" do
+        patch confirm_project_project_member_path(project, pending_member), as: :json
+        expect(pending_member.reload.status).to eq("pending")
       end
     end
   end

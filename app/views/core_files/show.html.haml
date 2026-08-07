@@ -1,0 +1,28 @@
+.container.py-5
+  %h1.mb-3= @core_file.title
+  - if @core_file.description.present?
+    %p= @core_file.description
+  - if @core_file.ography_type.present?
+    %p.text-muted Type: #{@core_file.ography_type}
+  %span.badge{ class: @core_file.is_public? ? "bg-success" : "bg-secondary" }
+    = @core_file.is_public? ? "Public" : "Private"
+
+  - if can? :update, @core_file
+    .mt-3
+      = link_to "Edit File", edit_core_file_path(@core_file), class: "btn btn-outline-primary btn-sm"
+
+  %hr.my-4
+
+  %section
+    %h2.mb-3 Collections
+    - if @collections.any?
+      %ul.list-unstyled
+        - @collections.each do |collection|
+          %li.mb-3
+            %h5= link_to collection.title, collection_path(collection)
+    - else
+      %p.text-muted Not in any collections you can view.
+
+  - if can? :destroy, @core_file
+    %hr.my-4
+    = button_to "Delete File", core_file_path(@core_file), method: :delete, class: "btn btn-outline-danger", form: { data: { turbo_confirm: "Delete this file? This cannot be undone." } }

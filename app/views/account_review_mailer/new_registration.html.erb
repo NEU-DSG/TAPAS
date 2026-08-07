@@ -1,0 +1,3 @@
+<p><strong><%= @user.name || @user.email %></strong> (<%= @user.email %>) has registered a new TAPAS account and is waiting for admin review.</p>
+
+<p><%= link_to "Open the account review queue", review_queue_admin_users_url %></p>

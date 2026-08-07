@@ -1,0 +1,30 @@
+-# Placeholder profile form for manual testing until designed frontend replaces it.
+-# Email and password changes live under Devise's account settings (edit_user_registration_path).
+.container.py-5
+  %h1.mb-4 Edit Profile
+
+  = form_with model: @user do |f|
+    - if @user.errors.any?
+      .alert.alert-danger
+        %ul.mb-0
+          - @user.errors.full_messages.each do |message|
+            %li= message
+
+    .mb-3
+      = f.label :name, class: "form-label"
+      = f.text_field :name, class: "form-control"
+    .mb-3
+      = f.label :bio, class: "form-label"
+      = f.text_area :bio, rows: 4, class: "form-control"
+    .mb-3
+      = f.label :institution, class: "form-label"
+      = f.text_field :institution, class: "form-control"
+
+    = f.submit "Update Profile", class: "btn btn-primary"
+    = link_to "Cancel", user_path(@user), class: "btn btn-outline-secondary ms-2"
+
+  %hr.my-4
+  %p
+    Looking to change your email or password? Use
+    = succeed "." do
+      = link_to "account settings", edit_user_registration_path

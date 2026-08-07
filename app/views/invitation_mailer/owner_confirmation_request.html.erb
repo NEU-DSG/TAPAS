@@ -1,0 +1,5 @@
+<p><strong><%= @user.name %></strong> (<%= @user.email %>) has been vetted by an admin and accepted your invitation to join <strong><%= @project.title %></strong>.</p>
+
+<p>Click below to confirm their membership and activate their access.</p>
+
+<p><%= link_to "Confirm Membership", @confirm_url %></p>

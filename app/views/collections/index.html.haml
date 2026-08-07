@@ -7,7 +7,7 @@
     %ul.list-unstyled
       - @collections.each do |collection|
         %li.mb-4
-          %h4= collection.title
+          %h4= link_to collection.title, collection_path(collection)
           - if collection.description.present?
             %p= collection.description
           %p.text-muted Project: #{collection.project.title}

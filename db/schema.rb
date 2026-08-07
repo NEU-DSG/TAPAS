@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_04_180135) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_22_150100) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -98,14 +98,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_04_180135) do
     t.index ["imageable_type", "imageable_id"], name: "index_image_files_on_imageable_type_and_imageable_id"
   end
 
-  create_table "project_member_collection_scopes", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
-    t.bigint "collection_id", null: false
+  create_table "project_invitations", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.bigint "project_member_id", null: false
+    t.bigint "created_by_user_id", null: false
+    t.datetime "expires_at", null: false
+    t.bigint "project_id", null: false
+    t.datetime "revoked_at"
+    t.string "token", null: false
     t.datetime "updated_at", null: false
-    t.index ["collection_id"], name: "index_project_member_collection_scopes_on_collection_id"
-    t.index ["project_member_id", "collection_id"], name: "index_pmcs_on_project_member_and_collection", unique: true
-    t.index ["project_member_id"], name: "index_project_member_collection_scopes_on_project_member_id"
+    t.index ["created_by_user_id"], name: "index_project_invitations_on_created_by_user_id"
+    t.index ["project_id"], name: "index_project_invitations_on_project_id"
+    t.index ["token"], name: "index_project_invitations_on_token", unique: true
   end
 
   create_table "project_members", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
@@ -134,6 +137,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_04_180135) do
   end
 
   create_table "users", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.integer "account_status", default: 0, null: false
     t.datetime "admin_at"
     t.text "bio"
     t.datetime "created_at", null: false
@@ -149,6 +153,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_04_180135) do
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
     t.integer "sign_in_count", default: 0, null: false
+    t.string "signup_invitation_token"
     t.datetime "updated_at", null: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
@@ -174,6 +179,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_04_180135) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "collection_core_files", "collections"
   add_foreign_key "collection_core_files", "core_files"
-  add_foreign_key "project_member_collection_scopes", "collections"
-  add_foreign_key "project_member_collection_scopes", "project_members"
+  add_foreign_key "project_invitations", "projects"
+  add_foreign_key "project_invitations", "users", column: "created_by_user_id"
 end

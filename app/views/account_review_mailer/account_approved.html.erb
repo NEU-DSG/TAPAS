@@ -1,0 +1,6 @@
+<p>Your TAPAS account has been approved — you can now <%= link_to "sign in", new_user_session_url %>.</p>
+
+<% if @invitation %>
+  <p>You signed up from an invitation to join <strong><%= @invitation.project.title %></strong>.
+  Once you're signed in, you can <%= link_to "accept the invitation", invitation_url(@invitation.token) %>.</p>
+<% end %>

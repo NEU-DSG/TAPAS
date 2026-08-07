@@ -1,0 +1,14 @@
+.container.my-5
+  %h1.mb-4 Confirm Membership
+
+  - if @member.nil?
+    %p.text-muted This membership request no longer exists — it may already have been resolved.
+  - elsif !@member.pending?
+    %p.text-muted This membership request has already been confirmed.
+  - else
+    %p
+      %strong= @member.user.name || @member.user.email
+      has been vetted and accepted your invitation to join
+      %strong= @project.title
+      \.
+    = button_to "Confirm Membership", confirm_project_project_member_path(@project, @member), method: :patch, class: "btn btn-success"

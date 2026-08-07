@@ -1,0 +1,43 @@
+-# Placeholder "My TAPAS" dashboard for manual testing until designed frontend replaces it.
+.container.py-5
+  %h1.mb-4 My TAPAS
+
+  %section.mb-5
+    %h2.mb-3 Projects I Own
+    - if @owned_projects.any?
+      %ul.list-unstyled
+        - @owned_projects.each do |project|
+          %li.mb-2
+            %h5.mb-0= link_to project.title, project_path(project)
+    - else
+      %p.text-muted You don't own any projects yet.
+
+  %section.mb-5
+    %h2.mb-3 Projects I Contribute To
+    - if @contributed_projects.any?
+      %ul.list-unstyled
+        - @contributed_projects.each do |project|
+          %li.mb-2
+            %h5.mb-0= link_to project.title, project_path(project)
+    - else
+      %p.text-muted You aren't contributing to any projects yet.
+
+  %section.mb-5
+    %h2.mb-3 Collections I Can Access
+    - if @collections.any?
+      %ul.list-unstyled
+        - @collections.each do |collection|
+          %li.mb-2
+            = link_to collection.title, collection_path(collection)
+            %span.text-muted= "(#{collection.project.title})"
+    - else
+      %p.text-muted No accessible collections.
+
+  %section
+    %h2.mb-3 Files I Can Access
+    - if @core_files.any?
+      %ul.list-unstyled
+        - @core_files.each do |core_file|
+          %li.mb-2= link_to core_file.title, core_file_path(core_file)
+    - else
+      %p.text-muted No accessible files.
