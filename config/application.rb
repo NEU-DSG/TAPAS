@@ -16,6 +16,10 @@ module Tapas
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
+    # We only install mini_magick/image_processing, not ruby-vips, so make that explicit
+    # rather than relying on Rails' :vips default.
+    config.active_storage.variant_processor = :mini_magick
+
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
