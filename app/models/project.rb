@@ -13,7 +13,7 @@ class Project < ApplicationRecord
   accepts_nested_attributes_for :image_file, allow_destroy: true
   has_many :collections, dependent: :destroy
   has_many :core_files, through: :collections
-  has_many :project_members
+  has_many :project_members, dependent: :destroy
   has_many :project_invitations, dependent: :destroy
   has_many :users, through: :project_members
 

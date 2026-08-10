@@ -13,7 +13,7 @@ RSpec.describe Project, type: :model do
     it { is_expected.to have_one(:image_file) }
     it { is_expected.to have_many(:collections) }
     it { is_expected.to have_many(:core_files).through(:collections) }
-    it { is_expected.to have_many(:project_members) }
+    it { is_expected.to have_many(:project_members).dependent(:destroy) }
     it { is_expected.to have_many(:users).through(:project_members) }
   end
 
@@ -119,6 +119,19 @@ RSpec.describe Project, type: :model do
     it 'does not create a duplicate owner if one already exists' do
       project = create(:project, depositor: depositor)
       expect(project.project_members.where(role: "owner").count).to eq(1)
+    end
+  end
+
+  describe '#destroy' do
+    it 'destroys its project_members instead of orphaning them' do
+      depositor = create(:user)
+      project = create(:project, depositor: depositor)
+      create(:project_member, :contributor, project: project, user: create(:user))
+      member_ids = project.project_members.pluck(:id)
+
+      project.destroy
+
+      expect(ProjectMember.where(id: member_ids)).to be_empty
     end
   end
 

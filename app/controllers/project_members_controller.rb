@@ -60,7 +60,7 @@ class ProjectMembersController < ApplicationController
     if @member.update(status: :active)
       respond_to do |format|
         format.json { render json: @member, status: :ok }
-        format.html { redirect_to project_path(@project), notice: "#{@member.user.name || @member.user.email} confirmed as a project member." }
+        format.html { redirect_to project_path(@project), notice: "#{display_name(@member.user)} confirmed as a project member." }
       end
     else
       respond_to do |format|
@@ -84,7 +84,7 @@ class ProjectMembersController < ApplicationController
 
     @member.destroy
     respond_to do |format|
-      format.html { redirect_to project_path(@project), notice: "#{@member.user.name || @member.user.email} has been removed." }
+      format.html { redirect_to project_path(@project), notice: "#{display_name(@member.user)} has been removed." }
       format.json { head :no_content }
     end
   end
@@ -106,5 +106,9 @@ class ProjectMembersController < ApplicationController
 
   def member_params
     params.require(:project_member).permit(:user_id, :role)
+  end
+
+  def display_name(user)
+    helpers.strip_tags(user.name.presence || user.email)
   end
 end

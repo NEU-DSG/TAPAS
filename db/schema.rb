@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_22_150100) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_10_213041) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -181,4 +181,5 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_22_150100) do
   add_foreign_key "collection_core_files", "core_files"
   add_foreign_key "project_invitations", "projects"
   add_foreign_key "project_invitations", "users", column: "created_by_user_id"
+  add_foreign_key "project_members", "projects"
 end

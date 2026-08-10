@@ -13,7 +13,7 @@ module Admin
       user = User.pending_review.find(params[:id])
       user.update!(account_status: :active)
       AccountReviewMailer.account_approved(user).deliver_later
-      redirect_to review_queue_admin_users_path, notice: "#{user.name || user.email}'s account is now active and they have been notified."
+      redirect_to review_queue_admin_users_path, notice: "#{display_name(user)}'s account is now active and they have been notified."
     end
 
     # DELETE /admin/users/:id/reject_account
@@ -21,7 +21,7 @@ module Admin
     def reject_account
       user = User.pending_review.find(params[:id])
       user.destroy!
-      redirect_to review_queue_admin_users_path, notice: "#{user.name || user.email}'s registration was rejected and the account removed."
+      redirect_to review_queue_admin_users_path, notice: "#{display_name(user)}'s registration was rejected and the account removed."
     end
 
     # Overwrite any of the RESTful controller actions to implement custom behavior
@@ -66,5 +66,11 @@ module Admin
 
     # See https://administrate-demo.herokuapp.com/customizing_controller_actions
     # for more information
+
+    private
+
+    def display_name(user)
+      helpers.strip_tags(user.name.presence || user.email)
+    end
   end
 end
