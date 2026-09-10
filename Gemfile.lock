@@ -232,7 +232,7 @@ GEM
     fugit (1.13.0)
       et-orbi (~> 1.4)
       raabro (~> 1.4)
-    git (5.0.2)
+    git (5.1.0)
       activesupport (>= 5.0)
       addressable (~> 2.8)
       process_executer (~> 4.0)
@@ -830,7 +830,7 @@ CHECKSUMS
   flog (4.9.4) sha256=12cc054fab7a2cbd2a906514397c4d7788954d530564782d6f14939dc2dfbcbb
   friendly_id (5.7.0) sha256=b8994416ebaceebc7c60bc556e84ef32a3a663e2e582eb04c429216cc98de4c4
   fugit (1.13.0) sha256=a4f093fce740da52f216740a5041e2a594ea763cdb89e8b2754ca4399634ab18
-  git (5.0.2) sha256=272718aeb678f2f6367ef1bf2cee0aa92a38b4418fb1cad1b9c46df4728dd3d2
+  git (5.1.0) sha256=405b32aba933f685278e35371685cf45288bdc3d37ab4e780210d3fcb748225e
   globalid (1.4.0) sha256=037f12fbf1d9d7a014d501c2d5c77356fd4ddd96d7a7991d6700bba96706f427
   google-protobuf (4.34.0) sha256=bffaea30fbe2807c80667a78953b15645b3bef62b25c10ca187e4418119be531
   google-protobuf (4.34.0-aarch64-linux-gnu) sha256=0ab8a8a97976a2265d647e69b3ff1980c89184abdaf06d36091856c5ab37cc55
