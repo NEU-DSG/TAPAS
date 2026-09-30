@@ -16,49 +16,69 @@
   <% if @pending_users.empty? %>
     <p>No new accounts are awaiting review.</p>
   <% else %>
-    <table>
-      <thead>
-        <tr>
-          <th>User</th>
-          <th>Email</th>
-          <th>Invited to</th>
-          <th>Registered</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @pending_users.each do |user| %>
-          <% invitation = @invitations_by_token[user.signup_invitation_token] %>
+    <%= form_with url: bulk_approve_accounts_admin_users_path, method: :patch,
+          data: {
+            controller: "bulk-select",
+            "bulk-select-approve-url-value": bulk_approve_accounts_admin_users_path,
+            "bulk-select-reject-url-value": bulk_reject_accounts_admin_users_path
+          } do |bulk_form| %>
+      <div class="main-content__header-actions">
+        <%= bulk_form.button "Approve Selected", type: "button", class: "button",
+              data: { action: "bulk-select#approve" } %>
+        <%= bulk_form.button "Reject Selected", type: "button", class: "button button--danger",
+              data: { action: "bulk-select#reject" } %>
+      </div>
+
+      <table>
+        <thead>
           <tr>
-            <td><%= user.name || user.email %></td>
-            <td><%= user.email %></td>
-            <td>
-              <% if invitation %>
-                <%= link_to invitation.project.title, [:admin, invitation.project] %>
-              <% else %>
-                <em>Direct sign-up (no invitation)</em>
-              <% end %>
-            </td>
-            <td><%= user.created_at.to_fs(:long) %></td>
-            <td>
-              <%= button_to(
-                "Approve",
-                approve_account_admin_user_path(user),
-                method: :patch,
-                class: "button",
-                form: { data: { turbo_confirm: "Approve #{user.name || user.email}'s account and notify them by email?" } }
-              ) %>
-              <%= button_to(
-                "Reject",
-                reject_account_admin_user_path(user),
-                method: :delete,
-                class: "button button--danger",
-                form: { data: { turbo_confirm: "Reject and delete #{user.name || user.email}'s account? They will not be notified." } }
-              ) %>
-            </td>
+            <th>
+              <%= check_box_tag "select_all", "1", false, data: { "bulk-select-target": "selectAll", action: "change->bulk-select#toggleAll" } %>
+            </th>
+            <th>User</th>
+            <th>Email</th>
+            <th>Invited to</th>
+            <th>Registered</th>
+            <th></th>
           </tr>
-        <% end %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% @pending_users.each do |user| %>
+            <% invitation = @invitations_by_token[user.signup_invitation_token] %>
+            <tr>
+              <td>
+                <%= check_box_tag "user_ids[]", user.id, false, id: "user_ids_#{user.id}", data: { "bulk-select-target": "row" } %>
+              </td>
+              <td><%= user.name || user.email %></td>
+              <td><%= user.email %></td>
+              <td>
+                <% if invitation %>
+                  <%= link_to invitation.project.title, [:admin, invitation.project] %>
+                <% else %>
+                  <em>Direct sign-up (no invitation)</em>
+                <% end %>
+              </td>
+              <td><%= user.created_at.to_fs(:long) %></td>
+              <td>
+                <%= button_to(
+                  "Approve",
+                  approve_account_admin_user_path(user),
+                  method: :patch,
+                  class: "button",
+                  form: { data: { turbo_confirm: "Approve #{user.name || user.email}'s account and notify them by email?" } }
+                ) %>
+                <%= button_to(
+                  "Reject",
+                  reject_account_admin_user_path(user),
+                  method: :delete,
+                  class: "button button--danger",
+                  form: { data: { turbo_confirm: "Reject and delete #{user.name || user.email}'s account? They will not be notified." } }
+                ) %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
   <% end %>
 </section>

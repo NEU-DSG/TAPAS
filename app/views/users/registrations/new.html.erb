@@ -4,6 +4,10 @@
   <%= f.error_notification %>
   <%= hidden_field_tag :invitation_token, params[:invitation_token] if params[:invitation_token].present? %>
 
+  <div id="website" inert>
+    <%= f.text_field :website, tabindex: -1, autocomplete: "off" %>
+  </div>
+
   <div class="form-inputs">
     <%= f.input :email,
                 required: true,

@@ -12,6 +12,12 @@ class User < ApplicationRecord
   # held for human admin review before it can sign in.
   enum :account_status, { pending_review: 0, active: 1 }
 
+  # Honeypot: real users never see or fill in this field (hidden on the sign-up
+  # form); a bot that does gets rejected before the record is ever persisted,
+  # so it never reaches pending_review or triggers the admin notification.
+  attr_accessor :website
+  validates :website, absence: true
+
   has_one :image_file, as: :imageable, dependent: :destroy
   accepts_nested_attributes_for :image_file, allow_destroy: true
   has_many :project_members, dependent: :destroy

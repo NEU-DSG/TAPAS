@@ -110,4 +110,65 @@ RSpec.describe "Admin::Users", type: :request do
       expect(response).to have_http_status(:not_found)
     end
   end
+
+  describe "PATCH /admin/users/bulk_approve_accounts" do
+    let!(:pending_users) { create_list(:user, 2, :pending_review) }
+    let!(:untouched_user) { create(:user, :pending_review) }
+
+    it "activates every selected account" do
+      patch bulk_approve_accounts_admin_users_path, params: { user_ids: pending_users.map(&:id) }
+      expect(pending_users.map { |u| u.reload.account_status }).to all(eq("active"))
+    end
+
+    it "leaves accounts that were not selected untouched" do
+      patch bulk_approve_accounts_admin_users_path, params: { user_ids: pending_users.map(&:id) }
+      expect(untouched_user.reload).to be_pending_review
+    end
+
+    it "enqueues an approval email for each selected account" do
+      expect {
+        patch bulk_approve_accounts_admin_users_path, params: { user_ids: pending_users.map(&:id) }
+      }.to have_enqueued_mail(AccountReviewMailer, :account_approved).twice
+    end
+
+    it "redirects back to the queue with a notice" do
+      patch bulk_approve_accounts_admin_users_path, params: { user_ids: pending_users.map(&:id) }
+      expect(response).to redirect_to(review_queue_admin_users_path)
+      expect(flash[:notice]).to be_present
+    end
+
+    it "redirects with an alert when nothing is selected" do
+      patch bulk_approve_accounts_admin_users_path, params: { user_ids: [] }
+      expect(response).to redirect_to(review_queue_admin_users_path)
+      expect(flash[:alert]).to be_present
+    end
+  end
+
+  describe "DELETE /admin/users/bulk_reject_accounts" do
+    let!(:pending_users) { create_list(:user, 2, :pending_review) }
+    let!(:untouched_user) { create(:user, :pending_review) }
+
+    it "deletes every selected account" do
+      expect {
+        delete bulk_reject_accounts_admin_users_path, params: { user_ids: pending_users.map(&:id) }
+      }.to change(User, :count).by(-2)
+    end
+
+    it "leaves accounts that were not selected untouched" do
+      delete bulk_reject_accounts_admin_users_path, params: { user_ids: pending_users.map(&:id) }
+      expect(User.exists?(untouched_user.id)).to be(true)
+    end
+
+    it "sends the registrants nothing — rejection is silent" do
+      expect {
+        delete bulk_reject_accounts_admin_users_path, params: { user_ids: pending_users.map(&:id) }
+      }.not_to have_enqueued_mail
+    end
+
+    it "redirects with an alert when nothing is selected" do
+      delete bulk_reject_accounts_admin_users_path, params: { user_ids: [] }
+      expect(response).to redirect_to(review_queue_admin_users_path)
+      expect(flash[:alert]).to be_present
+    end
+  end
 end

@@ -11,8 +11,7 @@ module Admin
     # PATCH /admin/users/:id/approve_account
     def approve_account
       user = User.pending_review.find(params[:id])
-      user.update!(account_status: :active)
-      AccountReviewMailer.account_approved(user).deliver_later
+      approve!(user)
       redirect_to review_queue_admin_users_path, notice: "#{display_name(user)}'s account is now active and they have been notified."
     end
 
@@ -20,8 +19,28 @@ module Admin
     # Rejection is silent by design — the registrant gets no email.
     def reject_account
       user = User.pending_review.find(params[:id])
-      user.destroy!
+      reject!(user)
       redirect_to review_queue_admin_users_path, notice: "#{display_name(user)}'s registration was rejected and the account removed."
+    end
+
+    # PATCH /admin/users/bulk_approve_accounts
+    def bulk_approve_accounts
+      users = pending_selection
+      return redirect_with_no_selection if users.empty?
+
+      users.each { |user| approve!(user) }
+      redirect_to review_queue_admin_users_path, notice: "#{users.size} account(s) are now active and their owners have been notified."
+    end
+
+    # DELETE /admin/users/bulk_reject_accounts
+    # Rejection is silent by design — registrants get no email.
+    def bulk_reject_accounts
+      users = pending_selection
+      return redirect_with_no_selection if users.empty?
+
+      count = users.size
+      users.each { |user| reject!(user) }
+      redirect_to review_queue_admin_users_path, notice: "#{count} account(s) were rejected and removed."
     end
 
     # Overwrite any of the RESTful controller actions to implement custom behavior
@@ -68,6 +87,23 @@ module Admin
     # for more information
 
     private
+
+    def approve!(user)
+      user.update!(account_status: :active)
+      AccountReviewMailer.account_approved(user).deliver_later
+    end
+
+    def reject!(user)
+      user.destroy!
+    end
+
+    def pending_selection
+      User.pending_review.where(id: params[:user_ids])
+    end
+
+    def redirect_with_no_selection
+      redirect_to review_queue_admin_users_path, alert: "No accounts were selected."
+    end
 
     def display_name(user)
       helpers.strip_tags(user.name.presence || user.email)
