@@ -26,6 +26,8 @@ Rails.application.routes.draw do
       resources :users do
         collection do
           get :review_queue
+          patch :bulk_approve_accounts
+          delete :bulk_reject_accounts
         end
         member do
           patch :approve_account

@@ -1,3 +1,14 @@
 //@import 'bootstrap';
 //@import 'blacklight';
 //@import 'tapas';
+
+// Honeypot field on the sign-up form (app/views/users/registrations/new.html.erb).
+// Kept in the DOM for spam bots to find and fill in, moved off-screen so a
+// sighted user never sees it; the `inert` attribute on the field's wrapper
+// keeps it out of the accessibility tree so screen reader users never land
+// on it either.
+#website {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+}

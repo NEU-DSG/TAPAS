@@ -29,7 +29,8 @@ class ApplicationController < ActionController::Base
       :institution_id,
       { image_file: [ :file ] },
       :bio,
-      :account_type
+      :account_type,
+      :website
     ])
     devise_parameter_sanitizer.permit(:account_update, keys: [ :username, :email, :password, :password_confirmation, :current_password, :name, :institution_id, { image_file: [ :file ] }, :remove_avatar, :bio, :account_type ])
   end
