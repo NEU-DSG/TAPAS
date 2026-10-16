@@ -1,0 +1,14 @@
+<%= simple_form_for [:admin, resource], wrapper: :admin_field_unit, html: { class: "form" } do |f| %>
+  <%= render "admin/base/form_errors", resource: resource %>
+
+  <%= f.input :title %>
+  <%= f.input :description %>
+  <%= f.association :depositor, label_method: :email %>
+  <%= f.association :collections, label_method: :title %>
+  <%= f.input :ography_type %>
+  <%= f.input :is_public %>
+
+  <div class="form-actions">
+    <%= f.button :submit, class: nil %>
+  </div>
+<% end %>

@@ -1,0 +1,6 @@
+<%# No "New" button: an image file has to belong to a record, which this form can't set. %>
+<%= render "admin/base/index_header", title: "Image Files" %>
+
+<%= render "admin/base/index_table", resources: @image_files,
+      columns: %i[title image_url file_format imageable created_at],
+      sortable: %i[title image_url file_format created_at] %>

@@ -1,0 +1,36 @@
+<%#
+# Index page header: title, search box and "New" button, then a button for
+# each search filter (if any).
+
+Locals:
+- title:    page heading
+- new_path: link for the "New" button, or nil to hide it
+- filter_buttons: which search filters get a button (default: all of them)
+%>
+<% filter_buttons = local_assigns.fetch(:filter_buttons, search_filters.keys) %>
+<% content_for(:title) { title } %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title" id="page-title"><%= title %></h1>
+
+  <%= render "admin/base/search", label: "Search #{title}" if searchable? %>
+
+  <div>
+    <%= link_to "New #{title.singularize.downcase}", local_assigns[:new_path], class: "button" if local_assigns[:new_path] %>
+  </div>
+</header>
+
+<% if filter_buttons.any? %>
+  <div class="filters">
+    <div class="filter-group">
+      <span class="filters__label">Filter:</span>
+      <% filter_buttons.each do |name| %>
+        <%= admin_filter_link(name) %>
+      <% end %>
+    </div>
+    <p class="filters__hint">
+      Click a filter to turn it on or off. Filters can also be typed into the search box, for example
+      <code><%= filter_buttons.first %>:</code>
+    </p>
+  </div>
+<% end %>

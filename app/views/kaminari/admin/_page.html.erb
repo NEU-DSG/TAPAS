@@ -1,0 +1,3 @@
+<%= tag.li class: class_names("page-item", active: page.current?) do %>
+  <%= link_to page, url, class: "page-link", rel: page.rel, aria: { current: ("page" if page.current?) } %>
+<% end %>

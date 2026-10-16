@@ -1,46 +1,62 @@
 module Admin
-  class CollectionsController < Admin::ApplicationController
-    # Overwrite any of the RESTful controller actions to implement custom behavior
-    # For example, you may want to send an email after a foo is updated.
-    #
-    # def update
-    #   super
-    #   send_foo_updated_email(requested_resource)
-    # end
+  class CollectionsController < Admin::BaseController
+    admin_index search: %i[title description],
+                sort: %i[title is_public created_at],
+                filters: {
+                  public: ->(collections) { collections.where(is_public: true) },
+                  private: ->(collections) { collections.where(is_public: false) }
+                }
 
-    # Override this method to specify custom lookup behavior.
-    # This will be used to set the resource for the `show`, `edit`, and `update`
-    # actions.
-    #
-    # def find_resource(param)
-    #   Foo.find_by!(slug: param)
-    # end
+    before_action :set_collection, only: %i[show edit update destroy]
 
-    # The result of this lookup will be available as `requested_resource`
+    def index
+      @collections = index_resources(Collection.includes(:project, :depositor))
+    end
 
-    # Override this if you have certain roles that require a subset
-    # this will be used to set the records shown on the `index` action.
-    #
-    # def scoped_resource
-    #   if current_user.super_admin?
-    #     resource_class
-    #   else
-    #     resource_class.with_less_stuff
-    #   end
-    # end
+    def show
+    end
 
-    # Override `resource_params` if you want to transform the submitted
-    # data before it's persisted. For example, the following would turn all
-    # empty values into nil values. It uses other APIs such as `resource_class`
-    # and `dashboard`:
-    #
-    # def resource_params
-    #   params.require(resource_class.model_name.param_key).
-    #     permit(dashboard.permitted_attributes(action_name)).
-    #     transform_values { |value| value == "" ? nil : value }
-    # end
+    def new
+      @collection = Collection.new
+    end
 
-    # See https://administrate-demo.herokuapp.com/customizing_controller_actions
-    # for more information
+    def edit
+    end
+
+    def create
+      @collection = Collection.new(collection_params)
+
+      if @collection.save
+        redirect_to [ :admin, @collection ], notice: "Collection was successfully created."
+      else
+        render :new, status: :unprocessable_content
+      end
+    end
+
+    def update
+      if @collection.update(collection_params)
+        redirect_to [ :admin, @collection ], notice: "Collection was successfully updated.", status: :see_other
+      else
+        render :edit, status: :unprocessable_content
+      end
+    end
+
+    def destroy
+      if @collection.destroy
+        redirect_to admin_collections_path, notice: "Collection was successfully destroyed.", status: :see_other
+      else
+        redirect_to [ :admin, @collection ], alert: @collection.errors.full_messages.to_sentence, status: :see_other
+      end
+    end
+
+    private
+
+    def set_collection
+      @collection = Collection.find(params.expect(:id))
+    end
+
+    def collection_params
+      without_blank_image_file(params.expect(collection: [ :depositor_id, :description, :is_public, :project_id, :title, image_file_attributes: [ :id, :title, :description, :image_url, :file_format, :depositor_id, :_destroy ] ]))
+    end
   end
 end

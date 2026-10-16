@@ -1,54 +1,73 @@
 module Admin
-  class CoreFilesController < Admin::ApplicationController
-    # Overwrite any of the RESTful controller actions to implement custom behavior
-    # For example, you may want to send an email after a foo is updated.
-    #
-    # def update
-    #   super
-    #   send_foo_updated_email(requested_resource)
-    # end
+  class CoreFilesController < Admin::BaseController
+    admin_index search: %i[title description ography_type tei_authors tei_contributors],
+                sort: %i[title ography_type is_public created_at],
+                filters: {
+                  public: ->(core_files) { core_files.where(is_public: true) },
+                  private: ->(core_files) { core_files.where(is_public: false) },
+                  ography: ->(core_files) { core_files.where.not(ography_type: nil) },
+                  processing_failed: ->(core_files) { core_files.processing_failed },
+                  processing_pending: ->(core_files) { core_files.processing_pending }
+                }
 
-    # Override this method to specify custom lookup behavior.
-    # This will be used to set the resource for the `show`, `edit`, and `update`
-    # actions.
-    #
-    # def find_resource(param)
-    #   Foo.find_by!(slug: param)
-    # end
+    before_action :set_core_file, only: %i[show edit update destroy retry_processing]
 
-    # The result of this lookup will be available as `requested_resource`
+    def index
+      @core_files = index_resources(CoreFile.includes(:depositor))
+    end
 
-    # Override this if you have certain roles that require a subset
-    # this will be used to set the records shown on the `index` action.
-    #
-    # def scoped_resource
-    #   if current_user.super_admin?
-    #     resource_class
-    #   else
-    #     resource_class.with_less_stuff
-    #   end
-    # end
+    def show
+    end
 
-    # Override `resource_params` if you want to transform the submitted
-    # data before it's persisted. For example, the following would turn all
-    # empty values into nil values. It uses other APIs such as `resource_class`
-    # and `dashboard`:
-    #
-    # def resource_params
-    #   params.require(resource_class.model_name.param_key).
-    #     permit(dashboard.permitted_attributes(action_name)).
-    #     transform_values { |value| value == "" ? nil : value }
-    # end
+    def new
+      @core_file = CoreFile.new
+    end
 
-    # See https://administrate-demo.herokuapp.com/customizing_controller_actions
-    # for more information
+    def edit
+    end
+
+    def create
+      @core_file = CoreFile.new(core_file_params)
+
+      if @core_file.save
+        redirect_to [ :admin, @core_file ], notice: "Core file was successfully created."
+      else
+        render :new, status: :unprocessable_content
+      end
+    end
+
+    def update
+      if @core_file.update(core_file_params)
+        redirect_to [ :admin, @core_file ], notice: "Core file was successfully updated.", status: :see_other
+      else
+        render :edit, status: :unprocessable_content
+      end
+    end
+
+    def destroy
+      if @core_file.destroy
+        redirect_to admin_core_files_path, notice: "Core file was successfully destroyed.", status: :see_other
+      else
+        redirect_to [ :admin, @core_file ], alert: @core_file.errors.full_messages.to_sentence, status: :see_other
+      end
+    end
 
     def retry_processing
-      if requested_resource.retry_processing!
-        redirect_to admin_core_file_path(requested_resource), notice: "File re-queued for processing."
+      if @core_file.retry_processing!
+        redirect_to admin_core_file_path(@core_file), notice: "File re-queued for processing."
       else
-        redirect_to admin_core_file_path(requested_resource), flash: { error: "Cannot retry processing for this file." }
+        redirect_to admin_core_file_path(@core_file), flash: { error: "Cannot retry processing for this file." }
       end
+    end
+
+    private
+
+    def set_core_file
+      @core_file = CoreFile.find(params.expect(:id))
+    end
+
+    def core_file_params
+      params.expect(core_file: [ :title, :description, :depositor_id, :ography_type, :is_public, collection_ids: [] ])
     end
   end
 end

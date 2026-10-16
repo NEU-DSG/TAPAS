@@ -185,9 +185,11 @@ RSpec.describe "Admin::CoreFiles", type: :request do
       expect(response.body).to include("All Files")
     end
 
-    it "displays search filter help text" do
+    it "shows a button for each search filter" do
       get admin_core_files_path
-      expect(response.body).to include("Search filters: public:, private:, ography:")
+      %w[public private ography processing_failed processing_pending].each do |name|
+        expect(response.body).to include(%(href="#{admin_core_files_path(search: "#{name}:")}"))
+      end
     end
   end
 
@@ -218,6 +220,40 @@ RSpec.describe "Admin::CoreFiles", type: :request do
       follow_redirect!
       expect(response.body).to include("flash-error")
       expect(response.body).to include("Cannot retry")
+    end
+  end
+
+  describe "CRUD pages" do
+    let(:crud_depositor) { create(:user) }
+    let(:crud_collection) { create(:collection, depositor: crud_depositor, project: create(:project, depositor: crud_depositor)) }
+    let(:resource) { create(:core_file, depositor: crud_depositor, collections: [ crud_collection ], description: "Letters, 1850") }
+    let(:index_path) { admin_core_files_path }
+    let(:show_path) { admin_core_file_path(resource) }
+    let(:edit_path) { edit_admin_core_file_path(resource) }
+    let(:index_text) { resource.title }
+    let(:show_text) { resource.description }
+    let(:param_key) { :core_file }
+    let(:valid_update) { { title: "Renamed File" } }
+    let(:updated) { -> { resource.reload.title == "Renamed File" } }
+    let(:invalid_update) { { title: "" } }
+
+    it_behaves_like "admin CRUD pages"
+
+    it "lets an admin move the file between collections" do
+      second = create(:collection, project: crud_collection.project, depositor: crud_depositor)
+      get edit_path
+      expect(response.body).to include("core_file[collection_ids][]")
+
+      patch show_path, params: { core_file: { collection_ids: [ "", second.id ] } }
+      expect(resource.reload.collections).to eq([ second ])
+    end
+
+    it "applies the ography: search filter" do
+      ography = create(:core_file, depositor: crud_depositor, collections: [ crud_collection ], ography_type: "personography")
+      resource
+      get index_path, params: { search: "ography:" }
+      expect(response.body).to include(ography.title)
+      expect(response.body).not_to include(resource.title)
     end
   end
 end

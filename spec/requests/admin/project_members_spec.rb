@@ -27,4 +27,23 @@ RSpec.describe "Admin::ProjectMembers", type: :request do
       expect(pending_member.reload.status).to eq("active")
     end
   end
+
+  describe "CRUD pages" do
+    let(:edit_path) { edit_admin_project_member_path(resource) }
+    let(:index_text) { resource.project.title }
+    let(:show_text) { resource.user.email }
+    let(:param_key) { :project_member }
+    let(:valid_update) { { role: "owner" } }
+    let(:updated) { -> { resource.reload.role == "owner" } }
+    let(:invalid_update) { { role: "bogus" } }
+
+    it_behaves_like "admin CRUD pages"
+  end
+
+  it "offers the role as a choice of valid roles" do
+    get edit_admin_project_member_path(resource)
+    ProjectMember::ROLES.each do |role|
+      expect(response.body).to match(/<option[^>]*value="#{role}"/)
+    end
+  end
 end

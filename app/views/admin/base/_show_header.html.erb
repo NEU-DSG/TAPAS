@@ -1,0 +1,19 @@
+<%#
+# Show page header with Edit and Destroy actions. Extra buttons (e.g. "Retry
+# Processing") go in content_for(:header_actions) before rendering this.
+
+Locals:
+- resource: the record
+%>
+<% content_for(:title) { admin_display_name(resource) } %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title"><%= admin_display_name(resource) %></h1>
+
+  <div>
+    <%= link_to "Edit #{admin_display_name(resource)}", [:edit, :admin, resource], class: "button" %>
+    <%= content_for(:header_actions) %>
+    <%= button_to "Destroy", [:admin, resource], method: :delete, class: "button button--danger",
+          form: { class: "d-inline", data: { turbo_confirm: "Are you sure?" } } %>
+  </div>
+</header>

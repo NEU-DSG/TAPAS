@@ -66,8 +66,9 @@ gem "dotenv-rails"
 gem "devise"
 gem "cancancan"
 
-# Admin Dashboard
-gem "administrate"
+# Admin index pagination. Declared directly so admin pages don't depend on
+# Blacklight continuing to pull it in.
+gem "kaminari"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem 'bcrypt', '~> 3.1.7'

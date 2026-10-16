@@ -11,4 +11,21 @@ RSpec.describe "Admin::ImageFiles", type: :request do
   before { sign_in admin_user }
 
   it_behaves_like "an admin controller"
+
+  describe "CRUD pages" do
+    let(:edit_path) { edit_admin_image_file_path(resource) }
+    let(:index_text) { resource.title }
+    let(:show_text) { resource.image_url }
+    let(:param_key) { :image_file }
+    let(:valid_update) { { title: "Renamed Image" } }
+    let(:updated) { -> { resource.reload.title == "Renamed Image" } }
+    let(:invalid_update) { { title: "" } }
+
+    it_behaves_like "admin CRUD pages"
+  end
+
+  it "has no New button, since the form can't attach an image to a record" do
+    get index_path
+    expect(response.body).not_to include(new_admin_image_file_path)
+  end
 end
