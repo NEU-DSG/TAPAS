@@ -18,8 +18,7 @@ module Admin
 
     # Admin forms always show the nested image fields. Leaving them all empty
     # means "no image"; passing them through would try to create a blank
-    # ImageFile and fail validation (this blocked every edit of a record without
-    # an image when the admin was built on Administrate).
+    # ImageFile and fail validation.
     def without_blank_image_file(attributes)
       image = attributes[:image_file_attributes]
       return attributes if image.nil? || image[:id].present?

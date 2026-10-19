@@ -1,8 +1,7 @@
 require 'rails_helper'
 
-# Admin pages used to load only Administrate's own JavaScript bundle, so the
-# app's Stimulus controllers never ran there. These specs check in a real
-# browser that admin pages now load the app's importmap like public pages do.
+# Admin pages must load the app's importmap like public pages do, or the
+# Stimulus controllers never run there. Checked in a real browser.
 RSpec.describe "Admin layout", type: :system do
   let(:admin) { create(:user, :admin) }
 

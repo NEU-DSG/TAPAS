@@ -84,7 +84,7 @@ RSpec.describe "CollectionCoreFiles", type: :request do
   describe "DELETE /collections/:collection_id/collection_core_files/:id" do
     let(:association) { CollectionCoreFile.find_by!(collection: collection, core_file: core_file) }
 
-    before { core_file } # ensure core_file (and its association) is created
+    before { core_file }
 
     context "when not signed in" do
       it "redirects to sign in" do

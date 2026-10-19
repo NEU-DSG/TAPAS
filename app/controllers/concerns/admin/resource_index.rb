@@ -1,5 +1,4 @@
-# Search, search filters, sorting and pagination for admin index pages, kept
-# the same as what Administrate's index pages offered.
+# Search, search filters, sorting and pagination for admin index pages.
 #
 # Each controller declares which columns can be searched and sorted, plus any
 # named filters typed into the search box as "name:" (e.g. "public:").

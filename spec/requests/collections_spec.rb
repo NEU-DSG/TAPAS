@@ -250,7 +250,7 @@ RSpec.describe "Collections", type: :request do
       end
 
       it "does not delete the collection" do
-        collection # force creation
+        collection
         expect {
           delete collection_path(collection), as: :json
         }.not_to change(Collection, :count)
@@ -264,7 +264,7 @@ RSpec.describe "Collections", type: :request do
       end
 
       it "does not delete the collection" do
-        collection # force creation
+        collection
         expect {
           delete collection_path(collection)
         }.not_to change(Collection, :count)
@@ -275,7 +275,7 @@ RSpec.describe "Collections", type: :request do
       before { sign_in user }
 
       it "deletes the collection" do
-        collection # force creation
+        collection
         expect {
           delete collection_path(collection)
         }.to change(Collection, :count).by(-1)

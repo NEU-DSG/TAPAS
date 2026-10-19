@@ -1,12 +1,10 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Drives the account review queue's bulk approve/reject form: a "select all"
-// checkbox that toggles every row, and two buttons that submit the same form
-// to different URLs with different HTTP methods (native formmethod only
-// supports get/post, so Rails' patch/delete method-override hidden field has
-// to be rewritten by hand before submitting). The form sits outside the table
-// because each row has its own Approve/Reject forms and forms can't nest, so
-// the row checkboxes join it through their HTML form attribute.
+// Bulk approve/reject for the account review queue: "select all", plus two
+// buttons that submit one form to different URLs. Native formmethod only does
+// get/post, so the patch/delete method-override field is rewritten by hand.
+// The form sits outside the table (each row has its own forms, and forms can't
+// nest); row checkboxes join it through their HTML form attribute.
 export default class extends Controller {
   static targets = [ "form", "selectAll", "row" ]
   static values = { approveUrl: String, rejectUrl: String }
