@@ -1,6 +1,17 @@
+@use "sass:meta";
+
 // Admin Dashboard Styles with Bootstrap
 
 @import 'bootstrap';
+
+// Admin page styles ported from Administrate. Scoped to .admin-page (set on the
+// admin layout's <html>) because the public layout's `stylesheet_link_tag :app`
+// also loads admin.css. The scope adds one class of specificity, so this sits
+// before the overrides below: they keep winning exactly where they beat the
+// gem's stylesheet before.
+.admin-page {
+  @include meta.load-css("admin/administrate");
+}
 
 // Admin-specific overrides and customizations
 .app-container {
@@ -125,13 +136,32 @@
 .field-unit__field input[type="text"],
 .field-unit__field input[type="email"],
 .field-unit__field input[type="password"],
-.field-unit__field textarea,
-.field-unit__field select {
+.field-unit__field textarea {
   @extend .form-control;
+}
+
+// .form-select, not .form-control: .form-control sets appearance: none without
+// drawing an arrow, so dropdowns looked like text boxes.
+.field-unit__field select {
+  @extend .form-select;
 }
 
 .field-unit__field input[type="checkbox"] {
   @extend .form-check-input;
+  // Administrate's base styles make checkboxes display: inline, which collapses
+  // Bootstrap's appearance: none checkbox to a thin line.
+  display: inline-block;
+}
+
+// Sortable column headers: a faded arrow on every sortable column, solid on
+// the one currently sorted.
+.sort-link__arrow {
+  margin-left: 0.25rem;
+  opacity: 0.4;
+}
+
+.sort-link--active .sort-link__arrow {
+  opacity: 1;
 }
 
 // Search
@@ -163,8 +193,19 @@
 
   .filter-group {
     display: flex;
+    align-items: center;
     gap: 0.5rem;
     flex-wrap: wrap;
+  }
+
+  .filters__label {
+    font-weight: 600;
+  }
+
+  .filters__hint {
+    margin: 0.5rem 0 0;
+    color: #6c757d;
+    font-size: 0.875rem;
   }
 
   .filter-btn {

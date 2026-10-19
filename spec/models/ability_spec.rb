@@ -195,10 +195,6 @@ RSpec.describe Ability, type: :model do
     end
   end
 
-  # ProjectMember authorization note:
-  # There are no direct CanCanCan rules for ProjectMember create/read/update/destroy.
-  # ProjectMember management is authorized via the parent Project's :manage_members
-  # permission, checked in ProjectMembersController with:
-  #   authorize! :manage_members, @project
-  # This means admins and project owners can manage members; all others cannot.
+  # ProjectMember has no CanCanCan rules of its own: ProjectMembersController
+  # authorizes :manage_members on the parent Project (admins and owners only).
 end

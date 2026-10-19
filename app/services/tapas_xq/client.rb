@@ -3,8 +3,8 @@
 require "rest-client"
 
 module TapasXq
-  # HTTP client for communicating with the TAPAS-XQ API
-  # Handles authentication, timeouts, and error handling
+  # HTTP client for the TAPAS-XQ API. Returns the response body; any failure
+  # raises a TapasXq::Error subclass.
   class Client
     attr_reader :base_url, :username, :password, :timeout
 
@@ -15,11 +15,8 @@ module TapasXq
       @timeout = timeout || TapasXq.configuration.timeout
     end
 
-    # Make a POST request to TAPAS-XQ
-    # @param path [String] The API endpoint path (e.g., '/:project_id/:doc_id')
+    # @param path [String] e.g. '/:project_id/:doc_id'
     # @param params [Hash] Form parameters to send
-    # @return [String] Response body
-    # @raise [TapasXq::Error] On any failure
     def post(path, params = {})
       response = RestClient::Request.execute(
         method: :post,
@@ -40,10 +37,6 @@ module TapasXq
       raise TapasXq::ConnectionError, "Cannot connect to TAPAS-XQ: #{e.message}"
     end
 
-    # Make a GET request to TAPAS-XQ
-    # @param path [String] The API endpoint path
-    # @return [String] Response body
-    # @raise [TapasXq::Error] On any failure
     def get(path)
       response = RestClient::Request.execute(
         method: :get,
@@ -67,10 +60,6 @@ module TapasXq
       raise TapasXq::ConnectionError, "Cannot connect to TAPAS-XQ: #{e.message}"
     end
 
-    # Make a DELETE request to TAPAS-XQ
-    # @param path [String] The API endpoint path
-    # @return [String] Response body
-    # @raise [TapasXq::Error] On any failure
     def delete(path)
       response = RestClient::Request.execute(
         method: :delete,

@@ -1,0 +1,12 @@
+<%= simple_form_for [:admin, resource], wrapper: :admin_field_unit, html: { class: "form" } do |f| %>
+  <%= render "admin/base/form_errors", resource: resource %>
+
+  <%= f.input :is_project_depositor %>
+  <%= f.association :project, label_method: :title %>
+  <%= f.input :role, collection: ProjectMember::ROLES, include_blank: false %>
+  <%= f.association :user, label_method: :email %>
+
+  <div class="form-actions">
+    <%= f.button :submit, class: nil %>
+  </div>
+<% end %>

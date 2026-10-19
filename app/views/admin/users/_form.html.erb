@@ -1,0 +1,16 @@
+<%= simple_form_for [:admin, resource], wrapper: :admin_field_unit, html: { class: "form" } do |f| %>
+  <%= render "admin/base/form_errors", resource: resource %>
+
+  <%= f.input :account_status, collection: User.account_statuses.keys, include_blank: false %>
+  <%= f.input :email %>
+  <%= f.input :name %>
+  <%= f.input :bio %>
+  <%= f.input :institution %>
+  <%= f.input :admin_at, as: :datetime, html5: true %>
+
+  <%= render "admin/base/image_file_fields", f: f %>
+
+  <div class="form-actions">
+    <%= f.button :submit, class: nil %>
+  </div>
+<% end %>

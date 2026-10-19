@@ -11,13 +11,10 @@ class Ability
       return
     end
 
-    # --- Projects ---
     can :read, Project, is_public: true
 
-    # --- Collections ---
     can :read, Collection, is_public: true
 
-    # --- CoreFiles ---
     can :read, CoreFile, is_public: true
 
     if user.persisted?
@@ -53,7 +50,6 @@ class Ability
         core_file.project&.project_members&.exists?(user: user, role: "owner", status: :active)
       end
 
-      # --- ImageFiles ---
       can [ :create, :destroy ], ImageFile do |image_file|
         case image_file.imageable_type
         when "User"
@@ -69,12 +65,10 @@ class Ability
         end
       end
 
-      # --- CollectionCoreFiles ---
       can [ :create, :destroy ], CollectionCoreFile do |ccf|
         ccf.collection&.project&.project_members&.exists?(user: user, status: :active)
       end
 
-      # --- Users ---
       can [ :edit, :update ], User, id: user.id
     end
   end

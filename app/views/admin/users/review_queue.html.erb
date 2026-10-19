@@ -16,24 +16,26 @@
   <% if @pending_users.empty? %>
     <p>No new accounts are awaiting review.</p>
   <% else %>
-    <%= form_with url: bulk_approve_accounts_admin_users_path, method: :patch,
-          data: {
-            controller: "bulk-select",
-            "bulk-select-approve-url-value": bulk_approve_accounts_admin_users_path,
-            "bulk-select-reject-url-value": bulk_reject_accounts_admin_users_path
-          } do |bulk_form| %>
-      <div class="main-content__header-actions">
+    <%# The bulk form sits outside the table: forms can't be nested, and each row
+        already has its own Approve/Reject forms. Checkboxes join the bulk form
+        through their form attribute instead. %>
+    <div data-controller="bulk-select"
+         data-bulk-select-approve-url-value="<%= bulk_approve_accounts_admin_users_path %>"
+         data-bulk-select-reject-url-value="<%= bulk_reject_accounts_admin_users_path %>">
+      <%= form_with url: bulk_approve_accounts_admin_users_path, method: :patch, id: "bulk-review-form",
+            class: "main-content__header-actions", data: { "bulk-select-target": "form" } do |bulk_form| %>
         <%= bulk_form.button "Approve Selected", type: "button", class: "button",
               data: { action: "bulk-select#approve" } %>
         <%= bulk_form.button "Reject Selected", type: "button", class: "button button--danger",
               data: { action: "bulk-select#reject" } %>
-      </div>
+      <% end %>
 
       <table>
         <thead>
           <tr>
             <th>
-              <%= check_box_tag "select_all", "1", false, data: { "bulk-select-target": "selectAll", action: "change->bulk-select#toggleAll" } %>
+              <%= check_box_tag "select_all", "1", false, aria: { label: "Select all" },
+                    data: { "bulk-select-target": "selectAll", action: "change->bulk-select#toggleAll" } %>
             </th>
             <th>User</th>
             <th>Email</th>
@@ -47,7 +49,8 @@
             <% invitation = @invitations_by_token[user.signup_invitation_token] %>
             <tr>
               <td>
-                <%= check_box_tag "user_ids[]", user.id, false, id: "user_ids_#{user.id}", data: { "bulk-select-target": "row" } %>
+                <%= check_box_tag "user_ids[]", user.id, false, id: "user_ids_#{user.id}", form: "bulk-review-form",
+                      data: { "bulk-select-target": "row" } %>
               </td>
               <td><%= user.name || user.email %></td>
               <td><%= user.email %></td>
@@ -79,6 +82,6 @@
           <% end %>
         </tbody>
       </table>
-    <% end %>
+    </div>
   <% end %>
 </section>

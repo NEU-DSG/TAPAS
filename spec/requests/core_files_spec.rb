@@ -380,7 +380,7 @@ RSpec.describe "CoreFiles", type: :request do
       end
 
       it "does not delete the core file" do
-        core_file # force creation
+        core_file
         expect {
           delete core_file_path(core_file), as: :json
         }.not_to change(CoreFile, :count)
@@ -394,7 +394,7 @@ RSpec.describe "CoreFiles", type: :request do
       end
 
       it "does not delete the core file" do
-        core_file # force creation
+        core_file
         expect {
           delete core_file_path(core_file)
         }.not_to change(CoreFile, :count)
@@ -405,7 +405,7 @@ RSpec.describe "CoreFiles", type: :request do
       before { sign_in user }
 
       it "deletes the core file" do
-        core_file # force creation
+        core_file
         expect {
           delete core_file_path(core_file)
         }.to change(CoreFile, :count).by(-1)

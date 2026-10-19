@@ -1,0 +1,51 @@
+// Admin page styles ported from the Administrate gem (v1.0.0), so admin pages
+// keep their look after the gem is removed. The Trix and Selectize styles are
+// left out because neither library is loaded any more. The only other change
+// from upstream: mix() and transparentize() are written as their sass:color
+// equivalents, since Dart Sass 3 drops the global versions.
+//
+// Administrate is released under the MIT License:
+//
+// Copyright (c) 2015-2025 thoughtbot, inc.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+// sell copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+// IN THE SOFTWARE.
+
+@import "reset/normalize";
+
+@import "library/clearfix";
+@import "library/data-label";
+@import "library/variables";
+
+@import "base/forms";
+@import "base/layout";
+@import "base/lists";
+@import "base/tables";
+@import "base/typography";
+
+@import "components/app-container";
+@import "components/attributes";
+@import "components/buttons";
+@import "components/cells";
+@import "components/field-unit";
+@import "components/flashes";
+@import "components/form-actions";
+@import "components/main-content";
+@import "components/navigation";
+@import "components/pagination";
+@import "components/search";

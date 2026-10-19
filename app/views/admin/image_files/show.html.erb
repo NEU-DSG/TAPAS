@@ -1,0 +1,5 @@
+<%= render "admin/base/show_header", resource: @image_file %>
+
+<%= render "admin/base/show_attributes", resource: @image_file, attributes: %i[
+      id title description image_url file_format imageable depositor_id created_at updated_at
+    ] %>

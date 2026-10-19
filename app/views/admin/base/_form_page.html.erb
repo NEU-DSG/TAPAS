@@ -1,0 +1,23 @@
+<%#
+# New/edit page: header plus the resource's own _form partial.
+
+Locals:
+- resource: the record being created or edited
+%>
+<% title = resource.persisted? ? "Edit #{admin_display_name(resource)}" : "New #{resource.model_name.human.downcase}" %>
+<% content_for(:title) { title } %>
+
+<header class="main-content__header">
+  <h1 class="main-content__page-title"><%= title %></h1>
+  <div>
+    <% if resource.persisted? %>
+      <%= link_to "Show #{admin_display_name(resource)}", [:admin, resource], class: "button" %>
+    <% else %>
+      <%= link_to "Back", [:admin, resource.class], class: "button" %>
+    <% end %>
+  </div>
+</header>
+
+<section class="main-content__body">
+  <%= render "form", resource: resource %>
+</section>

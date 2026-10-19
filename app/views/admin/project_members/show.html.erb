@@ -1,0 +1,5 @@
+<%= render "admin/base/show_header", resource: @project_member %>
+
+<%= render "admin/base/show_attributes", resource: @project_member, attributes: %i[
+      id is_project_depositor project role user created_at updated_at
+    ] %>

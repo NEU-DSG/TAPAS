@@ -169,7 +169,7 @@ namespace :dummy_data_generator do
 
         if core_file.persisted?
           puts "Ography file #{core_file.id} (#{core_file.ography_type}) created within Collection #{collection.id}"
-          sleep 0.3  # Longer delay
+          sleep 0.3
         else
           puts "Create Ography Files task failed: #{core_file.errors.full_messages.join(', ')}"
         end

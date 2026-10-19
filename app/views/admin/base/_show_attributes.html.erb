@@ -1,0 +1,15 @@
+<%#
+# Definition list of a record's attributes for show pages.
+
+Locals:
+- resource:   the record
+- attributes: attributes to show, in order
+%>
+<section class="main-content__body">
+  <dl>
+    <% attributes.each do |attribute| %>
+      <dt class="attribute-label" id="<%= attribute %>"><%= resource.class.human_attribute_name(attribute) %></dt>
+      <dd class="attribute-data"><%= admin_value(resource, attribute) %></dd>
+    <% end %>
+  </dl>
+</section>

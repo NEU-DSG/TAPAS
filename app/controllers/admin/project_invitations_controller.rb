@@ -1,8 +1,8 @@
 module Admin
-  class ProjectInvitationsController < Admin::ApplicationController
+  class ProjectInvitationsController < Admin::BaseController
     # GET /admin/project_invitations
     #
-    # Deliberately not a scaffolded Administrate resource: ProjectInvitation#token
+    # Deliberately not a full CRUD resource: ProjectInvitation#token
     # is a live, unhashed bearer credential, so this view is limited to what an
     # admin needs to audit/revoke a link, same as a project owner already sees.
     def index
