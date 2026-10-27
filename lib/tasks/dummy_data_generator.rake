@@ -70,6 +70,46 @@ namespace :dummy_data_generator do
     puts "Image file attached for #{record.class} #{record.id}"
   end
 
+  def create_projects
+    # Check the number of Projects we had before creating new ones.
+    older_projects = Project.count
+    # If the Rake task is called with an argument for "num_projects", use that value as the number of
+    # projects to create. Integer() will throw an ArgumentError if the value can't be converted.
+    num_projects = !ENV['num_projects'].nil? ? Integer(ENV['num_projects']) : 45
+    # Keep track of new projects' public and private status.
+    availability = []
+
+    num_projects.times do |i|
+      # The first three projects are private. Otherwise, pick a number between 0 and 
+      # 2. If the number is 2, the project is private.
+      is_private = i < 3 ? true : Random.rand(3) == 2
+      # Pick a number between 0 and 3. If the number is 3, generate an institution string.
+      include_institution = Random.rand(4) == 3
+      # Pick a number between 0 and 3. If the number is 3, add an image.
+      include_image = Random.rand(4) == 3
+
+      new_project = Project.create(title: Faker::Company.bs,
+                     description: Faker::Lorem.paragraph,
+                     depositor_id: User.all.where(admin_at: nil).sample.id,
+                     is_public: !is_private,
+                     institution: include_institution ? Faker::University.name : nil
+      )
+      if include_image
+        record_image(new_project)
+      end
+      availability.push(is_private ? 'private' : 'public')
+    end
+
+    # Split the availability array into two: one for "private" and one for "public".
+    availability = availability.partition { |p| p == 'private' }
+    puts "Created #{ availability[0].length } private and #{ availability[1].length } public projects."
+    # If the number of projects isn't what we expected, give a warning.
+    if Project.count != num_projects + older_projects
+      num_new = Project.count - older_projects
+      warn "WARNING: #{num_new} projects created, expected #{num_projects + older_projects}"
+    end
+  end
+
   def create_project_members
     # TODO: only add members to the new projects
     Project.all.each do |project|
@@ -304,43 +344,7 @@ namespace :dummy_data_generator do
 
   desc "creates projects"
   task projects: :environment do
-    # Check the number of Projects we had before creating new ones.
-    older_projects = Project.count
-    # If the Rake task is called with an argument for "num_projects", use that value as the number of
-    # projects to create. Integer() will throw an ArgumentError if the value can't be converted.
-    num_projects = !ENV['num_projects'].nil? ? Integer(ENV['num_projects']) : 45
-    # Keep track of new projects' public and private status.
-    availability = []
-
-    num_projects.times do |i|
-      # The first three projects are private. Otherwise, pick a number between 0 and 
-      # 2. If the number is 2, the project is private.
-      is_private = i < 3 ? true : Random.rand(3) == 2
-      # Pick a number between 0 and 3. If the number is 3, generate an institution string.
-      include_institution = Random.rand(4) == 3
-      # Pick a number between 0 and 3. If the number is 3, add an image.
-      include_image = Random.rand(4) == 3
-
-      new_project = Project.create(title: Faker::Company.bs,
-                     description: Faker::Lorem.paragraph,
-                     depositor_id: User.all.where(admin_at: nil).sample.id,
-                     is_public: !is_private,
-                     institution: include_institution ? Faker::University.name : nil
-      )
-      if include_image
-        record_image(new_project)
-      end
-      availability.push(is_private ? 'private' : 'public')
-    end
-
-    # Split the availability array into two: one for "private" and one for "public".
-    availability = availability.partition { |p| p == 'private' }
-    puts "Created #{ availability[0].length } private and #{ availability[1].length } public projects."
-    # If the number of projects isn't what we expected, give a warning.
-    if Project.count != num_projects + older_projects
-      num_new = Project.count - older_projects
-      warn "WARNING: #{num_new} projects created, expected #{num_projects + older_projects}"
-    end
+    create_projects
   end
 
   desc "creates project members"
