@@ -174,8 +174,10 @@ namespace :dummy_data_generator do
     end
   end
 
-  def create_collections
-    Project.all.each do |project|
+  # Create collections for a given array of project ids.
+  # If no array is provided, all projects have collections added.
+  def create_collections(project_ids = Project.all.ids)
+    Project.find(project_ids).each do |project|
       project_users = project.members.values.flatten.shuffle
 
       2.times do
@@ -333,7 +335,7 @@ namespace :dummy_data_generator do
     create_project_members(new_projects)
 
     puts "Creating collections..."
-    Rake::Task["dummy_data_generator:collections"].invoke
+    create_collections(new_projects)
 
     if [ User, Project, ProjectMember, Collection ].map(&:any?).include?(false)
       puts "Deleting Solr index"
