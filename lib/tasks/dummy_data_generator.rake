@@ -70,32 +70,58 @@ namespace :dummy_data_generator do
   end
 
   def create_project_members
+    # TODO: only add members to the new projects
     Project.all.each do |project|
-      non_admin_ids = User.all.select { |u| u.admin_at.nil? }.map(&:id)
+      # Populate a project's members from non-admins.
+      available_users = User.all.select { |u| u.admin_at.nil? }.map(&:id)
+      # The depositor should have already been added, so remove them from the pool.
+      available_users.delete(project.depositor_id)
+      num_contributors = Random.rand(13)   # 0 to 12
+      num_owners = Random.rand(6)   # 0 to 5, plus the depositor
 
-      # contributors
-      # has a TAPAS account and either creates or contributes to a TAPAS project
-      5.times do
-        user_id = (non_admin_ids - ProjectMember.all.map(&:user_id)).sample
-
-        ProjectMember.create(project_id: project.id,
-                             user_id: user_id,
-                             role: "contributor"
-        )
+      if available_users.count < num_owners + num_contributors
+        puts "WARNING: There aren't enough users available to fully populate project #{project.id}."
+        puts "  Did you run the dummy_data_generator:non_admin_users task?"
       end
 
-      # project owners
-      # has created the project in question and has responsibility for it
-      1.times do
-        user_id = (non_admin_ids - ProjectMember.all.map(&:user_id)).sample
-
-        ProjectMember.create(project_id: project.id,
-                             user_id: user_id,
-                             role: "owner"
-        )
+      # Project owner
+      # - Has full edit access for the project
+      # - Can create collections and core files
+      # Create any additional owners (besides the depositor).
+      num_owners_added = 0
+      num_owners.times do
+        user_id = available_users.sample
+        if !user_id.nil?
+          available_users.delete(user_id)
+  
+          ProjectMember.create(project_id: project.id,
+                               user_id: user_id,
+                               role: "owner"
+          )
+          num_owners_added += 1
+        end
       end
 
-      puts "#{project.members.values.flatten.count} project members created for #{project.__id__}: #{project.title}."
+      # Project contributor
+      # - Has access to a TAPAS project but is not an owner
+      # - Can create core files but not collections
+      num_contributors_added = 0
+      num_contributors.times do
+        user_id = available_users.sample
+        if !user_id.nil?
+          available_users.delete(user_id)
+  
+          ProjectMember.create(project_id: project.id,
+                               user_id: user_id,
+                               role: "contributor"
+          )
+          num_contributors_added += 1
+        end
+      end
+
+      puts "#{ProjectMember.where(project_id: project.id).count} project members in #{project.id}: #{project.title}"
+      puts "    #{num_owners_added} project owners created (+ depositor)"
+      puts "    #{num_contributors_added} contributors created"
     end
   end
 
@@ -279,25 +305,41 @@ namespace :dummy_data_generator do
 
   desc "creates projects"
   task projects: :environment do
-    22.times do
-      Project.create(title: Faker::Company.bs,
-                     description: Faker::Lorem.paragraph,
-                     depositor_id: User.all.sample.id,
-                     institution: Faker::University.name
-      )
-    end
+    # Check the number of Projects we had before creating new ones
+    older_projects = Project.count
+    num_projects = 45
+    # Keep track of new projects' public and private status.
+    availability = []
 
-    3.times do
-      Project.create(title: Faker::Company.bs,
+    num_projects.times do |i|
+      # The first three projects are private. Otherwise, pick a number between 0 and 
+      # 2. If the number is 2, the project is private.
+      is_private = i < 3 ? true : Random.rand(3) == 2
+      # Pick a number between 0 and 3. If the number is 3, generate an institution string.
+      include_institution = Random.rand(4) == 3
+      # Pick a number between 0 and 3. If the number is 3, add an image.
+      include_image = Random.rand(4) == 3
+
+      new_project = Project.create(title: Faker::Company.bs,
                      description: Faker::Lorem.paragraph,
                      depositor_id: User.all.where(admin_at: nil).sample.id,
-                     is_public: false,
-                     institution: Faker::University.name
+                     is_public: !is_private,
+                     institution: include_institution ? Faker::University.name : nil
       )
+      if include_image
+        record_image(new_project)
+      end
+      availability.push(is_private ? 'private' : 'public')
     end
 
-    Project.all.map { |p| record_image(p) }
-    puts Project.count >= 25 ? '25 Projects created.' : '"Create Projects" task failed.'
+    # Split the availability array into two: one for "private" and one for "public".
+    availability = availability.partition { |p| p == 'private' }
+    puts "Created #{ availability[0].length } private and #{ availability[1].length } public projects."
+    # If the number of projects isn't what we expected, give a warning.
+    if Project.count != num_projects + older_projects
+      num_new = Project.count - older_projects
+      puts "WARNING: #{num_new} projects created, expected #{num_projects + older_projects}"
+    end
   end
 
   desc "creates project members"
@@ -305,7 +347,7 @@ namespace :dummy_data_generator do
     if Project.any?
       create_project_members
     else
-      puts "Create projects task failed."
+      puts "Create project members task failed."
     end
   end
 
