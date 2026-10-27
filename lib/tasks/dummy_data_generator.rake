@@ -7,7 +7,8 @@ namespace :dummy_data_generator do
   RAW_TEI_URL = ENV.fetch("RAW_TEI_URL", nil)
 
   # Helper method to check queue adapter configuration
-  def check_queue_adapter
+  desc "checks queue adapter configuration"
+  task :check_queue_adapter => :environment do
     adapter = ActiveJob::Base.queue_adapter
     adapter_name = adapter.class.name
 
@@ -255,9 +256,7 @@ namespace :dummy_data_generator do
   end
 
   desc "generate all dummy data"
-  task run_all: :environment do
-    # Check queue adapter configuration
-    check_queue_adapter
+  task run_all: [:environment, :check_queue_adapter] do
     # Start or restart Solr service for connection to instance
     system("solr restart")
 
@@ -363,9 +362,7 @@ namespace :dummy_data_generator do
   end
 
   desc "creates core files"
-  task core_files: :environment do
-    # Check queue adapter before attaching files
-    check_queue_adapter
+  task core_files: [:environment, :check_queue_adapter] do
 
     if Collection.any?
       create_core_files
