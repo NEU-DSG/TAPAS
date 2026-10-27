@@ -80,8 +80,8 @@ namespace :dummy_data_generator do
       num_owners = Random.rand(6)   # 0 to 5, plus the depositor
 
       if available_users.count < num_owners + num_contributors
-        puts "WARNING: There aren't enough users available to fully populate project #{project.id}."
-        puts "  Did you run the dummy_data_generator:non_admin_users task?"
+        warn "WARNING: There aren't enough users available to fully populate project #{project.id}."
+        warn "  Did you run the dummy_data_generator:non_admin_users task?"
       end
 
       # Project owner
@@ -305,9 +305,11 @@ namespace :dummy_data_generator do
 
   desc "creates projects"
   task projects: :environment do
-    # Check the number of Projects we had before creating new ones
+    # Check the number of Projects we had before creating new ones.
     older_projects = Project.count
-    num_projects = 45
+    # If the Rake task is called with an argument for "num_projects", use that value as the number of
+    # projects to create. Integer() will throw an ArgumentError if the value can't be converted.
+    num_projects = !ENV['num_projects'].nil? ? Integer(ENV['num_projects']) : 45
     # Keep track of new projects' public and private status.
     availability = []
 
@@ -338,7 +340,7 @@ namespace :dummy_data_generator do
     # If the number of projects isn't what we expected, give a warning.
     if Project.count != num_projects + older_projects
       num_new = Project.count - older_projects
-      puts "WARNING: #{num_new} projects created, expected #{num_projects + older_projects}"
+      warn "WARNING: #{num_new} projects created, expected #{num_projects + older_projects}"
     end
   end
 
@@ -347,7 +349,7 @@ namespace :dummy_data_generator do
     if Project.any?
       create_project_members
     else
-      puts "Create project members task failed."
+      warn "Create project members task failed."
     end
   end
 
