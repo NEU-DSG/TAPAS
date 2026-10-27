@@ -325,7 +325,7 @@ namespace :dummy_data_generator do
   end
 
   desc "create non-user table records"
-  task non_user_records: :environment do
+  task non_user_records: [:environment, :check_queue_adapter] do
     puts "Creating projects..."
     new_projects = create_projects
 
@@ -360,7 +360,7 @@ namespace :dummy_data_generator do
     if Project.any?
       create_project_members
     else
-      warn "Create project members task failed."
+      warn "There are no projects for which to create members."
     end
   end
 
@@ -369,7 +369,7 @@ namespace :dummy_data_generator do
     if Project.any?
       create_collections
     else
-      puts "Create Project task failed."
+      warn "There are no projects for which to create collections."
     end
   end
 
@@ -379,7 +379,7 @@ namespace :dummy_data_generator do
     if Collection.any?
       create_core_files
     else
-      puts '"Create Collections" task failed. Cannot create core files.'
+      warn 'There are no collections for which to create core files.'
     end
   end
 
