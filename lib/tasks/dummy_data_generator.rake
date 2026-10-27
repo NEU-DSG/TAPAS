@@ -70,14 +70,17 @@ namespace :dummy_data_generator do
     puts "Image file attached for #{record.class} #{record.id}"
   end
 
+  # Create a given number of new projects.
+  # If `num_projects` is not defined in ENV, 45 projects are created.
   def create_projects
     # Check the number of Projects we had before creating new ones.
     older_projects = Project.count
     # If the Rake task is called with an argument for "num_projects", use that value as the number of
     # projects to create. Integer() will throw an ArgumentError if the value can't be converted.
     num_projects = !ENV['num_projects'].nil? ? Integer(ENV['num_projects']) : 45
-    # Keep track of new projects' public and private status.
-    availability = []
+    # Keep track of new projects and their public and private status.
+    new_project_ids = Array.new
+    availability = Array.new
 
     num_projects.times do |i|
       # The first three projects are private. Otherwise, pick a number between 0 and 
@@ -97,6 +100,7 @@ namespace :dummy_data_generator do
       if include_image
         record_image(new_project)
       end
+      new_project_ids.push(new_project.id)
       availability.push(is_private ? 'private' : 'public')
     end
 
@@ -108,11 +112,15 @@ namespace :dummy_data_generator do
       num_new = Project.count - older_projects
       warn "WARNING: #{num_new} projects created, expected #{num_projects + older_projects}"
     end
+
+    # Output the new project IDs, so they can be used in other tasks.
+    new_project_ids
   end
 
-  def create_project_members
-    # TODO: only add members to the new projects
-    Project.all.each do |project|
+  # Create project members for a given array of project ids.
+  # If no array is provided, all projects have members added.
+  def create_project_members(project_ids = Project.all.ids)
+    Project.find(project_ids).each do |project|
       # Populate a project's members from non-admins.
       available_users = User.all.select { |u| u.admin_at.nil? }.map(&:id)
       # The depositor should have already been added, so remove them from the pool.
@@ -319,10 +327,10 @@ namespace :dummy_data_generator do
   desc "create non-user table records"
   task non_user_records: :environment do
     puts "Creating projects..."
-    Rake::Task["dummy_data_generator:projects"].invoke
+    new_projects = create_projects
 
     puts "Creating project members..."
-    Rake::Task["dummy_data_generator:project_members"].invoke
+    create_project_members(new_projects)
 
     puts "Creating collections..."
     Rake::Task["dummy_data_generator:collections"].invoke
