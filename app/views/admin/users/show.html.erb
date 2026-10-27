@@ -1,0 +1,8 @@
+<%# Password hash, reset-token digest and remember-me time are deliberately not shown. %>
+<%= render "admin/base/show_header", resource: @user %>
+
+<%= render "admin/base/show_attributes", resource: @user, attributes: %i[
+      id account_status admin_at bio current_sign_in_at current_sign_in_ip email
+      image_file institution last_sign_in_at last_sign_in_ip name project_members
+      projects reset_password_sent_at sign_in_count created_at updated_at
+    ] %>

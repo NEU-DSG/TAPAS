@@ -6,8 +6,6 @@ class InvitationsController < ApplicationController
   # GET /invitations/:token
   def show
     store_location_for(:user, request.path) unless user_signed_in?
-    # @invitation and @project set by before_action
-    # renders invitations/show.html.erb
   end
 
   # POST /invitations/:token/accept

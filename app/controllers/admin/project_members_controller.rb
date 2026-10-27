@@ -1,46 +1,58 @@
 module Admin
-  class ProjectMembersController < Admin::ApplicationController
-    # Overwrite any of the RESTful controller actions to implement custom behavior
-    # For example, you may want to send an email after a foo is updated.
-    #
-    # def update
-    #   super
-    #   send_foo_updated_email(requested_resource)
-    # end
+  class ProjectMembersController < Admin::BaseController
+    admin_index search: %i[role],
+                sort: %i[id is_project_depositor role]
 
-    # Override this method to specify custom lookup behavior.
-    # This will be used to set the resource for the `show`, `edit`, and `update`
-    # actions.
-    #
-    # def find_resource(param)
-    #   Foo.find_by!(slug: param)
-    # end
+    before_action :set_project_member, only: %i[show edit update destroy]
 
-    # The result of this lookup will be available as `requested_resource`
+    def index
+      @project_members = index_resources(ProjectMember.includes(:project))
+    end
 
-    # Override this if you have certain roles that require a subset
-    # this will be used to set the records shown on the `index` action.
-    #
-    # def scoped_resource
-    #   if current_user.super_admin?
-    #     resource_class
-    #   else
-    #     resource_class.with_less_stuff
-    #   end
-    # end
+    def show
+    end
 
-    # Override `resource_params` if you want to transform the submitted
-    # data before it's persisted. For example, the following would turn all
-    # empty values into nil values. It uses other APIs such as `resource_class`
-    # and `dashboard`:
-    #
-    # def resource_params
-    #   params.require(resource_class.model_name.param_key).
-    #     permit(dashboard.permitted_attributes(action_name)).
-    #     transform_values { |value| value == "" ? nil : value }
-    # end
+    def new
+      @project_member = ProjectMember.new
+    end
 
-    # See https://administrate-demo.herokuapp.com/customizing_controller_actions
-    # for more information
+    def edit
+    end
+
+    def create
+      @project_member = ProjectMember.new(project_member_params)
+
+      if @project_member.save
+        redirect_to [ :admin, @project_member ], notice: "Project member was successfully created."
+      else
+        render :new, status: :unprocessable_content
+      end
+    end
+
+    def update
+      if @project_member.update(project_member_params)
+        redirect_to [ :admin, @project_member ], notice: "Project member was successfully updated.", status: :see_other
+      else
+        render :edit, status: :unprocessable_content
+      end
+    end
+
+    def destroy
+      if @project_member.destroy
+        redirect_to admin_project_members_path, notice: "Project member was successfully destroyed.", status: :see_other
+      else
+        redirect_to [ :admin, @project_member ], alert: @project_member.errors.full_messages.to_sentence, status: :see_other
+      end
+    end
+
+    private
+
+    def set_project_member
+      @project_member = ProjectMember.find(params.expect(:id))
+    end
+
+    def project_member_params
+      params.expect(project_member: [ :is_project_depositor, :project_id, :role, :user_id ])
+    end
   end
 end

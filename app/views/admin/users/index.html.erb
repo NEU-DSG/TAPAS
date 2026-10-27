@@ -1,0 +1,7 @@
+<%# No "New user" button: the form can't set a password, so creating a user here
+    always fails. Manual user creation (with a welcome email) is its own card. %>
+<%= render "admin/base/index_header", title: "Users" %>
+
+<%= render "admin/base/index_table", resources: @users,
+      columns: %i[email name institution admin_at sign_in_count created_at],
+      sortable: %i[email name institution admin_at sign_in_count created_at] %>

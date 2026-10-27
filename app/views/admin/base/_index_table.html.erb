@@ -1,0 +1,48 @@
+<%#
+# Index table with sortable headers, row actions and pagination.
+
+Locals:
+- resources: a paginated relation
+- columns:   attributes to show, in order
+- sortable:  attributes whose headers can be clicked to sort (default: none)
+%>
+<% sortable = local_assigns.fetch(:sortable, []).map(&:to_s) %>
+
+<section class="main-content__body main-content__body--flush">
+  <table aria-labelledby="page-title">
+    <thead>
+      <tr>
+        <% columns.each do |column| %>
+          <% label = resources.klass.human_attribute_name(column) %>
+          <%= tag.th scope: "col", aria: { sort: admin_aria_sort(column) } do %>
+            <%= sortable.include?(column.to_s) ? admin_sort_link(column, label) : label %>
+          <% end %>
+        <% end %>
+        <th scope="col" class="cell-label--action-button"><span class="visually-hidden">Edit</span></th>
+        <th scope="col" class="cell-label--action-button"><span class="visually-hidden">Destroy</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% resources.each do |resource| %>
+        <tr>
+          <% columns.each_with_index do |column, index| %>
+            <td class="cell-data">
+              <% if index.zero? %>
+                <%= link_to [:admin, resource], class: "action-show" do %><%= admin_value(resource, column).presence || admin_display_name(resource) %><% end %>
+              <% else %>
+                <%= admin_value(resource, column) %>
+              <% end %>
+            </td>
+          <% end %>
+          <td class="cell-label--action-button"><%= link_to "Edit", [:edit, :admin, resource], class: "action-edit" %></td>
+          <td class="cell-label--action-button">
+            <%= button_to "Destroy", [:admin, resource], method: :delete, class: "link link--danger",
+                  form: { data: { turbo_confirm: "Are you sure?" } } %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <%= paginate resources, theme: "admin" %>
+</section>

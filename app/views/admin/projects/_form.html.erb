@@ -1,0 +1,18 @@
+<%= simple_form_for [:admin, resource], wrapper: :admin_field_unit, html: { class: "form" } do |f| %>
+  <%= render "admin/base/form_errors", resource: resource %>
+  <%# Has-many associations (collections, members, users, core files) are edited
+      from their own pages, not here: assigning them through this form destroyed
+      deselected records. %>
+
+  <%= f.association :depositor, label_method: :email %>
+  <%= f.input :description %>
+  <%= f.input :institution %>
+  <%= f.input :is_public %>
+  <%= f.input :title %>
+
+  <%= render "admin/base/image_file_fields", f: f %>
+
+  <div class="form-actions">
+    <%= f.button :submit, class: nil %>
+  </div>
+<% end %>

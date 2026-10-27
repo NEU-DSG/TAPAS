@@ -3,11 +3,9 @@ require "uri"
 class Project < ApplicationRecord
   include SolrHelpers
 
-  # validations
   validates_presence_of :depositor_id, :title
   validates :website, format: { with: URI::DEFAULT_PARSER.make_regexp(%w[http https]), message: "must be a valid URL" }, allow_blank: true
 
-  # associations
   belongs_to :depositor, class_name: "User"
   has_one :image_file, as: :imageable, dependent: :destroy
   accepts_nested_attributes_for :image_file, allow_destroy: true
@@ -17,10 +15,8 @@ class Project < ApplicationRecord
   has_many :project_invitations, dependent: :destroy
   has_many :users, through: :project_members
 
-  # scopes
   scope :publicly_visible, -> { where(is_public: true) }
 
-  # callbacks
   after_save :index_record
   after_create :assign_default_owner
 

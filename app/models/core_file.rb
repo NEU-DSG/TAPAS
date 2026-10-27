@@ -3,7 +3,6 @@ class CoreFile < ApplicationRecord
 
   PROCESSING_STATUSES = %w[pending processing completed failed].freeze
 
-  # validations
   validates :title, :depositor_id, presence: true
   validates :collections, presence: true, if: -> { persisted? }
   validates :processing_status, inclusion: { in: PROCESSING_STATUSES }, allow_nil: true
@@ -12,7 +11,6 @@ class CoreFile < ApplicationRecord
   validate :visibility_consistent_with_collections, if: -> { collections.any? }
   validate :tei_filename_unique_within_collections, if: -> { tei_file.attached? && collections.any? }
 
-  # associations
   belongs_to :depositor, class_name: "User"
   has_one_attached :tei_file
   has_one :image_file, as: :imageable, dependent: :destroy
@@ -20,12 +18,10 @@ class CoreFile < ApplicationRecord
   has_many :collection_core_files, dependent: :destroy
   has_many :collections, through: :collection_core_files
 
-  # Scopes
   scope :processing_pending, -> { where(processing_status: "pending") }
   scope :processing_failed, -> { where(processing_status: "failed") }
   scope :processing_completed, -> { where(processing_status: "completed") }
 
-  # callbacks
   after_save :index_core_file
   after_create :enqueue_tapas_xq_processing
 

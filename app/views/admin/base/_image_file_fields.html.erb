@@ -1,0 +1,21 @@
+<%#
+# Nested fields for a record's attached image_file (users, projects,
+# collections and core files all accept image_file_attributes).
+
+Locals:
+- f: the parent simple_form builder
+%>
+<fieldset class="field-unit--nested">
+  <legend>Image File</legend>
+  <%# Not marked required: a blank section means "no image" (see
+      Admin::BaseController#without_blank_image_file). A half-filled one still
+      fails ImageFile's validations. %>
+  <p class="field-unit__hint">Optional. Leave every field blank to save without an image.</p>
+  <%= f.simple_fields_for :image_file, f.object.image_file || f.object.build_image_file do |image| %>
+    <%= image.input :title, required: false %>
+    <%= image.input :description, required: false %>
+    <%= image.input :image_url, required: false %>
+    <%= image.input :file_format, required: false %>
+    <%= image.input :depositor_id, required: false %>
+  <% end %>
+</fieldset>

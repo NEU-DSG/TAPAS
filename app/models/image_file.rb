@@ -1,10 +1,8 @@
 class ImageFile < ApplicationRecord
-  # associations
   belongs_to :depositor, class_name: "User"
   belongs_to :imageable, polymorphic: true
   has_one_attached :file
 
-  # validations
   validates_presence_of :title, :depositor_id, :image_url
   validate :validate_file_format
 
