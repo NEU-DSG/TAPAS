@@ -230,55 +230,53 @@ namespace :dummy_data_generator do
     new_collection_ids
   end
 
-  def create_core_files
-    Collection.all.each do |collection|
-      project = collection.project
-      collection_users = project.members.values.flatten.shuffle
-      visibility = collection.is_public
-      ography_types = CoreFile.all_ography_types
+  def create_core_files(collection_ids = Collection.all.ids)
+    ography_types = CoreFile.all_ography_types
 
-      # Create 3 regular TEI content files
-      3.times do |i|
-        core_file = CoreFile.create!(title: "#{Faker::Book.title} #{i + 1}",
-                                 description: Faker::Book.genre,
-                                 depositor_id: collection_users.sample&.id,
-                                 collections: [ collection ].compact,
-                                 is_public: [ visibility, !visibility ].sample,
-                                 tei_authors: Faker::Creature.name
+    Collection.find(collection_ids)
+              .group_by { |c| c.project_id }
+              .each_pair do |project_id, collections|
+      project = Project.find(project_id)
+      # Any project member can create a core file.
+      project_members = ProjectMember.where(project_id: project_id).shuffle
+      # Choose an upper bound on the number of core files by multiplying the number of collections by 5.
+      num_core_files = Random.rand(5 * collections.length)
+      new_core_files = 0
+      # Track whether core files are public or private.
+      #availability = Array.new
+
+      # Create regular TEI content files
+      num_core_files.times do |i|
+        # TODO: select more than one collection
+        collection = collections.sample
+        depositor = project_members.sample&.user_id
+        # If the collection is private, the core file must be too.
+        # If the collection is public, the core file can be public or private.
+        is_public = collection.is_public ? [ true, false ].sample : false
+
+        core_file = CoreFile.create!( title: "#{Faker::Book.title} #{i + 1}",
+                                      description: Faker::Book.genre,
+                                      depositor_id: depositor,
+                                      collections: [ collection ].compact,
+                                      is_public: is_public,
+                                      tei_authors: Faker::Creature.name
         )
+        new_core_files += 1
 
         # Attach TEI file (required for non-ography files)
         attach_tei_file(core_file)
 
         if core_file.save
-          puts "Core file #{core_file.id} created within Collection #{collection.id}"
+          #puts "Core file #{core_file.id} created within Collection #{collection.id}"
         else
           puts "Create Core Files task failed: #{core_file.errors.full_messages.join(', ')}"
         end
       end
 
-      # Create 3 ography support files (don't need TEI)
-      2.times do
-        core_file = CoreFile.create!(title: Faker::Book.title,
-                                    description: Faker::Book.genre,
-                                    depositor_id: collection_users.sample&.id,
-                                    collections: [ collection ].compact,
-                                    is_public: visibility,
-                                    ography_type: ography_types.sample,
-                                    tei_authors: Faker::Artist.name
-        )
-
-        if core_file.persisted?
-          puts "Ography file #{core_file.id} (#{core_file.ography_type}) created within Collection #{collection.id}"
-          sleep 0.3  # Longer delay
-        else
-          puts "Create Ography Files task failed: #{core_file.errors.full_messages.join(', ')}"
-        end
-      end
-
-      # Clear connection pool after each collection
+      # Clear connection pool after each project
       ActiveRecord::Base.connection_pool.release_connection
-      puts "-> Completed collection #{collection.id}"
+      puts "Created #{new_core_files} core files in collections within project #{project_id}"
+      #puts "-> Completed project #{project_id}"
     end
 
     puts "Core file creation complete!"
@@ -358,21 +356,10 @@ namespace :dummy_data_generator do
     create_project_members(new_projects)
 
     puts "Creating collections..."
-    create_collections(new_projects)
+    new_collections = create_collections(new_projects)
 
-    if [ User, Project, ProjectMember, Collection ].map(&:any?).include?(false)
-      puts "Deleting Solr index"
-      Rake::Task["dummy_data_generator:delete_indexed"].invoke
-
-      puts "Recreating database"
-      Rake::Task["db:drop"].invoke
-      Rake::Task["db:create"].invoke
-      Rake::Task["db:migrate"].invoke
-      Rake::Task["dummy_data_generator:all_users"].invoke
-    else
-      puts "Creating core files"
-      Rake::Task["dummy_data_generator:core_files"].invoke
-    end
+    puts "Creating core files"
+    create_core_files(new_collections)
   end
 
   desc "creates projects"
