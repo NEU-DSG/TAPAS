@@ -190,11 +190,11 @@ namespace :dummy_data_generator do
         # If the project is private, the new collection must be too.
         visibility = project.is_public ? [true, false].sample : false
 
-        collection = Collection.create(title: Faker::Food.dish,
-                                       description: Faker::GreekPhilosophers.quote,
-                                       depositor_id: project_owners.sample&.id,
-                                       project_id: project.id,
-                                       is_public: visibility
+        collection = Collection.create!(title: Faker::Food.dish,
+                                        description: Faker::GreekPhilosophers.quote,
+                                        depositor_id: project_owners.sample&.id,
+                                        project_id: project.id,
+                                        is_public: visibility
         )
         if !collection.nil?
           new_collections += 1
