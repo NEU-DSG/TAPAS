@@ -54,7 +54,7 @@ namespace :dummy_data_generator do
     image_name ||= "#{record.class}_#{record.__id__}"
     depositor_id = record.is_a?(User) ? record.id : record.depositor_id
 
-    record_assoc_image_file = ImageFile.create(
+    record_assoc_image_file = ImageFile.create!(
       title: image_name,
       depositor_id: depositor_id,
       imageable_type: record.class.name,
@@ -91,15 +91,17 @@ namespace :dummy_data_generator do
       # Pick a number between 0 and 3. If the number is 3, add an image.
       include_image = Random.rand(4) == 3
 
-      new_project = Project.create(title: Faker::Company.bs,
-                     description: Faker::Lorem.paragraph,
-                     depositor_id: User.all.where(admin_at: nil).sample.id,
-                     is_public: !is_private,
-                     institution: include_institution ? Faker::University.name : nil
+      new_project = Project.create!(title: Faker::Company.bs,
+                                    description: Faker::Lorem.paragraph,
+                                    depositor_id: User.all.where(admin_at: nil).sample.id,
+                                    is_public: !is_private,
+                                    institution: include_institution ? Faker::University.name : nil
       )
+
       if include_image
         record_image(new_project)
       end
+
       new_project_ids.push(new_project.id)
       availability.push(is_private ? 'private' : 'public')
     end
@@ -107,6 +109,7 @@ namespace :dummy_data_generator do
     # Split the availability array into two: one for "private" and one for "public".
     availability = availability.partition { |p| p == 'private' }
     puts "Created #{ availability[0].length } private and #{ availability[1].length } public projects."
+
     # If the number of projects isn't what we expected, give a warning.
     if Project.count != num_projects + older_projects
       num_new = Project.count - older_projects
@@ -143,9 +146,9 @@ namespace :dummy_data_generator do
         if !user_id.nil?
           available_users.delete(user_id)
   
-          ProjectMember.create(project_id: project.id,
-                               user_id: user_id,
-                               role: "owner"
+          ProjectMember.create!(project_id: project.id,
+                                user_id: user_id,
+                                role: "owner"
           )
           num_owners_added += 1
         end
@@ -160,9 +163,9 @@ namespace :dummy_data_generator do
         if !user_id.nil?
           available_users.delete(user_id)
   
-          ProjectMember.create(project_id: project.id,
-                               user_id: user_id,
-                               role: "contributor"
+          ProjectMember.create!(project_id: project.id,
+                                user_id: user_id,
+                                role: "contributor"
           )
           num_contributors_added += 1
         end
@@ -222,7 +225,7 @@ namespace :dummy_data_generator do
 
       # Create 3 regular TEI content files
       3.times do |i|
-        core_file = CoreFile.new(title: "#{Faker::Book.title} #{i + 1}",
+        core_file = CoreFile.create!(title: "#{Faker::Book.title} #{i + 1}",
                                  description: Faker::Book.genre,
                                  depositor_id: collection_users.sample&.id,
                                  collections: [ collection ].compact,
@@ -242,7 +245,7 @@ namespace :dummy_data_generator do
 
       # Create 3 ography support files (don't need TEI)
       2.times do
-        core_file = CoreFile.create(title: Faker::Book.title,
+        core_file = CoreFile.create!(title: Faker::Book.title,
                                     description: Faker::Book.genre,
                                     depositor_id: collection_users.sample&.id,
                                     collections: [ collection ].compact,
@@ -396,11 +399,11 @@ namespace :dummy_data_generator do
     email = ENV.fetch("DUMMY_ADMIN_EMAIL")
     password = ENV.fetch("DUMMY_ADMIN_PASSWORD")
 
-    user = User.create(name: "Admin",
-                       email: email,
-                       bio: Faker::Lorem.paragraph,
-                       password: password,
-                       admin_at: Time.current
+    user = User.create!(name: "Admin",
+                        email: email,
+                        bio: Faker::Lorem.paragraph,
+                        password: password,
+                        admin_at: Time.current
     )
 
     puts "Admin user #{user.id} has been created." unless user.nil?
@@ -411,10 +414,10 @@ namespace :dummy_data_generator do
     email = ENV.fetch("DUMMY_DEBUG_EMAIL")
     password = ENV.fetch("DUMMY_DEBUG_PASSWORD")
 
-    user = User.create(name: "Debug",
-                       email: email,
-                       bio: Faker::Lorem.paragraph,
-                       password: password
+    user = User.create!(name: "Debug",
+                        email: email,
+                        bio: Faker::Lorem.paragraph,
+                        password: password
     )
 
     puts "Debug non-admin user #{user.id} has been created." unless user.nil?
@@ -428,10 +431,10 @@ namespace :dummy_data_generator do
     
     new_users = 0
     num_non_admin_users.times do
-      user = User.create(name: Faker::Name.unique.name,
-                         email: Faker::Internet.email,
-                         bio: Faker::Lorem.paragraph,
-                         password: Faker::Internet.password
+      user = User.create!(name: Faker::Name.unique.name,
+                          email: Faker::Internet.email,
+                          bio: Faker::Lorem.paragraph,
+                          password: Faker::Internet.password
       )
 
       if !user.nil?
