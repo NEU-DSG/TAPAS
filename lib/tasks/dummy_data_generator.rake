@@ -171,7 +171,7 @@ namespace :dummy_data_generator do
         end
       end
 
-      puts "#{ProjectMember.where(project_id: project.id).count} project members in #{project.id}: #{project.title}"
+      puts "#{ProjectMember.where(project_id: project.id).count} project members in #{project.id}: #{project.title}:"
       puts "    #{num_owners_added} project owners created (+ depositor)"
       puts "    #{num_contributors_added} contributors created"
     end
@@ -180,13 +180,17 @@ namespace :dummy_data_generator do
   # Create collections for a given array of project ids.
   # If no array is provided, all projects have collections added.
   def create_collections(project_ids = Project.all.ids)
+    # Keep track of new collections.
+    new_collection_ids = Array.new
     Project.find(project_ids).each do |project|
       project_owners = project.owner.shuffle
       is_empty = Random.rand(101) >= 95  # Very low chance for a project to have 0 collections
       num_collections = is_empty ? 0 : 1 + Random.rand(10) # 0 to 10
       # Pick a number between 0 and 3. If the number is 3, add an image.
       include_image = Random.rand(4) == 3
+      # Keep track of the number of new collections and whether they're publicly visible.
       new_collections = 0
+      availability = Array.new
 
       num_collections.times do
         # If the project is public, the collection can be public or private.
@@ -199,7 +203,10 @@ namespace :dummy_data_generator do
                                         project_id: project.id,
                                         is_public: visibility
         )
+
         if !collection.nil?
+          new_collection_ids.push(collection.id)
+          availability.push(visibility ? 'public' : 'private')
           new_collections += 1
         end
 
@@ -208,12 +215,19 @@ namespace :dummy_data_generator do
         end
       end
 
+      # Split the availability array into two: one for "private" and one for "public".
+      availability = availability.partition { |p| p == 'private' }
       if num_collections != new_collections
-        warn "WARNING: Expected #{num_collections} new collections for project #{project.id}, got #{new_collections}"
+        warn "WARNING: Expected #{num_collections} new collections for project #{project.id}, got #{new_collections}:"
       else
-        puts "Created #{new_collections} collections in project #{project.id}"
+        puts "Created #{num_collections} collections in #{ project.is_public ? 'public' : 'private' } project #{project.id}:"
       end
+      puts "    #{ availability[0].length } private collections"
+      puts "    #{ availability[1].length } public collections"
     end
+
+    # Now that we've created all the collections, output their IDs for possible core file creation.
+    new_collection_ids
   end
 
   def create_core_files
