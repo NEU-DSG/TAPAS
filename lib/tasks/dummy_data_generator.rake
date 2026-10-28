@@ -196,14 +196,20 @@ namespace :dummy_data_generator do
                                        project_id: project.id,
                                        is_public: visibility
         )
-        new_collections += 1
+        if !collection.nil?
+          new_collections += 1
+        end
 
         if include_image
           record_image(collection)
         end
       end
 
-      puts "Created #{new_collections} collections in project #{project.id}"
+      if num_collections != new_collections
+        warn "WARNING: Expected #{num_collections} new collections for project #{project.id}, got #{new_collections}"
+      else
+        puts "Created #{new_collections} collections in project #{project.id}"
+      end
     end
   end
 
