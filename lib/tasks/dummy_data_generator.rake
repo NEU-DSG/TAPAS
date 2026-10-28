@@ -322,7 +322,6 @@ namespace :dummy_data_generator do
     puts "Creating debug user..."
     Rake::Task["dummy_data_generator:debug_non_admin_user"].invoke
 
-    puts "Creating non-admin users..."
     Rake::Task["dummy_data_generator:non_admin_users"].invoke
   end
 
@@ -416,14 +415,27 @@ namespace :dummy_data_generator do
 
   desc "creates non-admin users"
   task non_admin_users: :environment do
-    275.times do
+    # Create 275 new non-admin users if "num_non_admin_users" was not set.
+    num_non_admin_users = ENV['num_non_admin_users'].nil? ? 275 : Integer(ENV['num_non_admin_users'])
+    puts "Creating #{num_non_admin_users} non-admin users..."
+    
+    new_users = 0
+    num_non_admin_users.times do
       user = User.create(name: Faker::Name.unique.name,
                          email: Faker::Internet.email,
                          bio: Faker::Lorem.paragraph,
                          password: Faker::Internet.password
       )
 
-      puts "Non-admin user #{user.id} has been created." unless user.nil?
+      if !user.nil?
+        new_users += 1
+      end
+    end
+    
+    if new_users != num_non_admin_users
+      warn "WARNING: Expected #{num_non_admin_users} new users, got #{new_users}."
+    else
+      puts "Created #{new_users} non-admin users."
     end
   end
 
