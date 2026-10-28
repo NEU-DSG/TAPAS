@@ -178,31 +178,32 @@ namespace :dummy_data_generator do
   # If no array is provided, all projects have collections added.
   def create_collections(project_ids = Project.all.ids)
     Project.find(project_ids).each do |project|
-      project_users = project.members.values.flatten.shuffle
+      project_owners = project.owner.shuffle
+      is_empty = Random.rand(101) >= 95  # Very low chance for a project to have 0 collections
+      num_collections = is_empty ? 0 : 1 + Random.rand(10) # 0 to 10
+      # Pick a number between 0 and 3. If the number is 3, add an image.
+      include_image = Random.rand(4) == 3
+      new_collections = 0
 
-      2.times do
-        public = Collection.create(title: Faker::Food.dish,
-                                   description: Faker::GreekPhilosophers.quote,
-                                   depositor_id: project_users.sample&.id,
-                                   project_id: project.id,
-                                   is_public: true
+      num_collections.times do
+        # If the project is public, the collection can be public or private.
+        # If the project is private, the new collection must be too.
+        visibility = project.is_public ? [true, false].sample : false
+
+        collection = Collection.create(title: Faker::Food.dish,
+                                       description: Faker::GreekPhilosophers.quote,
+                                       depositor_id: project_owners.sample&.id,
+                                       project_id: project.id,
+                                       is_public: visibility
         )
+        new_collections += 1
 
-        record_image(public)
-
-        puts "Public collection #{public.id}: #{public.title} created for Project #{project.id}."
+        if include_image
+          record_image(collection)
+        end
       end
 
-      1.times do
-        private = Collection.create(title: Faker::Food.dish,
-                                    description: Faker::GreekPhilosophers.quote,
-                                    depositor_id: project_users.sample&.id,
-                                    project_id: project.id,
-                                    is_public: false
-        )
-
-        puts "Private collection #{private.id}: #{private.title} created for Project #{project.id}."
-      end
+      puts "Created #{new_collections} collections in project #{project.id}"
     end
   end
 
