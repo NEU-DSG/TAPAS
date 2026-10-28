@@ -241,10 +241,12 @@ namespace :dummy_data_generator do
       project_members = ProjectMember.where(project_id: project_id).shuffle
       # Choose an upper bound on the number of core files by multiplying the number of collections by 5.
       num_core_files = Random.rand(5 * collections.length)
+      # Track the number of created core files, and whether core files are public or private.
       new_core_files = 0
-      # Track whether core files are public or private.
-      #availability = Array.new
+      new_ographies = 0
+      availability = Array.new
 
+      puts "Creating #{num_core_files} core files in #{collections.length} collections in project #{project_id}"
       # Create regular TEI content files
       num_core_files.times do |i|
         # TODO: select more than one collection
@@ -253,30 +255,38 @@ namespace :dummy_data_generator do
         # If the collection is private, the core file must be too.
         # If the collection is public, the core file can be public or private.
         is_public = collection.is_public ? [ true, false ].sample : false
+        # Choose a number between 0 and 3. If it's 3, this core file is an 'ography.
+        is_ography = Random.rand(4) == 3
 
         core_file = CoreFile.create!( title: "#{Faker::Book.title} #{i + 1}",
                                       description: Faker::Book.genre,
                                       depositor_id: depositor,
                                       collections: [ collection ].compact,
                                       is_public: is_public,
+                                      ography_type: is_ography ? ography_types.sample : nil,
                                       tei_authors: Faker::Creature.name
         )
+        availability.push(is_public ? 'public' : 'private')
         new_core_files += 1
+        if is_ography
+          new_ographies += 1
+        end
 
         # Attach TEI file (required for non-ography files)
         attach_tei_file(core_file)
 
-        if core_file.save
-          #puts "Core file #{core_file.id} created within Collection #{collection.id}"
-        else
+        if !core_file.save
           puts "Create Core Files task failed: #{core_file.errors.full_messages.join(', ')}"
         end
       end
 
       # Clear connection pool after each project
       ActiveRecord::Base.connection_pool.release_connection
-      puts "Created #{new_core_files} core files in collections within project #{project_id}"
-      #puts "-> Completed project #{project_id}"
+      # Split the availability array into two: one for "private" and one for "public".
+      availability = availability.partition { |p| p == 'private' }
+      puts "Created #{new_core_files} total core files:"
+      puts "    #{ availability[0].length } private, #{ availability[1].length } public"
+      puts "    #{new_core_files - new_ographies} regular, #{new_ographies} 'ographies"
     end
 
     puts "Core file creation complete!"
