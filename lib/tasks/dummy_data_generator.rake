@@ -273,19 +273,19 @@ namespace :dummy_data_generator do
       puts "Creating #{num_core_files} core files in #{collections.length} collections in project #{project_id}"
       # Create regular TEI content files
       num_core_files.times do |i|
-        # TODO: select more than one collection
-        collection = collections.sample
+        # This core file will be associated with between 1 and `collections.length` collections.
+        my_collections = collections.sample(1 + Random.rand(collections.length))
         depositor = project_members.sample&.user_id
-        # If the collection is private, the core file must be too.
-        # If the collection is public, the core file can be public or private.
-        is_public = collection.is_public ? [ true, false ].sample : false
+        # If all collections are public, the core file can be public or private.
+        # If any collection is private, the core file must be too.
+        is_public = my_collections.all? { |c| c.is_public } ? [ true, false ].sample : false
         # Choose a number between 0 and 3. If it's 3, make this core file an 'ography.
         is_ography = is_one_in_four?
 
         core_file = CoreFile.create!( title: "#{Faker::Book.title} #{i + 1}",
                                       description: Faker::Book.genre,
                                       depositor_id: depositor,
-                                      collections: [ collection ].compact,
+                                      collections: my_collections.compact,
                                       is_public: is_public,
                                       ography_type: is_ography ? ography_types.sample : nil,
                                       tei_authors: Faker::Creature.name
@@ -299,6 +299,7 @@ namespace :dummy_data_generator do
         # Attach TEI file (required for non-ography files)
         attach_tei_file(core_file)
 
+        puts "  Core file #{core_file.id} is associated with #{core_file.collections.length} collections"
         if !core_file.save
           puts "Create Core Files task failed: #{core_file.errors.full_messages.join(', ')}"
         end
