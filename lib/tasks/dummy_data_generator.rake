@@ -6,9 +6,35 @@ namespace :dummy_data_generator do
   IMAGE_BASE_URL = ENV.fetch("IMAGE_BASE_URL", nil)
   RAW_TEI_URL = ENV.fetch("RAW_TEI_URL", nil)
 
+  # Very low chance for something to be intentionally empty.
+  def do_make_empty?
+    Random.rand(101) >= 95
+  end
+
+  # Pick a number between 0 and 3. If the number is 3, add an image.
+  def is_one_in_four?
+    Random.rand(4) == 3
+  end
+
+  # Tally the number of private and public items in an array of keywords.
+  def tally_public_and_private(visibilities = Array.new)
+    # First, remove any values that are *not* the keywords we want to tally.
+    tallied = visibilities.select { |p| p == "public" or p == "private" }.tally
+
+    # Make sure there is a count for both "public" and "private", even if that count is zero.
+    ["public", "private"].each do |key|
+      if !tallied.has_key?(key)
+        tallied.store(key, 0)
+      end
+    end
+
+    tallied
+  end
+
+
   # Helper method to check queue adapter configuration
   desc "checks queue adapter configuration"
-  task :check_queue_adapter => :environment do
+  task check_queue_adapter: :environment do
     adapter = ActiveJob::Base.queue_adapter
     adapter_name = adapter.class.name
 
@@ -86,19 +112,18 @@ namespace :dummy_data_generator do
       # The first three projects are private. Otherwise, pick a number between 0 and 
       # 2. If the number is 2, the project is private.
       is_private = i < 3 ? true : Random.rand(3) == 2
-      # Pick a number between 0 and 3. If the number is 3, generate an institution string.
-      include_institution = Random.rand(4) == 3
-      # Pick a number between 0 and 3. If the number is 3, add an image.
-      include_image = Random.rand(4) == 3
+      # Generate an institution string for some projects.
+      institution = is_one_in_four? ? Faker::University.name : nil
 
       new_project = Project.create!(title: Faker::Company.bs,
                                     description: Faker::Lorem.paragraph,
                                     depositor_id: User.all.where(admin_at: nil).sample.id,
                                     is_public: !is_private,
-                                    institution: include_institution ? Faker::University.name : nil
+                                    institution: institution
       )
 
-      if include_image
+      # Attach an image to some projects.
+      if is_one_in_four?
         record_image(new_project)
       end
 
@@ -106,9 +131,9 @@ namespace :dummy_data_generator do
       availability.push(is_private ? 'private' : 'public')
     end
 
-    # Split the availability array into two: one for "private" and one for "public".
-    availability = availability.partition { |p| p == 'private' }
-    puts "Created #{ availability[0].length } private and #{ availability[1].length } public projects."
+    # Report on the visibility of the created projects.
+    tallies = tally_public_and_private(availability)
+    puts "Created #{ tallies['private'] } private and #{ tallies['public'] } public projects."
 
     # If the number of projects isn't what we expected, give a warning.
     if Project.count != num_projects + older_projects
@@ -184,10 +209,7 @@ namespace :dummy_data_generator do
     new_collection_ids = Array.new
     Project.find(project_ids).each do |project|
       project_owners = project.owner.shuffle
-      is_empty = Random.rand(101) >= 95  # Very low chance for a project to have 0 collections
-      num_collections = is_empty ? 0 : 1 + Random.rand(10) # 0 to 10
-      # Pick a number between 0 and 3. If the number is 3, add an image.
-      include_image = Random.rand(4) == 3
+      num_collections = do_make_empty? ? 0 : 1 + Random.rand(10) # 0 to 10
       # Keep track of the number of new collections and whether they're publicly visible.
       new_collections = 0
       availability = Array.new
@@ -210,20 +232,21 @@ namespace :dummy_data_generator do
           new_collections += 1
         end
 
-        if include_image
+        if is_one_in_four?
           record_image(collection)
         end
       end
 
-      # Split the availability array into two: one for "private" and one for "public".
-      availability = availability.partition { |p| p == 'private' }
       if num_collections != new_collections
         warn "WARNING: Expected #{num_collections} new collections for project #{project.id}, got #{new_collections}:"
       else
         puts "Created #{num_collections} collections in #{ project.is_public ? 'public' : 'private' } project #{project.id}:"
       end
-      puts "    #{ availability[0].length } private collections"
-      puts "    #{ availability[1].length } public collections"
+
+      # Report on the visibility of the created collections.
+      tallies = tally_public_and_private(availability)
+      puts "    #{ tallies['private'] } private collections"
+      puts "    #{ tallies['public'] } public collections"
     end
 
     # Now that we've created all the collections, output their IDs for possible core file creation.
@@ -241,7 +264,7 @@ namespace :dummy_data_generator do
       project_members = ProjectMember.where(project_id: project_id).shuffle
       # Choose an upper bound on the number of core files by multiplying the number of collections by 5.
       num_core_files = Random.rand(5 * collections.length)
-      # Track the number of created core files, and whether core files are public or private.
+      # Track the number of created core files and 'ographies, and public or private status.
       new_core_files = 0
       new_ographies = 0
       availability = Array.new
@@ -255,8 +278,8 @@ namespace :dummy_data_generator do
         # If the collection is private, the core file must be too.
         # If the collection is public, the core file can be public or private.
         is_public = collection.is_public ? [ true, false ].sample : false
-        # Choose a number between 0 and 3. If it's 3, this core file is an 'ography.
-        is_ography = Random.rand(4) == 3
+        # Choose a number between 0 and 3. If it's 3, make this core file an 'ography.
+        is_ography = is_one_in_four?
 
         core_file = CoreFile.create!( title: "#{Faker::Book.title} #{i + 1}",
                                       description: Faker::Book.genre,
@@ -282,10 +305,9 @@ namespace :dummy_data_generator do
 
       # Clear connection pool after each project
       ActiveRecord::Base.connection_pool.release_connection
-      # Split the availability array into two: one for "private" and one for "public".
-      availability = availability.partition { |p| p == 'private' }
+      tallies = tally_public_and_private(availability)
       puts "Created #{new_core_files} total core files:"
-      puts "    #{ availability[0].length } private, #{ availability[1].length } public"
+      puts "    #{ tallies['private'] } private, #{ tallies['public'] } public"
       puts "    #{new_core_files - new_ographies} regular, #{new_ographies} 'ographies"
     end
 
