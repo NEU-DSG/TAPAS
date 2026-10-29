@@ -265,7 +265,7 @@ namespace :dummy_data_generator do
       project_members = ProjectMember.where(project_id: project_id).shuffle
       # Choose an upper bound on the number of core files by multiplying the number of collections by 5.
       num_core_files = do_make_empty? ? 0 : 1 + Random.rand(5 * collections.length)
-      # Track the number of created core files and 'ographies, and public or private status.
+      # Track the created core files and 'ographies, and public or private status.
       new_core_files = 0
       new_ographies = 0
       availability = Array.new
@@ -310,6 +310,11 @@ namespace :dummy_data_generator do
       puts "  Created #{new_core_files} total core files:"
       puts "    #{ tallies['private'] } private, #{ tallies['public'] } public"
       puts "    #{new_core_files - new_ographies} regular, #{new_ographies} 'ographies"
+
+      # Report on the modified collections of this project.
+      collections.each do |collection|
+        puts "  Collection #{ collection.id } now has #{ collection.core_files.length } core files"
+      end
     end
 
     puts "Core file creation complete!"
