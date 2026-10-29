@@ -18,7 +18,7 @@ namespace :dummy_data_generator do
 
   # Tally the number of private and public items in an array of keywords.
   def tally_public_and_private(visibilities = Array.new)
-    # First, remove any values that are *not* the keywords we want to tally.
+    # First, remove any values that are *not* the keywords we want to tally. Then, tally.
     tallied = visibilities.select { |p| p == "public" or p == "private" }.tally
 
     # Make sure there is a count for both "public" and "private", even if that count is zero.
@@ -207,6 +207,7 @@ namespace :dummy_data_generator do
   def create_collections(project_ids = Project.all.ids)
     # Keep track of new collections.
     new_collection_ids = Array.new
+
     Project.find(project_ids).each do |project|
       project_owners = project.owner.shuffle
       num_collections = do_make_empty? ? 0 : 1 + Random.rand(10) # 0 to 10
@@ -263,7 +264,7 @@ namespace :dummy_data_generator do
       # Any project member can create a core file.
       project_members = ProjectMember.where(project_id: project_id).shuffle
       # Choose an upper bound on the number of core files by multiplying the number of collections by 5.
-      num_core_files = Random.rand(5 * collections.length)
+      num_core_files = do_make_empty? ? 0 : 1 + Random.rand(5 * collections.length)
       # Track the number of created core files and 'ographies, and public or private status.
       new_core_files = 0
       new_ographies = 0
@@ -306,7 +307,7 @@ namespace :dummy_data_generator do
       # Clear connection pool after each project
       ActiveRecord::Base.connection_pool.release_connection
       tallies = tally_public_and_private(availability)
-      puts "Created #{new_core_files} total core files:"
+      puts "  Created #{new_core_files} total core files:"
       puts "    #{ tallies['private'] } private, #{ tallies['public'] } public"
       puts "    #{new_core_files - new_ographies} regular, #{new_ographies} 'ographies"
     end
