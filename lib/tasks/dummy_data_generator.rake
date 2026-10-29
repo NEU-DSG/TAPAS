@@ -259,18 +259,27 @@ namespace :dummy_data_generator do
 
     Collection.find(collection_ids)
               .group_by { |c| c.project_id }
-              .each_pair do |project_id, collections|
+              .each_pair do |project_id, mod_collections|
       project = Project.find(project_id)
       # Any project member can create a core file.
       project_members = ProjectMember.where(project_id: project_id).shuffle
-      # Choose an upper bound on the number of core files by multiplying the number of collections by 5.
-      num_core_files = do_make_empty? ? 0 : 1 + Random.rand(5 * collections.length)
       # Track the created core files and 'ographies, and public or private status.
       new_core_files = 0
       new_ographies = 0
       availability = Array.new
 
-      puts "Creating #{num_core_files} core files in #{collections.length} collections in project #{project_id}"
+      # Sometimes collections can be empty. Take those out of the pool for core file attachment.
+      collections = Array.new
+      mod_collections.each do |c|
+        if !do_make_empty?
+          collections.push(c)
+        end
+      end
+
+      # Choose an upper bound on the number of core files by multiplying the number of collections by 5.
+      num_core_files = do_make_empty? ? 0 : 1 + Random.rand(5 * collections.length)
+      puts "Creating #{num_core_files} core files in #{mod_collections.length} collections in project #{project_id}"
+
       # Create regular TEI content files
       num_core_files.times do |i|
         # This core file will be associated with between 1 and `collections.length` collections.
@@ -307,14 +316,18 @@ namespace :dummy_data_generator do
 
       # Clear connection pool after each project
       ActiveRecord::Base.connection_pool.release_connection
-      tallies = tally_public_and_private(availability)
-      puts "  Created #{new_core_files} total core files:"
-      puts "    #{ tallies['private'] } private, #{ tallies['public'] } public"
-      puts "    #{new_core_files - new_ographies} regular, #{new_ographies} 'ographies"
 
-      # Report on the modified collections of this project.
-      collections.each do |collection|
-        puts "  Collection #{ collection.id } now has #{ collection.core_files.length } core files"
+      # Only report on a project's stats if a core file has been added.
+      if num_core_files != 0
+        # Report on the modifiable collections of this project (even ones with no core files).
+        mod_collections.each do |collection|
+          puts "  Collection #{ collection.id } now has #{ collection.core_files.length } core files"
+        end
+  
+        tallies = tally_public_and_private(availability)
+        puts "  Created #{new_core_files} total core files:"
+        puts "    #{ tallies['private'] } private, #{ tallies['public'] } public"
+        puts "    #{new_core_files - new_ographies} regular, #{new_ographies} 'ographies"
       end
     end
 
