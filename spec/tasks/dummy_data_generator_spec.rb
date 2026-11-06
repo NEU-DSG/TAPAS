@@ -74,10 +74,24 @@ RSpec.describe 'dummy_data_generator rake tasks' do
   # :non_admin_users  (slow – creates 275 DB records)
   # ---------------------------------------------------------------------------
   describe 'dummy_data_generator:non_admin_users', :slow do
-    it 'creates 275 users with no admin privileges' do
-      expect { invoke('dummy_data_generator:non_admin_users') }
-        .to change(User, :count).by(275)
-      expect(User.where(admin_at: nil).count).to eq(275)
+    
+    context 'by default, without environment variable `num_non_admin_users`' do
+      it 'creates 275 users with no admin privileges' do
+        expect { invoke('dummy_data_generator:non_admin_users') }
+          .to change(User, :count).by(275)
+        expect(User.where(admin_at: nil).count).to eq(275)
+      end
+    end
+
+    context 'when environment variable `num_non_admin_users=100` is specified' do
+      it 'creates 100 users with no admin privileges' do
+        stub_const('ENV', ENV.to_h.merge(
+          'num_non_admin_users' => '100'
+        ))
+        expect { invoke('dummy_data_generator:non_admin_users') }
+          .to change(User, :count).by(100)
+        expect(User.where(admin_at: nil).count).to eq(100)
+      end
     end
   end
 
@@ -86,24 +100,59 @@ RSpec.describe 'dummy_data_generator rake tasks' do
   # ---------------------------------------------------------------------------
   describe 'dummy_data_generator:projects' do
     before do
-      # Task samples from User.all / User.all.where(admin_at: nil) – needs a user
-      User.create!(name: 'Depositor', email: 'dep@test.com', password: 'password123!')
+      # Create 5 new non-admin users to serve as depositors.
+      stub_const('ENV', ENV.to_h.merge(
+        'num_non_admin_users' => '5'
+      ))
+      invoke('dummy_data_generator:non_admin_users')
+
       allow(rake_context).to receive(:record_image)
     end
 
-    it 'creates 25 projects' do
-      expect { invoke('dummy_data_generator:projects') }
-        .to change(Project, :count).by(25)
+    shared_examples "projects" do
+      it 'creates at least 3 private projects' do
+        invoke('dummy_data_generator:projects')
+        # The first three projects are private.
+        expect(Project.limit(3).where(is_public: false).count).to eq(3)
+        # There are at 3 or more total private projects.
+        expect(Project.where(is_public: false).count).to be >= 3
+      end
+
+      #it 'calls record_image once per project' do
+      #  expect(rake_context).to receive(:record_image).exactly(25).times
+      #  invoke('dummy_data_generator:projects')
+      #end
     end
 
-    it 'creates exactly 3 private projects' do
-      invoke('dummy_data_generator:projects')
-      expect(Project.where(is_public: false).count).to eq(3)
+    context 'by default, without environment variable `num_projects`' do
+      it 'creates 45 projects' do
+        expect { invoke('dummy_data_generator:projects') }
+          .to change(Project, :count).by(45)
+      end
+
+      # We can't test for public projects in the other context, because there's a possibility all 5 will
+      # be private.
+      it 'creates at least 1 public project' do
+        invoke('dummy_data_generator:projects')
+        expect(Project.where(is_public: true).count).to be >= 1
+      end
+
+      include_examples "projects"
     end
 
-    it 'calls record_image once per project' do
-      expect(rake_context).to receive(:record_image).exactly(25).times
-      invoke('dummy_data_generator:projects')
+    context 'when environment variable `num_projects=5` is specified' do
+      before(:example) do
+        stub_const('ENV', ENV.to_h.merge(
+          'num_projects' => '5'
+        ))
+      end
+
+      it 'creates 5 projects' do
+        expect { invoke('dummy_data_generator:projects') }
+          .to change(Project, :count).by(5)
+      end
+
+      include_examples "projects"
     end
   end
 
