@@ -109,7 +109,7 @@ RSpec.describe 'dummy_data_generator rake tasks' do
       allow(rake_context).to receive(:record_image)
     end
 
-    shared_examples "projects" do
+    shared_examples 'projects' do
       it 'creates at least 3 private projects' do
         invoke('dummy_data_generator:projects')
         # The first three projects are private.
@@ -117,11 +117,6 @@ RSpec.describe 'dummy_data_generator rake tasks' do
         # There are at 3 or more total private projects.
         expect(Project.where(is_public: false).count).to be >= 3
       end
-
-      #it 'calls record_image once per project' do
-      #  expect(rake_context).to receive(:record_image).exactly(25).times
-      #  invoke('dummy_data_generator:projects')
-      #end
     end
 
     context 'by default, without environment variable `num_projects`' do
@@ -135,6 +130,13 @@ RSpec.describe 'dummy_data_generator rake tasks' do
       it 'creates at least 1 public project' do
         invoke('dummy_data_generator:projects')
         expect(Project.where(is_public: true).count).to be >= 1
+      end
+
+      # We can't test for record_image in the other context, because there's a possibility all 5 won't
+      # have an image attached.
+      it 'calls record_image for at least 1 project' do
+        expect(rake_context).to receive(:record_image)
+        invoke('dummy_data_generator:projects')
       end
 
       include_examples "projects"
