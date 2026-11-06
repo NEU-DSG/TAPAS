@@ -1,0 +1,15 @@
+<%#
+# Search box (press Enter to search). Named filters such as "public:" are typed
+# into the same box; the index header also offers them as buttons.
+%>
+<%= form_with url: request.path, method: :get, class: "search", role: "search" do |f| %>
+  <label class="search__label" for="search">
+    <svg class="search__eyeglass-icon" role="img"><title><%= label %></title><use xlink:href="#icon-eyeglass" /></svg>
+  </label>
+  <%= f.search_field :search, value: search_term, id: "search", class: "search__input", placeholder: label %>
+  <%= hidden_field_tag :order, params[:order], id: nil if sort_column %>
+  <%= hidden_field_tag :direction, params[:direction], id: nil if sort_column %>
+  <%= link_to request.path, class: "search__clear-link" do %>
+    <svg class="search__clear-icon" role="img"><title>Clear search</title><use xlink:href="#icon-cancel" /></svg>
+  <% end %>
+<% end %>

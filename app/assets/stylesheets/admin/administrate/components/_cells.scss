@@ -1,0 +1,54 @@
+.cell-label__sort-indicator {
+  float: right;
+  margin-left: 5px;
+
+  svg {
+    color: $hint-grey;
+    height: 13px;
+    transition: transform $base-duration $base-timing;
+    width: 13px;
+  }
+}
+
+.cell-label {
+  padding-top: 0.15em;
+
+  a {
+    color: inherit;
+    display: inline-block;
+    transition: color $base-duration $base-timing;
+    width: 100%;
+  }
+
+  &:hover {
+    a {
+      color: $action-color;
+    }
+
+    svg {
+      fill: $action-color;
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.cell-label--asc,
+.cell-label--desc {
+  font-weight: $bold-font-weight;
+}
+
+.cell-label__sort-indicator--desc {
+  transform: rotate(180deg);
+}
+
+.cell-label--action-button {
+  white-space: nowrap;
+  width: 1rem;
+}
+
+.cell-data--number,
+.cell-label--number {
+  text-align: right;
+  white-space: nowrap;
+  width: 1rem;
+}

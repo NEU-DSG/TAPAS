@@ -1,0 +1,19 @@
+<%= simple_form_for [:admin, resource], wrapper: :admin_field_unit, html: { class: "form" } do |f| %>
+  <%= render "admin/base/form_errors", resource: resource %>
+
+  <%= f.input :css_files %>
+  <%= f.input :description %>
+  <%= f.input :dir_name %>
+  <%= f.input :file_type %>
+  <%= f.input :git_branch %>
+  <%= f.input :git_timestamp, as: :datetime, html5: true %>
+  <%= f.input :human_name %>
+  <%= f.input :js_files %>
+  <%= f.input :machine_name %>
+  <%= f.input :parameters %>
+  <%= f.input :run_process %>
+
+  <div class="form-actions">
+    <%= f.button :submit, class: nil %>
+  </div>
+<% end %>

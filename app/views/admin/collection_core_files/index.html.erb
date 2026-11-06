@@ -1,0 +1,5 @@
+<%= render "admin/base/index_header", title: "Collection Core Files", new_path: new_admin_collection_core_file_path %>
+
+<%= render "admin/base/index_table", resources: @collection_core_files,
+      columns: %i[id collection core_file created_at],
+      sortable: %i[id created_at] %>

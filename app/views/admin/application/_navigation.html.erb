@@ -1,10 +1,9 @@
 <%#
-# Navigation
+# Admin sidebar navigation.
 
-This partial is used to display the navigation in Administrate.
-By default, the navigation contains navigation links
-for all resources in the admin dashboard,
-as defined by the routes in the `admin/` namespace
+Image files, view packages, project members and collection core files are
+deliberately left out; they're reachable by URL and from the records they
+belong to.
 %>
 
 <nav class="navigation">
@@ -12,28 +11,29 @@ as defined by the routes in the `admin/` namespace
     <h5 class="text-white mb-0">TAPAS Admin</h5>
   </div>
 
-  <% if defined?(root_url) %>
-    <%= link_to(root_url, class: "navigation__link") do %>
-      <span class="navigation__link__text">← Back to App</span>
-    <% end %>
+  <%= link_to(root_url, class: "navigation__link") do %>
+    <span class="navigation__link__text">← Back to App</span>
   <% end %>
 
   <div class="mt-3"></div>
 
-  <%= link_to("New Account Review", review_queue_admin_users_path, class: "navigation__link") %>
-  <%= link_to("Invitation Links", admin_project_invitations_path, class: "navigation__link") %>
+  <%# Highlighted by section (controller), not exact URL, so a record's view and
+      edit pages and /admin itself keep their section lit. The review queue is
+      a users action but has its own link, so it doesn't light up Users. %>
+  <% review_queue = controller_name == "users" && action_name == "review_queue" %>
+  <%= link_to("New Account Review", review_queue_admin_users_path,
+        class: class_names("navigation__link", "navigation__link--active" => review_queue)) %>
+  <%= link_to("Invitation Links", admin_project_invitations_path,
+        class: class_names("navigation__link", "navigation__link--active" => controller_name == "project_invitations")) %>
 
   <div class="mt-3"></div>
 
-  <% allowed_resources = ['collections', 'core_files', 'projects', 'users'] %>
-  <% Administrate::Namespace.new(namespace).resources_with_index_route.each do |resource| %>
-    <% if allowed_resources.include?(resource.to_s) && accessible_action?(model_from_resource(resource), :index) %>
-      <%= link_to(
-        resource_index_route(resource),
-        class: "navigation__link navigation__link--#{nav_link_state(resource)}"
-      ) do %>
-        <span class="navigation__link__text"><%= display_resource_name(resource) %></span>
-      <% end %>
+  <% { "Collections" => [ admin_collections_path, "collections" ],
+       "Core Files" => [ admin_core_files_path, "core_files" ],
+       "Projects" => [ admin_projects_path, "projects" ],
+       "Users" => [ admin_users_path, "users" ] }.each do |label, (path, section)| %>
+    <%= link_to(path, class: class_names("navigation__link", "navigation__link--active" => controller_name == section && !review_queue)) do %>
+      <span class="navigation__link__text"><%= label %></span>
     <% end %>
   <% end %>
 </nav>

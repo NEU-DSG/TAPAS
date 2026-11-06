@@ -1,0 +1,6 @@
+<%= render "admin/base/show_header", resource: @project %>
+
+<%= render "admin/base/show_attributes", resource: @project, attributes: %i[
+      id collections core_files depositor description image_file institution is_public
+      project_members title users created_at updated_at
+    ] %>

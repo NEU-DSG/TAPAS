@@ -1,0 +1,5 @@
+<%= render "admin/base/index_header", title: "Project Members", new_path: new_admin_project_member_path %>
+
+<%= render "admin/base/index_table", resources: @project_members,
+      columns: %i[id is_project_depositor project role],
+      sortable: %i[id is_project_depositor role] %>

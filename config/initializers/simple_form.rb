@@ -65,6 +65,26 @@ SimpleForm.setup do |config|
     # b.use :full_error, wrap_with: { tag: :span, class: :error }
   end
 
+  # Admin forms only (passed as `wrapper: :admin_field_unit`). Produces the
+  # field-unit markup the admin stylesheets lay out as a label/field grid.
+  config.wrappers :admin_field_unit, tag: :div, class: "field-unit", error_class: "field-unit--error" do |b|
+    b.use :html5
+    b.use :placeholder
+    b.optional :maxlength
+    b.optional :minlength
+    b.optional :pattern
+    b.optional :min_max
+    b.optional :readonly
+    b.wrapper tag: :div, class: "field-unit__label" do |label|
+      label.use :label
+    end
+    b.wrapper tag: :div, class: "field-unit__field" do |field|
+      field.use :input
+      field.use :error, wrap_with: { tag: :span, class: "flash-error" }
+      field.use :hint, wrap_with: { tag: :div, class: "field-unit__hint" }
+    end
+  end
+
   # The default wrapper to be used by the FormBuilder.
   config.default_wrapper = :default
 

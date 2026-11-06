@@ -83,7 +83,7 @@ in-app "Confirm" button already used — which performs the actual PATCH.
 The mailer now links to this GET route instead of the PATCH-only one.
 
 There is still no "Reject" affordance for a *membership* anywhere in the UI —
-the only way to remove a pending member is the generic Administrate
+the only way to remove a pending member is the generic admin
 `Destroy` button on `/admin/project_members/:id`, which has no status
 restriction. (Account-level rejection, added 2026-07-22, is a separate
 affordance in the new `/admin/users/review_queue` — see Scenario 3.) That's

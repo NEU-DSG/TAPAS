@@ -1,0 +1,6 @@
+<%= render "admin/base/show_header", resource: @view_package %>
+
+<%= render "admin/base/show_attributes", resource: @view_package, attributes: %i[
+      id css_files description dir_name file_type git_branch git_timestamp
+      human_name js_files machine_name parameters run_process created_at updated_at
+    ] %>

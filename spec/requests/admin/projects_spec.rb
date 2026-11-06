@@ -83,6 +83,13 @@ RSpec.describe "Admin::Projects", type: :request do
       get admin_projects_path
       expect(response.body).to match(/filter-btn\s+active/)
     end
+
+    it "gives only the recent: search filter a button, since Public/Private buttons already exist" do
+      get admin_projects_path
+      expect(response.body).to include(%(href="#{admin_projects_path(search: "recent:")}"))
+      expect(response.body).not_to include(%(href="#{admin_projects_path(search: "public:")}"))
+      expect(response.body).not_to include(%(href="#{admin_projects_path(search: "private:")}"))
+    end
   end
 
   describe "admin navigation partial" do
@@ -126,12 +133,81 @@ RSpec.describe "Admin::Projects", type: :request do
       nav_section = response.body[/(<nav.*?<\/nav>)/m, 1]
       expect(nav_section).to include(%(href="#{admin_project_invitations_path}"))
     end
+
+    describe "highlighted section" do
+      def active_nav_links
+        Nokogiri::HTML(response.body).css("nav a.navigation__link--active").map { |link| link.text.strip }
+      end
+
+      it "highlights Projects on /admin, a project's page and its edit page" do
+        project = create(:project)
+        [ admin_root_path, admin_projects_path, admin_project_path(project), edit_admin_project_path(project) ].each do |path|
+          get path
+          expect(active_nav_links).to eq([ "Projects" ]), "on #{path}"
+        end
+      end
+
+      it "highlights New Account Review, not Users, on the review queue" do
+        get review_queue_admin_users_path
+        expect(active_nav_links).to eq([ "New Account Review" ])
+      end
+
+      it "highlights Users on a user's page" do
+        get admin_user_path(admin_user)
+        expect(active_nav_links).to eq([ "Users" ])
+      end
+
+      it "highlights Invitation Links on the invitation links page" do
+        get admin_project_invitations_path
+        expect(active_nav_links).to eq([ "Invitation Links" ])
+      end
+
+      it "highlights nothing on sections without a sidebar link" do
+        get admin_image_files_path
+        expect(active_nav_links).to be_empty
+      end
+    end
   end
 
   describe "GET /admin (admin root)" do
     it "routes to projects#index" do
       get admin_root_path
       expect(response).to have_http_status(:success)
+    end
+  end
+
+  describe "CRUD pages" do
+    let(:resource) { create(:project, description: "A project about letters") }
+    let(:index_path) { admin_projects_path }
+    let(:show_path) { admin_project_path(resource) }
+    let(:edit_path) { edit_admin_project_path(resource) }
+    let(:index_text) { resource.title }
+    let(:show_text) { resource.description }
+    let(:param_key) { :project }
+    let(:valid_update) { { title: "Renamed Project" } }
+    let(:updated) { -> { resource.reload.title == "Renamed Project" } }
+    let(:invalid_update) { { title: "" } }
+
+    it_behaves_like "admin CRUD pages"
+
+    it "searches titles" do
+      other = create(:project, title: "Unrelated Work")
+      get admin_projects_path, params: { search: "letters" }
+      expect(response.body).not_to include(other.title)
+    end
+
+    it "edits collections, members and users from their own pages, not from the project form" do
+      get edit_admin_project_path(resource)
+      %w[collection_ids project_member_ids user_ids core_file_ids].each do |field|
+        expect(response.body).not_to include("project[#{field}]")
+      end
+    end
+
+    it "lists collections and members on the show page" do
+      collection = create(:collection, project: resource, depositor: resource.depositor)
+      get admin_project_path(resource)
+      expect(response.body).to include(admin_collection_path(collection))
+      expect(response.body).to include(admin_project_member_path(resource.project_members.first))
     end
   end
 end

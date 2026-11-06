@@ -1,39 +1,35 @@
 <%#
-# Application Layout
+# Admin layout, shared by every admin page.
 
-This view template is used as the layout
-for every page that Administrate generates.
-
-By default, it renders:
-- Navigation
-- Content for a search bar
-  (if provided by a `content_for` block in a nested page)
-- Flashes
-- Links to stylesheets and JavaScripts
+Loads JavaScript through the app's importmap, the same as public pages, so
+Stimulus controllers such as bulk-select work here. The admin-page class on
+<html> turns on the admin styles in admin.scss.
 %>
 
 <!DOCTYPE html>
-<html lang="<%= I18n.locale %>">
+<html lang="<%= I18n.locale %>" class="admin-page">
 <head>
   <meta charset="utf-8">
   <meta name="ROBOTS" content="NOODP">
   <meta name="viewport" content="initial-scale=1">
   <title>
-    <%= content_for(:title) %> - <%= application_title %>
+    <%= content_for(:title) %> - TAPAS Admin
   </title>
-  <%= render "stylesheet" %>
+  <link rel="icon" href="/icon.png" type="image/png">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <%= stylesheet_link_tag "admin", "data-turbo-track": "reload" %>
   <%= csrf_meta_tags %>
-  <%= csp_meta_tag if defined?(csp_meta_tag) %>
-  <%= render "javascript" %>
+  <%= csp_meta_tag %>
+  <%= javascript_importmap_tags %>
 </head>
 <body>
-  <%= render "icons" %>
+  <%= render "admin/application/icons" %>
 
   <div class="app-container">
-    <%= render "navigation" -%>
+    <%= render "admin/application/navigation" -%>
 
     <main class="main-content">
-      <%= render "flashes" -%>
+      <%= render "admin/application/flashes" -%>
       <%= yield %>
     </main>
   </div>

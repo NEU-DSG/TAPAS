@@ -31,7 +31,6 @@ class ProcessTeiFileJob < ApplicationJob
       return
     end
 
-    # Skip if already processing or completed
     return if [ "processing", "completed" ].include?(core_file.processing_status)
 
     core_file.update!(processing_status: "processing")

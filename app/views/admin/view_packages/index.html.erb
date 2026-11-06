@@ -1,0 +1,5 @@
+<%= render "admin/base/index_header", title: "View Packages", new_path: new_admin_view_package_path %>
+
+<%= render "admin/base/index_table", resources: @view_packages,
+      columns: %i[id css_files description dir_name],
+      sortable: %i[id css_files description dir_name] %>

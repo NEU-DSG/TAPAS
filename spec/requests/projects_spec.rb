@@ -207,7 +207,7 @@ RSpec.describe "Projects", type: :request do
       end
 
       it "does not delete the project" do
-        project # force creation
+        project
         expect {
           delete project_path(project)
         }.not_to change(Project, :count)
@@ -223,7 +223,7 @@ RSpec.describe "Projects", type: :request do
       end
 
       it "does not delete the project" do
-        project # force creation
+        project
         expect {
           delete project_path(project), as: :json
         }.not_to change(Project, :count)
@@ -234,7 +234,7 @@ RSpec.describe "Projects", type: :request do
       before { sign_in user }
 
       it "deletes the project" do
-        project # force creation
+        project
         expect {
           delete project_path(project)
         }.to change(Project, :count).by(-1)

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module TapasXq
-  # Retrieves TEI, MODS, and TFE files from TAPAS-XQ.
-  # Useful for debugging, syncing, and displaying stored content.
+  # Retrieves TEI, MODS, and TFE (TAPAS-friendly environment) files from
+  # TAPAS-XQ as XML strings. Raises TapasXq::Error on API failure.
   class Retrieval
     attr_reader :client, :project_id, :doc_id
 
@@ -15,23 +15,14 @@ module TapasXq
       @client = client || TapasXq::Client.new
     end
 
-    # Retrieve the TEI file from TAPAS-XQ
-    # @return [String] TEI XML content
-    # @raise [TapasXq::Error] On API failure
     def retrieve_tei
       client.get("/#{project_id}/#{doc_id}/tei")
     end
 
-    # Retrieve the MODS metadata from TAPAS-XQ
-    # @return [String] MODS XML content
-    # @raise [TapasXq::Error] On API failure
     def retrieve_mods
       client.get("/#{project_id}/#{doc_id}/mods")
     end
 
-    # Retrieve the TFE (TAPAS-friendly environment) metadata from TAPAS-XQ
-    # @return [String] TFE XML content
-    # @raise [TapasXq::Error] On API failure
     def retrieve_tfe
       client.get("/#{project_id}/#{doc_id}/tfe")
     end

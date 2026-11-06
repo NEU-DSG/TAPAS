@@ -1,0 +1,16 @@
+<%= simple_form_for [:admin, resource], wrapper: :admin_field_unit, html: { class: "form" } do |f| %>
+  <%= render "admin/base/form_errors", resource: resource %>
+  <%# Has-many associations (core files) are edited from their own pages; see show. %>
+
+  <%= f.association :depositor, label_method: :email %>
+  <%= f.input :description %>
+  <%= f.input :is_public %>
+  <%= f.association :project, label_method: :title %>
+  <%= f.input :title %>
+
+  <%= render "admin/base/image_file_fields", f: f %>
+
+  <div class="form-actions">
+    <%= f.button :submit, class: nil %>
+  </div>
+<% end %>

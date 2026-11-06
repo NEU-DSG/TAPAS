@@ -1,0 +1,90 @@
+@use "sass:color";
+
+button,
+[type="button"],
+[type="reset"],
+[type="submit"],
+.button {
+  appearance: none;
+  background-color: $action-color;
+  border: 0;
+  border-radius: $base-border-radius;
+  color: $white;
+  cursor: pointer;
+  display: inline-block;
+  font-family: $base-font-family;
+  font-size: $base-font-size;
+  -webkit-font-smoothing: antialiased;
+  font-weight: $bold-font-weight;
+  line-height: 1;
+  padding: $small-spacing $base-spacing;
+  text-decoration: none;
+  transition: background-color $base-duration $base-timing;
+  user-select: none;
+  vertical-align: middle;
+  white-space: nowrap;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  &:not(.link):hover {
+    background-color: color.mix($black, $action-color, 20%);
+    color: $white;
+  }
+
+  &:not(.link):focus {
+    outline: $focus-outline;
+    outline-offset: $focus-outline-offset;
+  }
+
+  &:not(.link):disabled:hover {
+    background-color: $action-color;
+  }
+}
+
+
+form.button_to { /* stylelint-disable selector-no-qualifying-type, selector-class-pattern */
+  .link {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+.button--alt {
+  background-color: transparent;
+  border: $base-border;
+  border-color: $blue;
+  color: $blue;
+}
+
+.button--danger {
+  background-color: $red;
+
+  &:not(.link):hover {
+    background-color: color.mix($black, $red, 20%);
+    color: $white;
+  }
+
+  &:not(.link):disabled:hover {
+    background-color: color.mix($black, $red, 20%);
+  }
+}
+
+.button--nav {
+  margin-bottom: $base-spacing;
+}
+
+.button--tooltip {
+  background: none;
+	border: none;
+	color: inherit;
+	cursor: pointer;
+  padding: 0;
+
+  /* stylelint-disable declaration-no-important */
+  &:hover {
+    background-color: unset !important;
+  }
+}

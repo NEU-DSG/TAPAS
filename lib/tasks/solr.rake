@@ -15,7 +15,7 @@ namespace :solr do
     puts "\nPress Ctrl+C to cancel, or Enter to continue..."
     STDIN.gets
 
-    connection = SolrHelpers::SOLR_CORE_CONNECTION
+    connection = SolrHelpers.solr_connection
     errors = []
 
     puts "\nClearing existing Solr index..."
@@ -60,7 +60,7 @@ namespace :solr do
   desc "Optimize the Solr index to trigger spellcheck index rebuild"
   task optimize: :environment do
     puts "Optimizing Solr index..."
-    SolrHelpers::SOLR_CORE_CONNECTION.optimize
+    SolrHelpers.solr_connection.optimize
     puts "Done."
   end
 end

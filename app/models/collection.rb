@@ -1,12 +1,10 @@
 class Collection < ApplicationRecord
   include SolrHelpers
 
-  # validations
   validates_presence_of :depositor_id, :project_id, :title
   validate :depositor_is_project_member
   validate :visibility_consistent_with_project
 
-  # associations
   belongs_to :depositor, class_name: "User"
   belongs_to :project
   has_one :image_file, as: :imageable, dependent: :destroy
@@ -14,7 +12,6 @@ class Collection < ApplicationRecord
   has_many :collection_core_files, dependent: :destroy
   has_many :core_files, through: :collection_core_files
 
-  # callbacks
   after_save :index_record
   before_destroy :capture_core_file_ids_for_orphan_cleanup, prepend: true
   after_destroy :destroy_core_files_orphaned_by_this_collection

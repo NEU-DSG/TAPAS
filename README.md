@@ -129,7 +129,7 @@ bin/brakeman
 ## Additional Resources
 
 ### Documentation
-- [Admin Dashboard Guide](ADMIN_DASHBOARD_GUIDE.md) - Guide to using the Administrate-powered admin interface
+- [Admin Dashboard Guide](ADMIN_DASHBOARD_GUIDE.md) - Guide to using the admin interface
 - [Development Environment Configuration Guide](DEVELOPMENT_ENVIRONMENT_CONFIGURATION_GUIDE.md) - Detailed setup instructions
 
 ### External Resources

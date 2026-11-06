@@ -12,8 +12,7 @@ module TapasXq
       @client = client || TapasXq::Client.new
     end
 
-    # Upload TEI to TAPAS-XQ and generate MODS/TFE metadata
-    # @return [Hash] Hash containing mods_xml, tapas_xq_project_id, tapas_xq_doc_id
+    # @return [Hash] mods_xml, tapas_xq_project_id, tapas_xq_doc_id
     # @raise [ArgumentError] If prerequisites not met
     # @raise [TapasXq::Error] On API failure
     def store

@@ -1,57 +1,79 @@
 module Admin
-  class ProjectsController < Admin::ApplicationController
-    # Custom scoped_resource to handle filters via session
-    def scoped_resource
-      # Store filter state in session
-      session[:project_visibility] = params[:visibility] unless params[:visibility].blank?
-      session[:project_visibility] = nil if params[:clear_filters]
+  class ProjectsController < Admin::BaseController
+    admin_index search: %i[title description institution],
+                sort: %i[title institution is_public created_at],
+                filters: {
+                  public: ->(projects) { projects.where(is_public: true) },
+                  private: ->(projects) { projects.where(is_public: false) },
+                  recent: ->(projects) { projects.where("created_at > ?", 30.days.ago) }
+                }
 
-      resources = super
+    before_action :set_project, only: %i[show edit update destroy]
 
-      # Apply filters based on session state
-      case session[:project_visibility]
-      when "public"
-        resources.where(is_public: true)
-      when "private"
-        resources.where(is_public: false)
+    def index
+      @projects = index_resources(filter_by_visibility(Project.includes(:depositor)))
+    end
+
+    def show
+    end
+
+    def new
+      @project = Project.new
+    end
+
+    def edit
+    end
+
+    def create
+      @project = Project.new(project_params)
+
+      if @project.save
+        redirect_to [ :admin, @project ], notice: "Project was successfully created."
       else
-        resources
+        render :new, status: :unprocessable_content
       end
     end
 
-    # Override this method to specify custom lookup behavior.
-    # This will be used to set the resource for the `show`, `edit`, and `update`
-    # actions.
-    #
-    # def find_resource(param)
-    #   Foo.find_by!(slug: param)
-    # end
+    def update
+      if @project.update(project_params)
+        redirect_to [ :admin, @project ], notice: "Project was successfully updated.", status: :see_other
+      else
+        render :edit, status: :unprocessable_content
+      end
+    end
 
-    # The result of this lookup will be available as `requested_resource`
+    def destroy
+      if @project.destroy
+        redirect_to admin_projects_path, notice: "Project was successfully destroyed.", status: :see_other
+      else
+        redirect_to [ :admin, @project ], alert: @project.errors.full_messages.to_sentence, status: :see_other
+      end
+    end
 
-    # Override this if you have certain roles that require a subset
-    # this will be used to set the records shown on the `index` action.
-    #
-    # def scoped_resource
-    #   if current_user.super_admin?
-    #     resource_class
-    #   else
-    #     resource_class.with_less_stuff
-    #   end
-    # end
+    private
 
-    # Override `resource_params` if you want to transform the submitted
-    # data before it's persisted. For example, the following would turn all
-    # empty values into nil values. It uses other APIs such as `resource_class`
-    # and `dashboard`:
-    #
-    # def resource_params
-    #   params.require(resource_class.model_name.param_key).
-    #     permit(dashboard.permitted_attributes(action_name)).
-    #     transform_values { |value| value == "" ? nil : value }
-    # end
+    def set_project
+      @project = Project.find(params.expect(:id))
+    end
 
-    # See https://administrate-demo.herokuapp.com/customizing_controller_actions
-    # for more information
+    def project_params
+      without_blank_image_file(params.expect(project: [
+        :depositor_id, :description, :institution, :is_public, :title,
+        image_file_attributes: [ :id, :title, :description, :image_url, :file_format, :depositor_id, :_destroy ]
+      ]))
+    end
+
+    # The Public/Private buttons remember their choice in the session until
+    # "All Projects" clears it.
+    def filter_by_visibility(projects)
+      session[:project_visibility] = params[:visibility] if params[:visibility].present?
+      session[:project_visibility] = nil if params[:clear_filters]
+
+      case session[:project_visibility]
+      when "public" then projects.where(is_public: true)
+      when "private" then projects.where(is_public: false)
+      else projects
+      end
+    end
   end
 end
