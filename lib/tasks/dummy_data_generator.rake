@@ -3,6 +3,9 @@ namespace :dummy_data_generator do
   require "net/http"
   require "open-uri"
 
+  # Custom error to use when a task can't be run in isolation.
+  class MissingDependencies < StandardError; end
+
   IMAGE_BASE_URL = ENV.fetch("IMAGE_BASE_URL", nil)
   RAW_TEI_URL = ENV.fetch("RAW_TEI_URL", nil)
 
@@ -99,6 +102,10 @@ namespace :dummy_data_generator do
   # Create a given number of new projects.
   # If `num_projects` is not defined in ENV, 45 projects are created.
   def create_projects
+    if User.all.where(admin_at: nil).empty?
+      raise MissingDependencies, 
+        'Cannot create projects without non-admin users to use as depositors'
+    end
     # Check the number of Projects we had before creating new ones.
     older_projects = Project.count
     # If the Rake task is called with an argument for "num_projects", use that value as the number of

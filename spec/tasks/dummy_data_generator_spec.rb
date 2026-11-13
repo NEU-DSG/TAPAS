@@ -123,7 +123,7 @@ RSpec.describe 'dummy_data_generator rake tasks' do
       it 'raises an error' do
         # Remove all the users created as part of the setup for this example.
         User.destroy_all
-        expect { new_projects }.to raise_error
+        expect { new_projects }.to raise_error(MissingDependencies)
       end
     end
 
