@@ -119,6 +119,14 @@ RSpec.describe 'dummy_data_generator rake tasks' do
     # Explicitly set the subject of these specifications/tests as newly-created projects.
     subject(:new_projects) { create_projects }
 
+    context 'when there are no non-admin users to be depositors' do
+      it 'raises an error' do
+        # Remove all the users created as part of the setup for this example.
+        User.destroy_all
+        expect { new_projects }.to raise_error
+      end
+    end
+
     shared_examples 'projects' do
       it 'creates the first 3 as private projects' do
         expect(new_projects.limit(3).where(is_public: false).count).to eq(3)
@@ -165,6 +173,19 @@ RSpec.describe 'dummy_data_generator rake tasks' do
       end
 
       include_examples 'projects'
+    end
+
+    context 'when the value of environment variable `num_projects` is not an integer' do
+      # Set the environment variable to ask for 5 new projects.
+      before(:each) do
+        stub_const('ENV', ENV.to_h.merge(
+          'num_projects' => 'nope'
+        ))
+      end
+
+      it 'raises an ArgumentError' do
+        expect { new_projects }.to raise_error(ArgumentError)
+      end
     end
 
     context 'when environment variable `num_projects=5` is specified' do
