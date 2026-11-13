@@ -125,8 +125,11 @@ RSpec.describe 'dummy_data_generator rake tasks' do
       end
 
       it 'creates at least 3 private projects' do
-        # There are at 3 or more total private projects.
         expect(new_projects.where(is_public: false).count).to be >= 3
+      end
+
+      it 'reports the number of new private and public projects in standard output' do
+        expect { new_projects }.to output(/\d+ private and \d+ public projects/).to_stdout
       end
 
       context 'when run a second time' do
