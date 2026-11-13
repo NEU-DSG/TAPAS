@@ -110,10 +110,15 @@ RSpec.describe 'dummy_data_generator rake tasks' do
     end
 
     shared_examples 'projects' do
+      it 'creates as private the first three projects' do
+        now = Time.current
+        invoke('dummy_data_generator:projects')
+        new_projects = Project.where(created_at: now..Time.zone.now.end_of_day)
+        expect(new_projects.limit(3).where(is_public: false).length).to eq(3)
+      end
+      
       it 'creates at least 3 private projects' do
         invoke('dummy_data_generator:projects')
-        # The first three projects are private.
-        expect(Project.limit(3).where(is_public: false).count).to eq(3)
         # There are at 3 or more total private projects.
         expect(Project.where(is_public: false).count).to be >= 3
       end
