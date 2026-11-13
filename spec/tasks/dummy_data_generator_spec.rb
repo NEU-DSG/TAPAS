@@ -99,7 +99,7 @@ RSpec.describe 'dummy_data_generator rake tasks' do
   # :projects
   # ---------------------------------------------------------------------------
   describe 'dummy_data_generator:projects' do
-    before do
+    before(:each) do
       # Create 5 new non-admin users to serve as depositors.
       stub_const('ENV', ENV.to_h.merge(
         'num_non_admin_users' => '5'
@@ -109,57 +109,63 @@ RSpec.describe 'dummy_data_generator rake tasks' do
       allow(rake_context).to receive(:record_image)
     end
 
+    # Invoke project creation and return the task's newly-created projects.
+    def create_projects
+      now = Time.current
+      invoke('dummy_data_generator:projects')
+      Project.where(created_at: now..Time.zone.now.end_of_day)
+    end
+
+    # Explicitly set the subject of these specifications/tests as newly-created projects.
+    subject(:new_projects) { create_projects }
+
     shared_examples 'projects' do
       it 'creates as private the first three projects' do
-        now = Time.current
-        invoke('dummy_data_generator:projects')
-        new_projects = Project.where(created_at: now..Time.zone.now.end_of_day)
-        expect(new_projects.limit(3).where(is_public: false).length).to eq(3)
+        expect(new_projects.limit(3).where(is_public: false).count).to eq(3)
       end
       
       it 'creates at least 3 private projects' do
-        invoke('dummy_data_generator:projects')
         # There are at 3 or more total private projects.
-        expect(Project.where(is_public: false).count).to be >= 3
+        expect(new_projects.where(is_public: false).count).to be >= 3
       end
     end
 
     context 'by default, without environment variable `num_projects`' do
       it 'creates 45 projects' do
-        expect { invoke('dummy_data_generator:projects') }
-          .to change(Project, :count).by(45)
+        expect { new_projects }.to change(Project, :count).by(45)
       end
 
       # We can't test for public projects in the other context, because there's a possibility all 5 will
       # be private.
       it 'creates at least 1 public project' do
-        invoke('dummy_data_generator:projects')
-        expect(Project.where(is_public: true).count).to be >= 1
+        expect(new_projects.where(is_public: true).count).to be >= 1
       end
 
       # We can't test for record_image in the other context, because there's a possibility all 5 won't
       # have an image attached.
       it 'calls record_image for at least 1 project' do
+        # In order to test this example, we need to invoke the Rake task AFTER stating what we expect of
+        # `rake_context`.
         expect(rake_context).to receive(:record_image)
-        invoke('dummy_data_generator:projects')
+        create_projects
       end
 
-      include_examples "projects"
+      include_examples 'projects'
     end
 
     context 'when environment variable `num_projects=5` is specified' do
-      before(:example) do
+      # Set the environment variable to ask for 5 new projects.
+      before(:each) do
         stub_const('ENV', ENV.to_h.merge(
           'num_projects' => '5'
         ))
       end
 
       it 'creates 5 projects' do
-        expect { invoke('dummy_data_generator:projects') }
-          .to change(Project, :count).by(5)
+        expect { new_projects }.to change(Project, :count).by(5)
       end
 
-      include_examples "projects"
+      include_examples 'projects'
     end
   end
 
