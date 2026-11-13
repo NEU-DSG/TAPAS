@@ -155,7 +155,23 @@ namespace :dummy_data_generator do
   # Create project members for a given array of project ids.
   # If no array is provided, all projects have members added.
   def create_project_members(project_ids = Project.all.ids)
-    Project.find(project_ids).each do |project|
+    projects = Project.find(project_ids)
+
+    # Make sure there are projects to create members for.
+    if Project.all.empty?
+      raise MissingDependencies, 'Cannot create project members without projects'
+    elsif projects.empty?
+      warn 'WARNING: Found no projects for the given IDs. No project members will be created.'
+      return nil
+    end
+
+    # Make sure there are at least 18 non-admin users to serve as project members.
+    if User.where(admin_at: nil).count < 18
+      warn "WARNING: There may not be enough users available to fully populate projects."
+      warn "  Did you run the dummy_data_generator:non_admin_users task?"
+    end
+
+    projects.each do |project|
       # Populate a project's members from non-admins.
       available_users = User.all.select { |u| u.admin_at.nil? }.map(&:id)
       # The depositor should have already been added, so remove them from the pool.
@@ -165,7 +181,6 @@ namespace :dummy_data_generator do
 
       if available_users.count < num_owners + num_contributors
         warn "WARNING: There aren't enough users available to fully populate project #{project.id}."
-        warn "  Did you run the dummy_data_generator:non_admin_users task?"
       end
 
       # Project owner
