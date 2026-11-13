@@ -120,13 +120,24 @@ RSpec.describe 'dummy_data_generator rake tasks' do
     subject(:new_projects) { create_projects }
 
     shared_examples 'projects' do
-      it 'creates as private the first three projects' do
+      it 'creates the first 3 as private projects' do
         expect(new_projects.limit(3).where(is_public: false).count).to eq(3)
       end
-      
+
       it 'creates at least 3 private projects' do
         # There are at 3 or more total private projects.
         expect(new_projects.where(is_public: false).count).to be >= 3
+      end
+
+      context 'when run a second time' do
+        it 'does not raise errors' do
+          expect { new_projects }.not_to raise_error
+          expect { create_projects }.not_to raise_error
+        end
+
+        it 'does not affect previously-created projects' do
+          expect { create_projects }.not_to change { new_projects }
+        end
       end
     end
 
