@@ -100,12 +100,6 @@ RSpec.describe 'dummy_data_generator rake tasks' do
   # ---------------------------------------------------------------------------
   describe 'dummy_data_generator:projects' do
     before(:each) do
-      # Create 5 new non-admin users to serve as depositors.
-      stub_const('ENV', ENV.to_h.merge(
-        'num_non_admin_users' => '5'
-      ))
-      invoke('dummy_data_generator:non_admin_users')
-
       allow(rake_context).to receive(:record_image)
     end
 
@@ -119,88 +113,96 @@ RSpec.describe 'dummy_data_generator rake tasks' do
     # Explicitly set the subject of these specifications/tests as newly-created projects.
     subject(:new_projects) { create_projects }
 
-    context 'when there are no non-admin users to be depositors' do
-      it 'raises an error' do
-        # Remove all the users created as part of the setup for this example.
-        User.destroy_all
+    context 'when there are no non-admin users to become project depositors' do
+      it 'raises a MissingDependencies error' do
         expect { new_projects }.to raise_error(MissingDependencies)
       end
     end
 
-    shared_examples 'projects' do
-      it 'creates the first 3 as private projects' do
-        expect(new_projects.limit(3).where(is_public: false).count).to eq(3)
-      end
-
-      it 'creates at least 3 private projects' do
-        expect(new_projects.where(is_public: false).count).to be >= 3
-      end
-
-      it 'reports the number of new private and public projects in standard output' do
-        expect { new_projects }.to output(/\d+ private and \d+ public projects/).to_stdout
-      end
-
-      context 'when run a second time' do
-        it 'does not raise errors' do
-          expect { new_projects }.not_to raise_error
-          expect { create_projects }.not_to raise_error
-        end
-
-        it 'does not affect previously-created projects' do
-          expect { create_projects }.not_to change { new_projects }
-        end
-      end
-    end
-
-    context 'by default, without environment variable `num_projects`' do
-      it 'creates 45 projects' do
-        expect { new_projects }.to change(Project, :count).by(45)
-      end
-
-      # We can't test for public projects in the other context, because there's a possibility all 5 will
-      # be private.
-      it 'creates at least 1 public project' do
-        expect(new_projects.where(is_public: true).count).to be >= 1
-      end
-
-      # We can't test for record_image in the other context, because there's a possibility all 5 won't
-      # have an image attached.
-      it 'calls record_image for at least 1 project' do
-        # In order to test this example, we need to invoke the Rake task AFTER stating what we expect of
-        # `rake_context`.
-        expect(rake_context).to receive(:record_image)
-        create_projects
-      end
-
-      include_examples 'projects'
-    end
-
-    context 'when the value of environment variable `num_projects` is not an integer' do
-      # Set the environment variable to ask for 5 new projects.
+    context 'when there are non-admin users to become project depositors' do
       before(:each) do
+        # Create 5 new non-admin users to serve as depositors.
         stub_const('ENV', ENV.to_h.merge(
-          'num_projects' => 'nope'
+          'num_non_admin_users' => '5'
         ))
+        invoke('dummy_data_generator:non_admin_users')
       end
 
-      it 'raises an ArgumentError' do
-        expect { new_projects }.to raise_error(ArgumentError)
+      shared_examples 'projects' do
+        it 'creates the first 3 as private projects' do
+          expect(new_projects.limit(3).where(is_public: false).count).to eq(3)
+        end
+  
+        it 'creates at least 3 private projects' do
+          expect(new_projects.where(is_public: false).count).to be >= 3
+        end
+  
+        it 'reports the number of new private and public projects in standard output' do
+          expect { new_projects }.to output(/\d+ private and \d+ public projects/).to_stdout
+        end
+  
+        context 'when run a second time' do
+          it 'does not raise errors' do
+            expect { new_projects }.not_to raise_error
+            expect { create_projects }.not_to raise_error
+          end
+  
+          it 'does not affect previously-created projects' do
+            expect { create_projects }.not_to change { new_projects }
+          end
+        end
       end
-    end
-
-    context 'when environment variable `num_projects=5` is specified' do
-      # Set the environment variable to ask for 5 new projects.
-      before(:each) do
-        stub_const('ENV', ENV.to_h.merge(
-          'num_projects' => '5'
-        ))
+  
+      context 'by default, without environment variable `num_projects`' do
+        it 'creates 45 projects' do
+          expect { new_projects }.to change(Project, :count).by(45)
+        end
+  
+        # We can't test for public projects in the other context, because there's a possibility all 5 will
+        # be private.
+        it 'creates at least 1 public project' do
+          expect(new_projects.where(is_public: true).count).to be >= 1
+        end
+  
+        # We can't test for record_image in the other context, because there's a possibility all 5 won't
+        # have an image attached.
+        it 'calls record_image for at least 1 project' do
+          # In order to test this example, we need to invoke the Rake task AFTER stating what we expect of
+          # `rake_context`.
+          expect(rake_context).to receive(:record_image)
+          create_projects
+        end
+  
+        include_examples 'projects'
       end
-
-      it 'creates 5 projects' do
-        expect { new_projects }.to change(Project, :count).by(5)
+  
+      context 'when the value of environment variable `num_projects` is not an integer' do
+        # Set the environment variable to ask for 5 new projects.
+        before(:each) do
+          stub_const('ENV', ENV.to_h.merge(
+            'num_projects' => 'nope'
+          ))
+        end
+  
+        it 'raises an ArgumentError' do
+          expect { new_projects }.to raise_error(ArgumentError)
+        end
       end
-
-      include_examples 'projects'
+  
+      context 'when environment variable `num_projects=5` is specified' do
+        # Set the environment variable to ask for 5 new projects.
+        before(:each) do
+          stub_const('ENV', ENV.to_h.merge(
+            'num_projects' => '5'
+          ))
+        end
+  
+        it 'creates 5 projects' do
+          expect { new_projects }.to change(Project, :count).by(5)
+        end
+  
+        include_examples 'projects'
+      end
     end
   end
 
