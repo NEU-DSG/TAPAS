@@ -23,6 +23,7 @@ class CoreFile < ApplicationRecord
   scope :processing_completed, -> { where(processing_status: "completed") }
 
   after_save :index_core_file
+  after_destroy :delete_record
   after_create :enqueue_tapas_xq_processing
 
   def project

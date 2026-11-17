@@ -27,11 +27,16 @@ module SolrHelpers
     solr_connection.commit
   end
 
+  # Built from class and id rather than to_solr: after a destroy the record's
+  # associations can be gone, and to_solr reads them. A Solr outage is logged, not
+  # raised, so it cannot undo the database delete; `rails solr:reindex` repairs the index.
   def delete_record
-    record_id = self.to_solr["id"]
+    record_id = "#{self.class}_#{id}"
 
-    solr_connection.delete_by_id(record_id.to_s)
+    solr_connection.delete_by_id(record_id)
     solr_connection.commit
+  rescue RSolr::Error::Http, RSolr::Error::ConnectionRefused => e
+    Rails.logger.error("Could not remove #{record_id} from Solr: #{e.message}")
   end
 
   def self.delete_all_indexed_records

@@ -13,6 +13,7 @@ class Collection < ApplicationRecord
   has_many :core_files, through: :collection_core_files
 
   after_save :index_record
+  after_destroy :delete_record
   before_destroy :capture_core_file_ids_for_orphan_cleanup, prepend: true
   after_destroy :destroy_core_files_orphaned_by_this_collection
 
