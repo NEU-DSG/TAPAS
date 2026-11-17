@@ -9,7 +9,7 @@ RSpec.describe 'dummy_data_generator rake tasks' do
   # on the top-level main object at rake-load time.
   let(:rake_context) { TOPLEVEL_BINDING.eval('self') }
 
-  before do
+  before(:each) do
     # Stub Solr to avoid needing a running Solr instance.
     # Project, Collection, and CoreFile all fire after_save Solr callbacks.
     allow_any_instance_of(SolrHelpers).to receive(:index_record).and_return(true)
@@ -20,6 +20,21 @@ RSpec.describe 'dummy_data_generator rake tasks' do
   def invoke(task_name)
     Rake::Task[task_name].reenable
     Rake::Task[task_name].invoke
+  end
+
+  def create_users_for_testing(total = 10)
+    # Create 10 new non-admin users.
+    stub_const('ENV', ENV.to_h.merge(
+      'num_non_admin_users' => total.to_s
+    ))
+    invoke('dummy_data_generator:non_admin_users')
+  end
+
+  # Invoke project creation and return the task's newly-created projects.
+  def create_projects
+    now = Time.current
+    invoke('dummy_data_generator:projects')
+    Project.where(created_at: now..Time.zone.now.end_of_day)
   end
 
   # ---------------------------------------------------------------------------
@@ -103,13 +118,6 @@ RSpec.describe 'dummy_data_generator rake tasks' do
       allow(rake_context).to receive(:record_image)
     end
 
-    # Invoke project creation and return the task's newly-created projects.
-    def create_projects
-      now = Time.current
-      invoke('dummy_data_generator:projects')
-      Project.where(created_at: now..Time.zone.now.end_of_day)
-    end
-
     # Explicitly set the subject of these specifications/tests as newly-created projects.
     subject(:new_projects) { create_projects }
 
@@ -121,11 +129,7 @@ RSpec.describe 'dummy_data_generator rake tasks' do
 
     context 'when there are non-admin users to become project depositors' do
       before(:each) do
-        # Create 5 new non-admin users to serve as depositors.
-        stub_const('ENV', ENV.to_h.merge(
-          'num_non_admin_users' => '5'
-        ))
-        invoke('dummy_data_generator:non_admin_users')
+        create_users_for_testing
       end
 
       shared_examples 'projects' do
@@ -210,38 +214,58 @@ RSpec.describe 'dummy_data_generator rake tasks' do
   # :project_members
   # ---------------------------------------------------------------------------
   describe 'dummy_data_generator:project_members' do
+    # Explicitly set the subject of these specifications/tests as the Rake task.
+    subject(:new_members) { invoke('dummy_data_generator:project_members') }
+
     context 'when no projects exist' do
-      it 'does not create any project members' do
-        expect { invoke('dummy_data_generator:project_members') }
-          .not_to change(ProjectMember, :count)
+      it 'raises a MissingDependencies error' do
+        expect { new_members }.to raise_error(MissingDependencies)
       end
     end
 
-    context 'when a project and enough non-admin users exist' do
+    context 'when projects exist' do
       let!(:depositor) { User.create!(name: 'Dep', email: 'dep@test.com', password: 'pass1234!') }
       # Note: Project.after_create :assign_default_owner auto-creates 1 owner PM for the depositor.
       let!(:project)   { Project.create!(title: 'Test Project', depositor_id: depositor.id) }
 
-      before do
-        # create_project_members needs enough unique non-admin users to fill 6 slots
-        # (the depositor is already assigned as owner by assign_default_owner, so 7 others
-        # gives 7 remaining candidates for the task to use)
-        7.times { |i| User.create!(name: "User #{i}", email: "u#{i}@test.com", password: 'pass1234!') }
+      context 'when no users exist' do
+        it 'raises a MissingDependencies error' do
+          # Delete the depositor now that the project is created, so there is 1 project and 0 users.
+          depositor.destroy
+          expect { new_members }.to raise_error(MissingDependencies)
+        end
       end
 
-      xit 'adds 6 project members per project (5 contributors + 1 owner)' do
-        # Project creation fires assign_default_owner, so 1 PM already exists.
-        # The task adds 6 more on top of that.
-        expect { invoke('dummy_data_generator:project_members') }
-          .to change(ProjectMember, :count).by(6)
+      context 'when 1 to 17 users exist' do
+        it 'warns that there may not be enough users' do
+          create_users_for_testing
+          expect { new_members }.to output.to_stderr
+        end
       end
 
-      xit 'assigns the correct roles to the members it creates' do
-        existing_pm_ids = ProjectMember.pluck(:id)
-        invoke('dummy_data_generator:project_members')
-        task_members = ProjectMember.where(project_id: project.id).where.not(id: existing_pm_ids)
-        expect(task_members.where(role: 'contributor').count).to eq(5)
-        expect(task_members.where(role: 'owner').count).to eq(1)
+      context 'when at least 18 users exist' do
+        before(:each) do
+          create_users_for_testing(18)
+        end
+
+        it 'does not issue a warning' do
+          expect { new_members }.not_to output.to_stderr
+        end
+
+        xit 'adds 6 project members per project (5 contributors + 1 owner)' do
+          # Project creation fires assign_default_owner, so 1 PM already exists.
+          # The task adds 6 more on top of that.
+          expect { new_members }
+            .to change(ProjectMember, :count).by(6)
+        end
+  
+        xit 'assigns the correct roles to the members it creates' do
+          existing_pm_ids = ProjectMember.pluck(:id)
+          invoke('dummy_data_generator:project_members')
+          task_members = ProjectMember.where(project_id: project.id).where.not(id: existing_pm_ids)
+          expect(task_members.where(role: 'contributor').count).to eq(5)
+          expect(task_members.where(role: 'owner').count).to eq(1)
+        end
       end
     end
   end
