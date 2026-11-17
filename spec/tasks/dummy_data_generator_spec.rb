@@ -17,16 +17,20 @@ RSpec.describe 'dummy_data_generator rake tasks' do
       add: true, commit: true, delete_by_query: true, delete_by_id: true))
   end
 
+  def stub_env(key, value)
+    stub_const('ENV', ENV.to_h.merge(
+      key => value.to_s
+    ))
+  end
+
   def invoke(task_name)
     Rake::Task[task_name].reenable
     Rake::Task[task_name].invoke
   end
 
+  # Create new non-admin users.
   def create_users_for_testing(total = 10)
-    # Create 10 new non-admin users.
-    stub_const('ENV', ENV.to_h.merge(
-      'num_non_admin_users' => total.to_s
-    ))
+    stub_env('num_non_admin_users', total)
     invoke('dummy_data_generator:non_admin_users')
   end
 
@@ -100,9 +104,7 @@ RSpec.describe 'dummy_data_generator rake tasks' do
 
     context 'when environment variable `num_non_admin_users=100` is specified' do
       it 'creates 100 users with no admin privileges' do
-        stub_const('ENV', ENV.to_h.merge(
-          'num_non_admin_users' => '100'
-        ))
+        stub_env('num_non_admin_users', 100)
         expect { invoke('dummy_data_generator:non_admin_users') }
           .to change(User, :count).by(100)
         expect(User.where(admin_at: nil).count).to eq(100)
@@ -196,9 +198,7 @@ RSpec.describe 'dummy_data_generator rake tasks' do
       context 'when environment variable `num_projects=5` is specified' do
         # Set the environment variable to ask for 5 new projects.
         before(:each) do
-          stub_const('ENV', ENV.to_h.merge(
-            'num_projects' => '5'
-          ))
+          stub_env('num_projects', 5)
         end
   
         it 'creates 5 projects' do
@@ -238,7 +238,7 @@ RSpec.describe 'dummy_data_generator rake tasks' do
 
       context 'when 1 to 17 users exist' do
         it 'warns that there may not be enough users' do
-          create_users_for_testing
+          create_users_for_testing(2)
           expect { new_members }.to output.to_stderr
         end
       end
@@ -250,6 +250,12 @@ RSpec.describe 'dummy_data_generator rake tasks' do
 
         it 'does not issue a warning' do
           expect { new_members }.not_to output.to_stderr
+        end
+
+        context 'when no project identifiers are passed' do
+          xit 'creates new project members for all projects' do
+            
+          end
         end
 
         xit 'adds 6 project members per project (5 contributors + 1 owner)' do
