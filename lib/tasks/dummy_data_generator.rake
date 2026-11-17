@@ -166,7 +166,10 @@ namespace :dummy_data_generator do
     end
 
     # Make sure there are at least 18 non-admin users to serve as project members.
-    if User.where(admin_at: nil).count < 18
+    if User.all.empty?
+      # This conditional should never be met: a project can only be created with a depositor user.
+      raise MissingDependencies, 'Cannot create project members without users'
+    elsif User.where(admin_at: nil).count < 18
       warn "WARNING: There may not be enough users available to fully populate projects."
       warn "  Did you run the dummy_data_generator:non_admin_users task?"
     end
@@ -443,11 +446,7 @@ namespace :dummy_data_generator do
 
   desc "creates project members"
   task project_members: :environment do
-    if Project.any?
-      create_project_members
-    else
-      warn "There are no projects for which to create members."
-    end
+    create_project_members
   end
 
   desc "creates collections"
@@ -461,7 +460,6 @@ namespace :dummy_data_generator do
 
   desc "creates core files"
   task core_files: [:environment, :check_queue_adapter] do
-
     if Collection.any?
       create_core_files
     else
