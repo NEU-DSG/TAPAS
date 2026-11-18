@@ -15,6 +15,8 @@ RSpec.describe 'dummy_data_generator rake tasks' do
     allow_any_instance_of(SolrHelpers).to receive(:index_record).and_return(true)
     allow(SolrHelpers).to receive(:solr_connection).and_return(double("RSolr",
       add: true, commit: true, delete_by_query: true, delete_by_id: true))
+
+    allow(rake_context).to receive(:record_image)
   end
 
   def stub_env(key, value)
@@ -39,6 +41,13 @@ RSpec.describe 'dummy_data_generator rake tasks' do
     now = Time.current
     invoke('dummy_data_generator:projects')
     Project.where(created_at: now..Time.zone.now.end_of_day)
+  end
+
+  # Invoke project member creation and return newly-created project members.
+  def create_project_members
+    now = Time.current
+    invoke('dummy_data_generator:project_members')
+    ProjectMember.where(created_at: now..Time.zone.now.end_of_day)
   end
 
   # ---------------------------------------------------------------------------
@@ -93,7 +102,6 @@ RSpec.describe 'dummy_data_generator rake tasks' do
   # :non_admin_users  (slow – creates 275 DB records)
   # ---------------------------------------------------------------------------
   describe 'dummy_data_generator:non_admin_users', :slow do
-    
     context 'by default, without environment variable `num_non_admin_users`' do
       it 'creates 275 users with no admin privileges' do
         expect { invoke('dummy_data_generator:non_admin_users') }
@@ -116,10 +124,6 @@ RSpec.describe 'dummy_data_generator rake tasks' do
   # :projects
   # ---------------------------------------------------------------------------
   describe 'dummy_data_generator:projects' do
-    before(:each) do
-      allow(rake_context).to receive(:record_image)
-    end
-
     # Explicitly set the subject of these specifications/tests as newly-created projects.
     subject(:new_projects) { create_projects }
 
@@ -214,8 +218,8 @@ RSpec.describe 'dummy_data_generator rake tasks' do
   # :project_members
   # ---------------------------------------------------------------------------
   describe 'dummy_data_generator:project_members' do
-    # Explicitly set the subject of these specifications/tests as the Rake task.
-    subject(:new_members) { invoke('dummy_data_generator:project_members') }
+    # Explicitly set the subject of these specifications/tests.
+    subject(:new_members) { create_project_members }
 
     context 'when no projects exist' do
       it 'raises a MissingDependencies error' do
@@ -245,17 +249,24 @@ RSpec.describe 'dummy_data_generator rake tasks' do
 
       context 'when at least 18 users exist' do
         before(:each) do
-          create_users_for_testing(18)
+          # Create 17 users (the depositor makes 18).
+          create_users_for_testing(17)
+          stub_env('num_projects', 5)
+          @more_projects = create_projects
         end
 
         it 'does not issue a warning' do
           expect { new_members }.not_to output.to_stderr
         end
 
-        context 'when no project identifiers are passed' do
-          xit 'creates new project members for all projects' do
-            
-          end
+        it 'creates new project members for most existing projects' do
+          # Create a hash where the key is a project ID and the value is the number of new project
+          # members. We expect every project to be represented, but there is a low chance that no new
+          # project members will be created for a project. We can expect 4 to 6 out of 6 projects will
+          # have members.
+          members_per_project = new_members.group(:project_id).count
+          expect(members_per_project.length)
+            .to be_between(@more_projects.size - 1, @more_projects.size + 1).inclusive
         end
 
         xit 'adds 6 project members per project (5 contributors + 1 owner)' do
