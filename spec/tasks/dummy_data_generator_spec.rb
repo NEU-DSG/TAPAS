@@ -280,7 +280,21 @@ RSpec.describe 'dummy_data_generator rake tasks' do
           expect(members_per_project.values).to all ( be_between(1, 17).inclusive )
           # ...so we test all ProjectMembers too, remembering that with the depositor, there may be up 
           # to 18 total members.
-          expect(ProjectMember.group(:project_id).count.values).to all ( be_between(1, 18).inclusive )
+          expect(ProjectMember.group(:project_id).count.values)
+            .to all( be_between(1, 18).inclusive )
+        end
+
+        it 'creates 0 to 5 new owners per project' do
+          expect(Project.all.to_a).to all(satisfy { |p| p.owner.size == 1 })
+          new_members
+          expect(Project.all.to_a).to all(satisfy { |p| p.owner.size > 0 && p.owner.size <= 6 })
+        end
+
+        it 'creates 0 to 12 new contributors per project' do
+          expect(Project.all.to_a).to all(satisfy { |p| p.contributors.empty? })
+          new_members
+          expect(Project.all.to_a)
+            .to all(satisfy { |p| p.contributors.empty? || p.contributors.size <= 12 })
         end
 
         it 'creates new project members for most existing projects' do
@@ -289,14 +303,6 @@ RSpec.describe 'dummy_data_generator rake tasks' do
           # members.
           expect(members_per_project.length)
             .to be_between(@more_projects.size - 1, @more_projects.size + 1).inclusive
-        end
-
-        xit 'assigns the correct roles to the members it creates' do
-          existing_pm_ids = ProjectMember.pluck(:id)
-          invoke('dummy_data_generator:project_members')
-          task_members = ProjectMember.where(project_id: project.id).where.not(id: existing_pm_ids)
-          expect(task_members.where(role: 'contributor').count).to eq(5)
-          expect(task_members.where(role: 'owner').count).to eq(1)
         end
       end
     end
