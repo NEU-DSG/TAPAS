@@ -221,6 +221,9 @@ RSpec.describe 'dummy_data_generator rake tasks' do
     # Explicitly set the subject of these specifications/tests.
     subject(:new_members) { create_project_members }
 
+    # Create a hash where the key is a project ID and the value is the number of new project members.
+    let(:members_per_project) { new_members.group(:project_id).count }
+
     context 'when no projects exist' do
       it 'raises a MissingDependencies error' do
         expect { new_members }.to raise_error(MissingDependencies)
@@ -251,6 +254,7 @@ RSpec.describe 'dummy_data_generator rake tasks' do
         before(:each) do
           # Create 17 users (the depositor makes 18).
           create_users_for_testing(17)
+          # Create 5 more projects
           stub_env('num_projects', 5)
           @more_projects = create_projects
         end
@@ -259,23 +263,34 @@ RSpec.describe 'dummy_data_generator rake tasks' do
           expect { new_members }.not_to output.to_stderr
         end
 
+        it 'reports any new project members for every existing project' do
+          # The output pattern is "# project members in PROJECT_ID: PROJECT_TITLE:"
+          expect { new_members }.to output {
+              match(/\d+ project members in 1:/).and
+              match(/\d+ project members in 2:/).and
+              match(/\d+ project members in 3:/).and
+              match(/\d+ project members in 4:/).and
+              match(/\d+ project members in 5:/).and
+              match(/\d+ project members in 6:/)
+            }.to_stdout
+        end
+
+        it 'creates 0 to 17 new project members for every existing project' do
+          # Only projects with 1+ new member will be represented in members_per_project...
+          expect(members_per_project.values).to all ( be_between(1, 17).inclusive )
+          # ...so we test all ProjectMembers too, remembering that with the depositor, there may be up 
+          # to 18 total members.
+          expect(ProjectMember.group(:project_id).count.values).to all ( be_between(1, 18).inclusive )
+        end
+
         it 'creates new project members for most existing projects' do
-          # Create a hash where the key is a project ID and the value is the number of new project
-          # members. We expect every project to be represented, but there is a low chance that no new
-          # project members will be created for a project. We can expect 4 to 6 out of 6 projects will
-          # have members.
-          members_per_project = new_members.group(:project_id).count
+          # We expect every project to be represented, but there is a low chance that no new project
+          # members will be created for a project. We can expect 4 to 6 out of 6 projects will have
+          # members.
           expect(members_per_project.length)
             .to be_between(@more_projects.size - 1, @more_projects.size + 1).inclusive
         end
 
-        xit 'adds 6 project members per project (5 contributors + 1 owner)' do
-          # Project creation fires assign_default_owner, so 1 PM already exists.
-          # The task adds 6 more on top of that.
-          expect { new_members }
-            .to change(ProjectMember, :count).by(6)
-        end
-  
         xit 'assigns the correct roles to the members it creates' do
           existing_pm_ids = ProjectMember.pluck(:id)
           invoke('dummy_data_generator:project_members')
