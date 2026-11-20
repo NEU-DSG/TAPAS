@@ -97,9 +97,9 @@ RSpec.describe Project, type: :model do
       expect(project.contributors).to include(contributor_user)
     end
 
-    it 'returns nil when there are no contributors' do
+    it 'returns an empty enumerable when there are no contributors' do
       empty_project = create(:project, depositor: depositor)
-      expect(empty_project.contributors).to be_nil
+      expect(empty_project.contributors).to be_empty
     end
   end
 
