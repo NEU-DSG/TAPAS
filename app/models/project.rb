@@ -37,7 +37,7 @@ class Project < ApplicationRecord
   end
 
   def contributors
-    members["contributor"]
+    members["contributor"] || []
   end
 
   def owner
