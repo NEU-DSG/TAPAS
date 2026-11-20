@@ -243,38 +243,7 @@ RSpec.describe 'dummy_data_generator rake tasks' do
         end
       end
 
-      context 'when 1 to 17 users exist' do
-        it 'warns that there may not be enough users' do
-          create_users_for_testing(2)
-          expect { new_members }.to output.to_stderr
-        end
-      end
-
-      context 'when at least 18 users exist' do
-        before(:each) do
-          # Create 17 users (the depositor makes 18).
-          create_users_for_testing(17)
-          # Create 5 more projects
-          stub_env('num_projects', 5)
-          @more_projects = create_projects
-        end
-
-        it 'does not issue a warning' do
-          expect { new_members }.not_to output.to_stderr
-        end
-
-        it 'reports any new project members for every existing project' do
-          # The output pattern is "# project members in PROJECT_ID: PROJECT_TITLE:"
-          expect { new_members }.to output {
-              match(/\d+ project members in 1:/).and
-              match(/\d+ project members in 2:/).and
-              match(/\d+ project members in 3:/).and
-              match(/\d+ project members in 4:/).and
-              match(/\d+ project members in 5:/).and
-              match(/\d+ project members in 6:/)
-            }.to_stdout
-        end
-
+      shared_examples 'project members' do
         it 'creates 0 to 17 new project members for every existing project' do
           # Only projects with 1+ new member will be represented in members_per_project...
           expect(members_per_project.values).to all ( be_between(1, 17).inclusive )
@@ -295,6 +264,43 @@ RSpec.describe 'dummy_data_generator rake tasks' do
           new_members
           expect(Project.all.to_a)
             .to all(satisfy { |p| p.contributors.empty? || p.contributors.size <= 12 })
+        end
+      end # shared examples
+
+      context 'when 1 to 17 users exist' do
+        it 'warns that there may not be enough users' do
+          create_users_for_testing(2)
+          expect { new_members }.to output.to_stderr
+        end
+
+        include_examples 'project members'
+      end
+
+      context 'when at least 18 users exist' do
+        before(:each) do
+          # Create 17 users (the depositor makes 18).
+          create_users_for_testing(17)
+          # Create 5 more projects
+          stub_env('num_projects', 5)
+          @more_projects = create_projects
+        end
+
+        it 'does not issue a warning' do
+          expect { new_members }.not_to output.to_stderr
+        end
+
+        include_examples 'project members'
+
+        it 'reports any new project members for every existing project' do
+          # The output pattern is "# project members in PROJECT_ID: PROJECT_TITLE:"
+          expect { new_members }.to output {
+              match(/\d+ project members in 1:/).and
+              match(/\d+ project members in 2:/).and
+              match(/\d+ project members in 3:/).and
+              match(/\d+ project members in 4:/).and
+              match(/\d+ project members in 5:/).and
+              match(/\d+ project members in 6:/)
+            }.to_stdout
         end
 
         it 'creates new project members for most existing projects' do
