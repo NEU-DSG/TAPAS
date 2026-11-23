@@ -249,11 +249,17 @@ namespace :dummy_data_generator do
     end
 
     projects.each do |project|
-      project_owners = project.owner.shuffle
+      project_owners = ProjectMember.where(project_id: project.id).where(role: 'owner').shuffle
       num_collections = do_make_empty? ? 0 : 1 + Random.rand(10) # 0 to 10
       # Keep track of the number of new collections and whether they're publicly visible.
       new_collections = 0
       availability = Array.new
+
+      if project_owners.empty?
+        # This conditional should never be met: a project can only be created with a depositor user, a 
+        # project owner.
+        raise MissingDependencies, 'Cannot create collections without a project owner'
+      end
 
       num_collections.times do
         # If the project is public, the collection can be public or private.
