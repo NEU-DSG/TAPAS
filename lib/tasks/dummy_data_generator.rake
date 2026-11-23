@@ -232,8 +232,23 @@ namespace :dummy_data_generator do
   def create_collections(project_ids = Project.all.ids)
     # Keep track of new collections.
     new_collection_ids = Array.new
+    projects = Project.find(project_ids)
 
-    Project.find(project_ids).each do |project|
+    # Make sure there are projects to create collections for.
+    if Project.all.empty?
+      raise MissingDependencies, 'Cannot create collections without projects'
+    elsif projects.empty?
+      warn 'WARNING: Found no projects for the given IDs. No collections will be created.'
+      return nil
+    end
+
+    # Make sure there are users who can be collection depositors.
+    if User.all.empty?
+      # This conditional should never be met: a project can only be created with a depositor user.
+      raise MissingDependencies, 'Cannot create collections without users'
+    end
+
+    projects.each do |project|
       project_owners = project.owner.shuffle
       num_collections = do_make_empty? ? 0 : 1 + Random.rand(10) # 0 to 10
       # Keep track of the number of new collections and whether they're publicly visible.
