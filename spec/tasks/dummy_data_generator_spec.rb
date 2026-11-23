@@ -50,6 +50,13 @@ RSpec.describe 'dummy_data_generator rake tasks' do
     ProjectMember.where(created_at: now..Time.zone.now.end_of_day)
   end
 
+  # Invoke collection creation and return newly-created collections.
+  def create_collections
+    now = Time.current
+    invoke('dummy_data_generator:collections')
+    Collection.where(created_at: now..Time.zone.now.end_of_day)
+  end
+
   # ---------------------------------------------------------------------------
   # :admin_user
   # ---------------------------------------------------------------------------
@@ -305,7 +312,7 @@ RSpec.describe 'dummy_data_generator rake tasks' do
 
         it 'creates new project members for most existing projects' do
           # We expect every project to be represented, but there is a low chance that no new project
-          # members will be created for a project. We can expect 4 to 6 out of 6 projects will have
+          # members will be created for a project. We can expect 4 to 6 out of 6 projects will have new
           # members.
           expect(members_per_project.length)
             .to be_between(@more_projects.size - 1, @more_projects.size + 1).inclusive
@@ -318,20 +325,43 @@ RSpec.describe 'dummy_data_generator rake tasks' do
   # :collections
   # ---------------------------------------------------------------------------
   describe 'dummy_data_generator:collections' do
+    # Explicitly set the subject of these specifications/tests.
+    subject(:new_collections) { create_collections }
+
     context 'when no projects exist' do
-      it 'does not create any collections' do
-        expect { invoke('dummy_data_generator:collections') }
-          .not_to change(Collection, :count)
+      it 'raises a MissingDependencies error' do
+        expect { new_collections }.to raise_error(MissingDependencies)
       end
     end
 
-    context 'when a project with members exists' do
+    context 'when a project exists but without users' do
+      let!(:depositor) { User.create!(name: 'Dep', email: 'dep@test.com', password: 'pass1234!') }
+      let!(:project)   { Project.create!(title: 'Test Project', depositor_id: depositor.id) }
+
+      context 'when there are no users at all' do
+        it 'raises a MissingDependencies error' do
+          # Delete the project depositor, so there is 1 project and 0 users.
+          depositor.destroy
+          expect { new_collections }.to raise_error(MissingDependencies)
+        end
+      end
+
+      context 'when there are users but a project has no owners' do
+        it 'raises a MissingDependencies error' do
+          # Create a few more users so the `User.all.empty?` test passes.
+          create_users_for_testing(2)
+          # Delete the project depositor, so there is 1 project and 0 owners.
+          depositor.destroy
+          expect { new_collections }.to raise_error(MissingDependencies)
+        end
+      end
+    end
+
+    context 'when a project with owners exists' do
       let!(:depositor) { User.create!(name: 'Dep', email: 'dep@test.com', password: 'pass1234!') }
       let!(:member)    { User.create!(name: 'Member', email: 'member@test.com', password: 'pass1234!') }
       let!(:project)   { Project.create!(title: 'Test Project', depositor_id: depositor.id) }
       let!(:pm)        { ProjectMember.create!(project_id: project.id, user_id: member.id, role: 'contributor') }
-
-      before { allow(rake_context).to receive(:record_image) }
 
       xit 'creates 3 collections per project (2 public + 1 private)' do
         expect { invoke('dummy_data_generator:collections') }

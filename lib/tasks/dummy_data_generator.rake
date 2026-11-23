@@ -472,11 +472,7 @@ namespace :dummy_data_generator do
 
   desc "creates collections"
   task collections: :environment do
-    if Project.any?
-      create_collections
-    else
-      warn "There are no projects for which to create collections."
-    end
+    create_collections
   end
 
   desc "creates core files"
