@@ -356,10 +356,43 @@ RSpec.describe 'dummy_data_generator rake tasks' do
     end
 
     context 'when a project with owners exists' do
-      let!(:depositor) { User.create!(name: 'Dep', email: 'dep@test.com', password: 'pass1234!') }
-      let!(:member)    { User.create!(name: 'Member', email: 'member@test.com', password: 'pass1234!') }
-      let!(:project)   { Project.create!(title: 'Test Project', depositor_id: depositor.id) }
-      let!(:pm)        { ProjectMember.create!(project_id: project.id, user_id: member.id, role: 'contributor') }
+      include_context 'simple project with contributor'
+
+      shared_examples 'collections' do
+        it 'creates 0 to 10 collections per project' do
+          expect(new_collections.length).to be_between(0, 10).inclusive
+        end
+  
+        it 'reports the total number of collections added to a project' do
+          expect { new_collections }
+            .to output(/Created \d+ collections in (public|private) project \d+/).to_stdout
+        end
+  
+        it 'reports the number of public and private collections added to a project' do
+          expect { new_collections }.to output {
+            match(/\d+ private collections/).and
+            match(/\d+ public collections/)
+          }.to_stdout
+        end
+      end # shared examples
+
+      context 'and the project is public' do
+        include_context 'simple project with contributor'
+
+        include_examples 'collections'
+      end
+
+      context 'and the project is private' do
+        include_context 'simple project with contributor' do
+          let!(:is_project_public) { false }
+        end
+
+        include_examples 'collections'
+
+        it 'creates no public collections' do
+          expect(new_collections.where(is_public: true).count).to eq(0)
+        end
+      end
 
       xit 'creates 3 collections per project (2 public + 1 private)' do
         expect { invoke('dummy_data_generator:collections') }

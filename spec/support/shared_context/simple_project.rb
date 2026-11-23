@@ -17,9 +17,20 @@ RSpec.shared_context 'simple project', :shared_context => :metadata do
       add: true, commit: true, delete_by_query: true, delete_by_id: true))
   end
 
+  let!(:is_project_public) { true }
   let!(:depositor) { User.create!(name: 'Dep', email: 'dep@test.com', password: 'pass1234!') }
   # Note: Project.after_create :assign_default_owner auto-creates 1 owner PM for the depositor.
-  let!(:project)   { Project.create!(title: 'Test Project', depositor_id: depositor.id) }
+  let!(:project)   { Project.create!(title: 'Test Project', 
+                                     depositor_id: depositor.id,
+                                     is_public: is_project_public) }
+end
+
+# A version that also includes a contributor.
+RSpec.shared_context 'simple project with contributor', :shared_context => :metadata do
+  include_context 'simple project' do
+    let!(:member)    { User.create!(name: 'Member', email: 'member@test.com', password: 'pass1234!') }
+    let!(:pm)        { ProjectMember.create!(project_id: project.id, user_id: member.id, role: 'contributor') }
+  end
 end
 
 RSpec.configure do |rspec|
