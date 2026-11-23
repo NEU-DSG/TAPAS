@@ -1,4 +1,5 @@
 require 'rails_helper'
+require 'support/shared_context/simple_project.rb'
 
 RSpec.describe 'dummy_data_generator rake tasks' do
   before(:all) do
@@ -238,9 +239,7 @@ RSpec.describe 'dummy_data_generator rake tasks' do
     end
 
     context 'when projects exist' do
-      let!(:depositor) { User.create!(name: 'Dep', email: 'dep@test.com', password: 'pass1234!') }
-      # Note: Project.after_create :assign_default_owner auto-creates 1 owner PM for the depositor.
-      let!(:project)   { Project.create!(title: 'Test Project', depositor_id: depositor.id) }
+      include_context 'simple project'
 
       context 'when no users exist' do
         it 'raises a MissingDependencies error' do
@@ -335,8 +334,7 @@ RSpec.describe 'dummy_data_generator rake tasks' do
     end
 
     context 'when a project exists but without users' do
-      let!(:depositor) { User.create!(name: 'Dep', email: 'dep@test.com', password: 'pass1234!') }
-      let!(:project)   { Project.create!(title: 'Test Project', depositor_id: depositor.id) }
+      include_context 'simple project'
 
       context 'when there are no users at all' do
         it 'raises a MissingDependencies error' do
