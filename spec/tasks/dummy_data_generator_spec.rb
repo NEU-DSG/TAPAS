@@ -490,8 +490,16 @@ RSpec.describe 'dummy_data_generator rake tasks' do
 
     context 'when no users exist' do
       include_context 'simple project'
+
       before(:each) {
-        # Destroy the single user after creating the project.
+        Collection.create!(
+          title:        'Test Collection',
+          depositor_id: depositor.id,
+          project_id:   project.id,
+          is_public:    true
+        )
+        # Destroy the single user. The tests for collections and projects will pass, but without any
+        # users, MissingDependencies will be triggered.
         depositor.destroy
       }
 
@@ -509,27 +517,14 @@ RSpec.describe 'dummy_data_generator rake tasks' do
         )
       end
 
-      xit 'creates 5 core files per collection (3 regular + 2 ography)' do
-        expect { invoke('dummy_data_generator:core_files') }
-          .to change(CoreFile, :count).by(5)
-      end
-
-      xit 'creates 3 regular TEI files and 2 ography files' do
-        invoke('dummy_data_generator:core_files')
-        expect(CoreFile.where(ography_type: nil).count).to eq(3)
-        expect(CoreFile.where.not(ography_type: nil).count).to eq(2)
-      end
-
-      xit 'attaches a TEI file to each regular core file' do
-        invoke('dummy_data_generator:core_files')
-        CoreFile.where(ography_type: nil).each do |cf|
+      it 'attaches a TEI file to each regular core file' do
+        new_core_files.where(ography_type: nil).each do |cf|
           expect(cf.tei_file).to be_attached
         end
       end
 
-      xit 'assigns a valid ography type to each ography file' do
-        invoke('dummy_data_generator:core_files')
-        CoreFile.where.not(ography_type: nil).each do |cf|
+      it 'assigns a valid ography type to each ography file' do
+        new_core_files.where.not(ography_type: nil).each do |cf|
           expect(CoreFile.all_ography_types).to include(cf.ography_type)
         end
       end
