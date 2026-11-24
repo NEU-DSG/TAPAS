@@ -250,6 +250,8 @@ namespace :dummy_data_generator do
 
     projects.each do |project|
       project_owners = ProjectMember.where(project_id: project.id).where(role: 'owner').shuffle
+      # Choose a project owner as a depositor.
+      depositor = project_owners.sample&.user_id
       num_collections = do_make_empty? ? 0 : 1 + Random.rand(10) # 0 to 10
       # Keep track of the number of new collections and whether they're publicly visible.
       new_collections = 0
@@ -268,7 +270,7 @@ namespace :dummy_data_generator do
 
         collection = Collection.create!(title: Faker::Food.dish,
                                         description: Faker::GreekPhilosophers.quote,
-                                        depositor_id: project_owners.sample&.id,
+                                        depositor_id: depositor,
                                         project_id: project.id,
                                         is_public: visibility
         )

@@ -35,4 +35,5 @@ end
 
 RSpec.configure do |rspec|
   rspec.include_context 'simple project', :include_shared => true
+  rspec.include_context 'simple project with contributor', :include_shared => true
 end

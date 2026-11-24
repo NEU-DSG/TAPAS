@@ -402,8 +402,6 @@ RSpec.describe 'dummy_data_generator rake tasks' do
           expect(new_collections.where(is_public: true).count).to eq(0)
         end
       end
-
-      
     end
   end
 
