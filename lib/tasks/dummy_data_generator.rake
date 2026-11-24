@@ -302,12 +302,21 @@ namespace :dummy_data_generator do
     new_collection_ids
   end
 
-  def create_core_files(collection_ids = Collection.all.ids)
+  def create_core_files(collection_ids = Collection.pluck(:id))
+    collections = Collection.find(collection_ids)
+
+    if Project.all.empty?
+      raise MissingDependencies, 'Cannot create core files without projects'
+    elsif Collection.all.empty? || collections.empty?
+      raise MissingDependencies, 'Cannot create core files without collections'
+    elsif User.all.empty?
+      raise MissingDependencies, 'Cannot create core files without users'
+    end
+
     ography_types = CoreFile.all_ography_types
 
-    Collection.find(collection_ids)
-              .group_by { |c| c.project_id }
-              .each_pair do |project_id, mod_collections|
+    collections.group_by { |c| c.project_id }
+               .each_pair do |project_id, mod_collections|
       project = Project.find(project_id)
       # Any project member can create a core file.
       project_members = ProjectMember.where(project_id: project_id).shuffle
@@ -479,11 +488,7 @@ namespace :dummy_data_generator do
 
   desc "creates core files"
   task core_files: [:environment, :check_queue_adapter] do
-    if Collection.any?
-      create_core_files
-    else
-      warn 'There are no collections for which to create core files.'
-    end
+    create_core_files
   end
 
   desc "creates admin user"
