@@ -374,7 +374,7 @@ RSpec.describe 'dummy_data_generator rake tasks' do
         for pid in Project.pluck(:id) do
           owners = ProjectMember.where(project_id: pid)
                                 .where(role: 'owner').pluck(:user_id)
-          for collection in new_collections.where(project_id: pid) do
+          new_collections.where(project_id: pid).each do |collection|
             expect(owners).to include(collection.depositor_id)
           end
         end
@@ -458,7 +458,7 @@ RSpec.describe 'dummy_data_generator rake tasks' do
         project_ids = @more_projects.pluck(:id)
         project_ids.unshift(project.id)
         expect { new_collections }.to output {
-          for pid in project_ids do
+          project_ids.each do |pid|
             match(/Created \d+ collections in (public|private) project #{pid}:/)
           end
         }.to_stdout
