@@ -1,7 +1,10 @@
 require 'rails_helper'
+require 'support/shared_context/stub_solr.rb'
 require 'support/shared_context/simple_project.rb'
 
 RSpec.describe 'dummy_data_generator rake tasks' do
+  include_context 'stub Solr'
+
   before(:all) do
     Rails.application.load_tasks
   end
@@ -11,12 +14,6 @@ RSpec.describe 'dummy_data_generator rake tasks' do
   let(:rake_context) { TOPLEVEL_BINDING.eval('self') }
 
   before(:each) do
-    # Stub Solr to avoid needing a running Solr instance.
-    # Project, Collection, and CoreFile all fire after_save Solr callbacks.
-    allow_any_instance_of(SolrHelpers).to receive(:index_record).and_return(true)
-    allow(SolrHelpers).to receive(:solr_connection).and_return(double("RSolr",
-      add: true, commit: true, delete_by_query: true, delete_by_id: true))
-
     allow(rake_context).to receive(:record_image)
   end
 
@@ -362,7 +359,15 @@ RSpec.describe 'dummy_data_generator rake tasks' do
         it 'creates 0 to 10 collections per project' do
           expect(new_collections.length).to be_between(0, 10).inclusive
         end
-  
+
+        it 'chooses a project owner as a depositor' do
+          owners = ProjectMember.where(project_id: project.id)
+                                .where(role: 'owner').pluck(:user_id)
+          for collection in new_collections do
+            expect(owners).to include(collection.depositor_id)
+          end
+        end
+
         it 'reports the total number of collections added to a project' do
           expect { new_collections }
             .to output(/Created \d+ collections in (public|private) project \d+/).to_stdout
