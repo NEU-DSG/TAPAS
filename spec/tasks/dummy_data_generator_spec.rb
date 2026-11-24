@@ -38,21 +38,34 @@ RSpec.describe 'dummy_data_generator rake tasks' do
   def create_projects
     now = Time.current
     invoke('dummy_data_generator:projects')
-    Project.where(created_at: now..Time.zone.now.end_of_day)
+    Project.where(created_at: now..)
   end
 
   # Invoke project member creation and return newly-created project members.
   def create_project_members
     now = Time.current
     invoke('dummy_data_generator:project_members')
-    ProjectMember.where(created_at: now..Time.zone.now.end_of_day)
+    ProjectMember.where(created_at: now..)
   end
 
   # Invoke collection creation and return newly-created collections.
   def create_collections
     now = Time.current
     invoke('dummy_data_generator:collections')
-    Collection.where(created_at: now..Time.zone.now.end_of_day)
+    Collection.where(created_at: now..)
+  end
+
+  # Invoke core file creation and return newly-created core files.
+  def create_core_files
+    now = Time.current
+    invoke('dummy_data_generator:core_files')
+    CoreFile.where(created_at: now..)
+  end
+
+  shared_examples 'missing dependencies' do
+    it 'raises a MissingDependencies error' do
+      expect { subject }.to raise_error(MissingDependencies)
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -133,9 +146,7 @@ RSpec.describe 'dummy_data_generator rake tasks' do
     subject(:new_projects) { create_projects }
 
     context 'when there are no non-admin users to become project depositors' do
-      it 'raises a MissingDependencies error' do
-        expect { new_projects }.to raise_error(MissingDependencies)
-      end
+      include_examples 'missing dependencies'
     end
 
     context 'when there are non-admin users to become project depositors' do
@@ -230,20 +241,18 @@ RSpec.describe 'dummy_data_generator rake tasks' do
     let(:members_per_project) { new_members.group(:project_id).count }
 
     context 'when no projects exist' do
-      it 'raises a MissingDependencies error' do
-        expect { new_members }.to raise_error(MissingDependencies)
-      end
+      include_examples 'missing dependencies'
     end
 
     context 'when projects exist' do
       include_context 'simple project'
 
       context 'when no users exist' do
-        it 'raises a MissingDependencies error' do
+        before(:each) {
           # Delete the depositor now that the project is created, so there is 1 project and 0 users.
           depositor.destroy
-          expect { new_members }.to raise_error(MissingDependencies)
-        end
+        }
+        include_examples 'missing dependencies'
       end
 
       shared_examples 'project members' do
@@ -333,21 +342,22 @@ RSpec.describe 'dummy_data_generator rake tasks' do
       include_context 'simple project'
 
       context 'when there are no TAPAS users at all' do
-        it 'raises a MissingDependencies error' do
+        before(:each) {
           # Delete the project depositor, so there is 1 project and 0 users.
           depositor.destroy
-          expect { new_collections }.to raise_error(MissingDependencies)
-        end
+        }
+
+        include_examples 'missing dependencies'
       end
 
       context 'when there are users but a project has no owners' do
-        it 'raises a MissingDependencies error' do
+        before(:each) {
           # Create a few more users so the `User.all.empty?` test passes.
           create_users_for_testing(2)
           # Delete the project depositor, so there is 1 project and 0 owners.
           depositor.destroy
-          expect { new_collections }.to raise_error(MissingDependencies)
-        end
+        }
+        include_examples 'missing dependencies'
       end
     end
 
@@ -460,25 +470,36 @@ RSpec.describe 'dummy_data_generator rake tasks' do
   # :core_files
   # ---------------------------------------------------------------------------
   describe 'dummy_data_generator:core_files' do
-    before do
-      allow(rake_context).to receive(:check_queue_adapter)
+    # Explicitly set the subject of these specifications/tests.
+    subject(:new_core_files) { create_core_files }
+
+    before(:each) do
       # RAW_TEI_URL may be set in the test environment; override so attach_tei_file
       # uses the locally-generated XML instead of making a real HTTP request.
       stub_const('RAW_TEI_URL', nil)
     end
 
+    context 'when no projects exist' do
+      include_examples 'missing dependencies'
+    end
+
     context 'when no collections exist' do
-      xit 'does not create any core files' do
-        expect { invoke('dummy_data_generator:core_files') }
-          .not_to change(CoreFile, :count)
-      end
+      include_context 'simple project'
+      include_examples 'missing dependencies'
+    end
+
+    context 'when no users exist' do
+      include_context 'simple project'
+      before(:each) {
+        # Destroy the single user after creating the project.
+        depositor.destroy
+      }
+
+      include_examples 'missing dependencies'
     end
 
     context 'when a collection with project members exists' do
-      let!(:depositor)   { User.create!(name: 'Dep', email: 'dep@test.com', password: 'pass1234!') }
-      let!(:owner_user)  { User.create!(name: 'Owner', email: 'owner@test.com', password: 'pass1234!') }
-      let!(:project)     { Project.create!(title: 'Test Project', depositor_id: depositor.id) }
-      let!(:pm)          { ProjectMember.create!(project_id: project.id, user_id: owner_user.id, role: 'owner') }
+      include_context 'simple project with contributor'
       let!(:collection)  do
         Collection.create!(
           title:        'Test Collection',
