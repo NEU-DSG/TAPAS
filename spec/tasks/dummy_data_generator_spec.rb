@@ -297,12 +297,9 @@ RSpec.describe 'dummy_data_generator rake tasks' do
         it 'reports any new project members for every existing project' do
           # The output pattern is "# project members in PROJECT_ID: PROJECT_TITLE:"
           expect { new_members }.to output {
-              match(/\d+ project members in 1:/).and
-              match(/\d+ project members in 2:/).and
-              match(/\d+ project members in 3:/).and
-              match(/\d+ project members in 4:/).and
-              match(/\d+ project members in 5:/).and
-              match(/\d+ project members in 6:/)
+              for p in 1..6 do
+                match(/\d+ project members in #{p}:/)
+              end
             }.to_stdout
         end
 
