@@ -192,7 +192,7 @@ RSpec.describe 'dummy_data_generator rake tasks' do
       end
   
       context 'when the value of environment variable `num_projects` is not an integer' do
-        # Set the environment variable to ask for 5 new projects.
+        # Set the environment variable to ask for 'nope' new projects.
         before(:each) do
           stub_const('ENV', ENV.to_h.merge(
             'num_projects' => 'nope'
@@ -295,10 +295,12 @@ RSpec.describe 'dummy_data_generator rake tasks' do
         include_examples 'project members'
 
         it 'reports any new project members for every existing project' do
+          project_ids = @more_projects.pluck(:id)
+          project_ids.unshift(project.id)
           # The output pattern is "# project members in PROJECT_ID: PROJECT_TITLE:"
           expect { new_members }.to output {
-              for p in 1..6 do
-                match(/\d+ project members in #{p}:/)
+              for pid in project_ids do
+                match(/\d+ project members in #{pid}:/)
               end
             }.to_stdout
         end
@@ -349,38 +351,43 @@ RSpec.describe 'dummy_data_generator rake tasks' do
       end
     end
 
-    context 'when a project with owners exists' do
-      include_context 'simple project with contributor'
+    shared_examples 'collections' do
+      it 'creates 0 to 10 collections per project' do
+        expect(Project.pluck(:id))
+          .to all(satisfy { |pid| 
+            expect(new_collections.where(project_id: pid).count)
+              .to be_between(0, 10).inclusive
+          })
+      end
 
-      shared_examples 'collections' do
-        it 'creates 0 to 10 collections per project' do
-          expect(new_collections.length).to be_between(0, 10).inclusive
-        end
-
-        it 'chooses a project owner as a depositor' do
-          owners = ProjectMember.where(project_id: project.id)
+      it 'chooses a project owner as a depositor' do
+        for pid in Project.pluck(:id) do
+          owners = ProjectMember.where(project_id: pid)
                                 .where(role: 'owner').pluck(:user_id)
-          for collection in new_collections do
+          for collection in new_collections.where(project_id: pid) do
             expect(owners).to include(collection.depositor_id)
           end
         end
+      end
 
-        it 'reports the total number of collections added to a project' do
-          expect { new_collections }
-            .to output(/Created \d+ collections in (public|private) project \d+/).to_stdout
-        end
-  
-        it 'reports the number of public and private collections added to a project' do
-          expect { new_collections }.to output {
-            match(/\d+ private collections/).and
-            match(/\d+ public collections/)
-          }.to_stdout
-        end
-      end # shared examples
+      it 'reports the total number of collections added to a project' do
+        expect { new_collections }
+          .to output(/Created \d+ collections in (public|private) project \d+/).to_stdout
+      end
+
+      it 'reports the number of public and private collections added to a project' do
+        expect { new_collections }.to output {
+          match(/\d+ private collections/).and
+          match(/\d+ public collections/)
+        }.to_stdout
+      end
+    end # shared examples
+
+    context 'when a project with owners exists' do
+      include_context 'simple project with contributor'
 
       context 'and the project is public' do
         include_context 'simple project with contributor'
-
         include_examples 'collections'
 
         it 'creates a mix of public and private collections' do
@@ -403,6 +410,48 @@ RSpec.describe 'dummy_data_generator rake tasks' do
         it 'creates no public collections' do
           expect(new_collections.where(is_public: true).count).to eq(0)
         end
+      end
+
+      context 'and the task is run twice' do
+        include_context 'simple project with contributor'
+
+        before(:each) {
+          # Create an initial batch of collections for the project. If the first call doesn't produce 
+          # any collections, try again.
+          if create_collections.empty?
+            create_collections
+          end
+        }
+
+        it 'does not issue a warning' do
+          expect { new_collections }.not_to output.to_stderr
+        end
+
+        include_examples 'collections'
+      end
+    end
+
+    context 'when many projects exist' do
+      include_context 'simple project with contributor'
+
+      before(:each) {
+        # Create 16 users (in addition to the 2 from the shared context).
+        create_users_for_testing(16)
+        # Create 5 more projects.
+        stub_env('num_projects', 5)
+        @more_projects = create_projects
+      }
+
+      include_examples 'collections'
+
+      it 'reports new collections for every existing project' do
+        project_ids = @more_projects.pluck(:id)
+        project_ids.unshift(project.id)
+        expect { new_collections }.to output {
+          for pid in project_ids do
+            match(/Created \d+ collections in (public|private) project #{pid}:/)
+          end
+        }.to_stdout
       end
     end
   end
