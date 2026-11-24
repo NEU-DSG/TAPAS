@@ -18,6 +18,7 @@ class Project < ApplicationRecord
   scope :publicly_visible, -> { where(is_public: true) }
 
   after_save :index_record
+  after_destroy :delete_record
   after_create :assign_default_owner
 
   def project_group
