@@ -418,19 +418,20 @@ RSpec.describe 'dummy_data_generator rake tasks' do
         include_examples 'collections'
 
         it 'creates no public collections' do
-          expect(new_collections.where(is_public: true).count).to eq(0)
+          expect(new_collections.where(is_public: true)).to be_empty
         end
       end
 
       context 'and the task is run twice' do
         include_context 'simple project with contributor'
-
         before(:each) {
           # Create an initial batch of collections for the project. If the first call doesn't produce 
           # any collections, try again.
-          if create_collections.empty?
-            create_collections
+          coll_pass = create_collections
+          while coll_pass.empty? do
+            coll_pass = create_collections
           end
+          coll_pass
         }
 
         it 'does not issue a warning' do
@@ -497,7 +498,6 @@ RSpec.describe 'dummy_data_generator rake tasks' do
 
     context 'when no users exist' do
       include_context 'simple project with collection'
-
       before(:each) {
         # Destroy the existing users. The tests for collections and projects will pass, but without any
         # users, MissingDependencies will be triggered.
@@ -550,6 +550,9 @@ RSpec.describe 'dummy_data_generator rake tasks' do
         include_context 'simple project with collection'
 
         it 'creates a random number of public and private core files' do
+          # There should be at least 1 core file.
+          expect(new_core_files.count).to be >= 1
+          # There can be 0 or more core files that are public/private.
           expect(new_core_files.where(is_public: true).count).to be >= 0
           expect(new_core_files.where(is_public: false).count).to be >= 0
         end
@@ -565,7 +568,8 @@ RSpec.describe 'dummy_data_generator rake tasks' do
 
         it 'creates no public core files' do
           expect(new_core_files.where(is_public: true)).to be_empty
-          expect(new_core_files.where(is_public: false).count).to be >= 0
+          # In this context a core file will be created, so the count will be at least 1.
+          expect(new_core_files.where(is_public: false).count).to be >= 1
         end
 
         include_examples 'common core file'
@@ -605,8 +609,10 @@ RSpec.describe 'dummy_data_generator rake tasks' do
         }.to_stdout
       end
 
+      # TODO: make a context for when a project has multiple collections + core files are created
+      # This output pattern is ONLY returned if the project has new core files!
       xit 'reports new core files for every existing collection' do
-        expect { new_core_files }.to output(//).to_stdout
+        expect { new_core_files }.to output(/Collection \d+ now has \d+ core files/).to_stdout
       end
     end
   end
