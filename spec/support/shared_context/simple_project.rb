@@ -29,7 +29,18 @@ RSpec.shared_context 'simple project with contributor', :shared_context => :meta
   end
 end
 
+# A version that includes a contributor as well as a collection
+RSpec.shared_context 'simple project with collection', :shared_context => :metadata do
+  include_context 'simple project with contributor' do
+    let!(:collection) { Collection.create!(title:        'Test Collection',
+                                           depositor_id: depositor.id,
+                                           project_id:   project.id,
+                                           is_public:    is_project_public) }
+  end
+end
+
 RSpec.configure do |rspec|
   rspec.include_context 'simple project', :include_shared => true
   rspec.include_context 'simple project with contributor', :include_shared => true
+  rspec.include_context 'simple project with collection', :include_shared => true
 end

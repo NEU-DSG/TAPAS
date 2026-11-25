@@ -489,33 +489,20 @@ RSpec.describe 'dummy_data_generator rake tasks' do
     end
 
     context 'when no users exist' do
-      include_context 'simple project'
+      include_context 'simple project with collection'
 
       before(:each) {
-        Collection.create!(
-          title:        'Test Collection',
-          depositor_id: depositor.id,
-          project_id:   project.id,
-          is_public:    true
-        )
-        # Destroy the single user. The tests for collections and projects will pass, but without any
+        # Destroy the existing users. The tests for collections and projects will pass, but without any
         # users, MissingDependencies will be triggered.
         depositor.destroy
+        second_user.destroy
       }
 
       include_examples 'missing dependencies'
     end
 
     context 'when a collection with project members exists' do
-      include_context 'simple project with contributor'
-      let!(:collection)  do
-        Collection.create!(
-          title:        'Test Collection',
-          depositor_id: depositor.id,
-          project_id:   project.id,
-          is_public:    true
-        )
-      end
+      include_context 'simple project with collection'
 
       it 'attaches a TEI file to each regular core file' do
         new_core_files.where(ography_type: nil).each do |cf|
