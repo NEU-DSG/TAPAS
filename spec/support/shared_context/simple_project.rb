@@ -24,12 +24,16 @@ end
 # A version that also includes a second project member, a contributor.
 RSpec.shared_context 'simple project with contributor', :shared_context => :metadata do
   include_context 'simple project' do
-    let!(:second_user)    { User.create!(name: 'Member', email: 'member@test.com', password: 'pass1234!') }
-    let!(:project_member) { ProjectMember.create!(project_id: project.id, user_id: second_user.id, role: 'contributor') }
+    let!(:second_user)    { User.create!(name: 'Member', 
+                                         email: 'member@test.com',
+                                         password: 'pass1234!') }
+    let!(:project_member) { ProjectMember.create!(project_id: project.id,
+                                                  user_id: second_user.id,
+                                                  role: 'contributor') }
   end
 end
 
-# A version that includes a contributor as well as a collection
+# A version that includes a contributor as well as a collection.
 RSpec.shared_context 'simple project with collection', :shared_context => :metadata do
   include_context 'simple project with contributor' do
     let!(:collection) { Collection.create!(title:        'Test Collection',
