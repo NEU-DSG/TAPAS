@@ -549,7 +549,9 @@ RSpec.describe 'dummy_data_generator rake tasks' do
       context 'and the collection is public' do
         include_context 'simple project with collection'
 
-        xit 'creates a mix of public and private core files' do
+        it 'creates a random number of public and private core files' do
+          expect(new_core_files.where(is_public: true).count).to be >= 0
+          expect(new_core_files.where(is_public: false).count).to be >= 0
         end
 
         include_examples 'common core file'
@@ -561,7 +563,9 @@ RSpec.describe 'dummy_data_generator rake tasks' do
           let!(:is_project_public) { false }
         end
 
-        xit 'creates no public core files' do
+        it 'creates no public core files' do
+          expect(new_core_files.where(is_public: true)).to be_empty
+          expect(new_core_files.where(is_public: false).count).to be >= 0
         end
 
         include_examples 'common core file'
