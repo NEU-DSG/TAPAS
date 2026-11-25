@@ -471,7 +471,14 @@ RSpec.describe 'dummy_data_generator rake tasks' do
   # ---------------------------------------------------------------------------
   describe 'dummy_data_generator:core_files' do
     # Explicitly set the subject of these specifications/tests.
-    subject(:new_core_files) { create_core_files }
+    subject(:new_core_files) {
+      cf_pass = create_core_files
+      # Make sure there are SOME created core files.
+      while cf_pass.empty? do
+        cf_pass = create_core_files
+      end
+      cf_pass
+    }
 
     before(:each) do
       # RAW_TEI_URL may be set in the test environment; override so attach_tei_file
@@ -501,8 +508,18 @@ RSpec.describe 'dummy_data_generator rake tasks' do
       include_examples 'missing dependencies'
     end
 
-    context 'when a collection with project members exists' do
-      include_context 'simple project with collection'
+    shared_examples 'common core file' do
+      xit 'creates core files from 0 up to 5 times the number of collections, per project' do
+      end
+
+      xit 'reports the number of core files which will be created in a project' do
+      end
+
+      xit 'associates each core file with 1 or more collections in a project' do
+      end
+
+      xit 'chooses any project member as a depositor' do
+      end
 
       it 'attaches a TEI file to each regular core file' do
         new_core_files.where(ography_type: nil).each do |cf|
@@ -514,6 +531,63 @@ RSpec.describe 'dummy_data_generator rake tasks' do
         new_core_files.where.not(ography_type: nil).each do |cf|
           expect(CoreFile.all_ography_types).to include(cf.ography_type)
         end
+      end
+
+      xit 'reports on the number of collections associated with each core file' do
+      end
+    end # shared examples
+
+    context 'when a collection with project members exists' do
+      context 'and the collection is public' do
+        include_context 'simple project with collection'
+
+        xit 'creates a mix of public and private core files' do
+        end
+
+        include_examples 'common core file'
+      end
+
+      context 'and the collection is private' do
+        # Modify the shared context to make the simple project and collection private.
+        include_context 'simple project with collection' do
+          let!(:is_project_public) { false }
+        end
+
+        xit 'creates no public core files' do
+        end
+
+        include_examples 'common core file'
+      end
+    end
+
+    context 'when run twice' do
+      include_context 'simple project with collection'
+      before(:each) {
+        create_core_files
+      }
+
+      it 'does not raise an error' do
+        expect { new_core_files }.not_to raise_error
+      end
+
+      include_examples 'common core file'
+    end
+
+    context 'when many projects and collections exist', :slow do
+      before(:each) {
+        create_users_for_testing(18)
+        stub_env('num_projects', 6)
+        create_projects
+        create_project_members
+        create_collections
+      }
+
+      include_examples 'common core file'
+
+      xit 'reports new core files for every existing project' do
+      end
+
+      xit 'reports new core files for every existing collection' do
       end
     end
   end
