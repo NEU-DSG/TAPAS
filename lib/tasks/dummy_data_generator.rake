@@ -335,7 +335,8 @@ namespace :dummy_data_generator do
 
       # Choose an upper bound on the number of core files per project by multiplying the number of
       # collections by 5.
-      num_core_files = do_make_empty? ? 0 : Random.rand(5 * collections.length)
+      num_core_files = do_make_empty? || collections.length == 0 ? 0 
+                                                                 : Random.rand(5 * collections.length)
       puts "Creating #{num_core_files} core files in #{mod_collections.length} collections in project #{project_id}"
 
       # Create regular TEI content files
