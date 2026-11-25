@@ -512,7 +512,10 @@ RSpec.describe 'dummy_data_generator rake tasks' do
       xit 'creates core files from 0 up to 5 times the number of collections, per project' do
       end
 
-      xit 'reports the number of core files which will be created in a project' do
+      it 'reports the number of core files to be created in a project' do
+        # Very simple test: Does this string occur at all in standard output?
+        expect { new_core_files }
+          .to output(/Creating \d+ core files in \d+ collections in project \d+/).to_stdout
       end
 
       xit 'associates each core file with 1 or more collections in a project' do
@@ -533,7 +536,12 @@ RSpec.describe 'dummy_data_generator rake tasks' do
         end
       end
 
-      xit 'reports on the number of collections associated with each core file' do
+      it 'reports on the number of collections associated with each core file' do
+        expect { new_core_files }.to output {
+          new_core_files.each do |cf|
+            matches(/Core file #{cf.id} is associated with \d+ collections/)
+          end
+        }.to_stdout
       end
     end # shared examples
 
@@ -584,10 +592,17 @@ RSpec.describe 'dummy_data_generator rake tasks' do
 
       include_examples 'common core file'
 
-      xit 'reports new core files for every existing project' do
+      it 'reports the number of core files to be created for every existing project' do
+        project_ids = Project.pluck(:id)
+        expect { new_core_files }.to output {
+          project_ids.each do |pid|
+            matches(/Creating \d+ core files in \d+ collections in project #{pid}$/)
+          end
+        }.to_stdout
       end
 
       xit 'reports new core files for every existing collection' do
+        expect { new_core_files }.to output(//).to_stdout
       end
     end
   end
